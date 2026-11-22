@@ -328,26 +328,26 @@ const TILES = {
   rainbow:{ e: '🌈', name: '虹', w: 3, tier: 3, desc: '盤面のタイルの種類1つにつき 倍率を×0.2ずつ上乗せ（8種類なら×2.6）。ただし効くのは盤面で最初の🌈だけ' },
   // ── 庭ごとの専用タイル（only の庭でしか出ない）──
   lotus:  { e: '🪷', name: '蓮',   w: 5, tier: 2, from: 1, only: 'water', desc: '倍率を×1.5。隣の💧1つにつき さらに×0.25' },
-  bamboo: { e: '🎋', name: '竹',   w: 5, tier: 2, from: 1, only: 'water', desc: '+6点と+3倍。置いてから経ったラウンド1つにつき さらに+3倍（長く残すほど育つ）' },
+  bamboo: { e: '🎋', name: '竹',   w: 5, tier: 2, from: 1, only: 'water', desc: '+6点と+3倍。さらに 倍率×1.12、置いてから経ったラウンド1つにつき ×0.12ずつ上乗せ（長く残すほど育つ）' },
   bigtree:{ e: '🌳', name: '大樹', w: 3, tier: 3, from: 3, only: 'water', desc: '盤面の「草」「水」のタイル（🌳以外）1つにつき 倍率×0.09ずつ上乗せ。さらに置いてから経ったラウンド1つにつき ×0.14（育てるほど掛け算が膨らむ）' },
   sprig:  { e: '🌿', name: '若葉', w: 0, born: true, desc: '+6点。隣の💧1つにつき +4点（🌱が2ラウンド残ると育つ。水辺の庭では さらに3ラウンドで🌳大樹に）' },
   ash:    { e: '🌫️', name: '灰',   w: 0, born: true, desc: '+4点。隣の🌱🌿1つにつき +2倍（大きな火が芽を燃やした焼け跡。肥えている）' },
   sun:    { e: '☀️', name: '日',   w: 3, tier: 3, from: 3, only: 'water', desc: '盤面の🌱・💧・🪷を全部 もう一度発動させる' },
-  lantern:{ e: '🏮', name: '提灯', w: 5, tier: 2, from: 1, only: 'fire',  desc: '盤面の🔥1つにつき +8点と+1倍' },
-  yam:    { e: '🍠', name: '焼き芋', w: 5, tier: 2, from: 1, only: 'fire', desc: 'いまの「熱」1つにつき +6点と+1倍。熱は このラウンドで それまでに🔥が発動した回数（右下に置くほど熱い）' },
+  lantern:{ e: '🏮', name: '提灯', w: 5, tier: 2, from: 1, only: 'fire',  desc: '盤面の🔥1つにつき +8点と+1倍、さらに 倍率×0.02ずつ上乗せ' },
+  yam:    { e: '🍠', name: '焼き芋', w: 5, tier: 2, from: 1, only: 'fire', desc: 'いまの「熱」1つにつき +6点と+1倍。熱が8以上なら さらに倍率×1.3。熱は このラウンドで それまでに🔥が発動した回数（右下に置くほど熱い）' },
   volcano:{ e: '🌋', name: '火山', w: 5, tier: 3, from: 3, only: 'fire', desc: 'いまの熱1つにつき 倍率×0.14ずつ上乗せ（🔥をたくさん燃やした後ろに置くほど強い）' },
   dragon: { e: '🐉', name: '竜',   w: 5, tier: 3, from: 3, only: 'fire',  desc: '隣の🔥1つにつき 倍率を×1.8' },
   owl:    { e: '🦉', name: '梟',   w: 5, tier: 2, from: 1, only: 'night', desc: '+8点。斜め4方向のタイルを もう一度発動させる。斜めの⭐🦉1つにつき 回数+1' },
-  scope:  { e: '🔭', name: '望遠鏡', w: 5, tier: 2, from: 1, only: 'night', desc: '同じ縦の列と横の列にある⭐1つにつき 倍率を×0.15ずつ上乗せ' },
+  scope:  { e: '🔭', name: '望遠鏡', w: 5, tier: 2, from: 1, only: 'night', desc: '同じ縦の列と横の列にある⭐1つにつき 倍率を×0.25ずつ上乗せ' },
   venus:  { e: '🌟', name: '明星', w: 3, tier: 3, from: 3, only: 'night', desc: '盤面の「天」のタイル（🌟以外）1つにつき 倍率×0.02ずつ上乗せ。同じ縦横の列にある「天」は さらに×0.03ずつ' },
   comet:  { e: '🌠', name: '流星', w: 3, tier: 3, from: 3, only: 'night', desc: '盤面の🌙を全部 もう一度発動させる' },
-  sunflwr:{ e: '🌻', name: '向日葵', w: 6, tier: 2, from: 1, only: 'bee', desc: '+10点。隣の🐝と🌱1つにつき +5倍、さらに 倍率×0.2ずつ上乗せ（4つ囲めば ×1.8）' },
-  nest:   { e: '🪺', name: '巣',   w: 5, tier: 2, from: 1, only: 'bee', desc: '隣の🐝の「群れ」（上下左右につながった🐝全部）1匹につき +6点と+3倍。群れが5匹以上なら さらに倍率×1.5' },
+  sunflwr:{ e: '🌻', name: '向日葵', w: 6, tier: 2, from: 1, only: 'bee', desc: '+10点。隣の🐝と🌱1つにつき +5倍、さらに 倍率×0.4ずつ上乗せ（4つ囲めば ×2.6）' },
+  nest:   { e: '🪺', name: '巣',   w: 5, tier: 2, from: 1, only: 'bee', desc: '隣の🐝の「群れ」（上下左右につながった🐝全部）1匹につき +6点と+3倍、さらに 倍率×0.25ずつ上乗せ' },
   ladybug:{ e: '🐞', name: '天道虫', w: 3, tier: 3, from: 3, only: 'bee', desc: '隣の🐝の群れ（つながった🐝全部）1匹につき 倍率×0.75ずつ上乗せ' },
   gear:   { e: '⚙️', name: '歯車',   w: 6, tier: 2, from: 0, only: 'gear', desc: '+4点。導火線で⚙️が続くほど 倍率×0.4ずつ上乗せ（3つ続けば ×2.2）。導火線の外では ×1.1' },
   switch: { e: '🔀', name: '転轍機', w: 4, tier: 2, from: 0, only: 'gear', desc: '+5点。導火線で この次に通るタイルを 2回多く発動させる' },
-  compass:{ e: '🧭', name: '羅針盤', w: 3, tier: 3, from: 2, only: 'gear', desc: '導火線が曲がった回数1つにつき 倍率×0.4ずつ上乗せ' },
-  target: { e: '🎯', name: '的',     w: 3, tier: 3, from: 2, only: 'gear', desc: '導火線の終点にあれば、導火線の長さ1マスにつき 倍率×0.35ずつ上乗せ。終点でなければ何もしない' },
+  compass:{ e: '🧭', name: '羅針盤', w: 3, tier: 3, from: 2, only: 'gear', desc: '+5点。導火線が曲がった回数1つにつき 倍率×0.4ずつ上乗せ' },
+  target: { e: '🎯', name: '的',     w: 3, tier: 3, from: 2, only: 'gear', desc: '+6点。導火線の終点にあれば、導火線の長さ1マスにつき 倍率×0.35ずつ上乗せ' },
   kite:   { e: '🪁', name: '凧',     w: 5, tier: 2, from: 0, only: 'wind', arrow: true, desc: '矢印の先に一直線に並ぶタイルを全部 もう一度発動させる（タップで向きを変えられる）' },
   leaf:   { e: '🍃', name: '木の葉', w: 6, tier: 2, from: 0, only: 'wind', arrow: true, desc: '+6点と+1倍。矢印の先の隣のタイルを 1回多く発動させる（追い風）' },
   tornado:{ e: '🌪️', name: '竜巻',   w: 3, tier: 3, from: 2, only: 'wind', arrow: true, desc: '盤面で自分と同じ向きの矢印タイル1つにつき 倍率×0.25ずつ上乗せ' },
@@ -355,11 +355,11 @@ const TILES = {
   hina:   { e: '🎎', name: '雛',     w: 7, tier: 2, from: 0, only: 'pair', desc: '+8点と+3倍。「対」になっていれば 倍率×1.5' },
   chou:   { e: '🦋', name: '蝶',     w: 6, tier: 2, from: 0, only: 'pair', desc: '軸をはさんだ反対側のタイルと同じ効果で発動し、どんなタイルとも「対」になる（反対側が空・🦋・真ん中の列なら +5点）' },
   torii:  { e: '⛩️', name: '鳥居',   w: 3, tier: 3, from: 2, only: 'pair', desc: '+4点。同じ横の列の「対」のタイルを全部 もう一度発動させる。真ん中の縦の列（軸）に置けば 2回ずつ' },
-  fuda:   { e: '🎴', name: '花札',   w: 3, tier: 3, from: 2, only: 'pair', desc: '盤面の「対」1組につき 倍率×0.2ずつ上乗せ' },
+  fuda:   { e: '🏵️', name: '家紋',   w: 3, tier: 3, from: 2, only: 'pair', desc: '盤面の「対」1組につき 倍率×0.2ずつ上乗せ' },
   castle: { e: '🏯', name: '城',     w: 6, tier: 2, from: 0, only: 'stack', desc: '+5点。自分の段1つにつき 倍率×0.2ずつ上乗せ（重ねるほど掛け算が太り、発動の回数も増える）' },
-  kokeshi:{ e: '🪆', name: 'こけし', w: 5, tier: 2, from: 0, only: 'stack', desc: '+4点。上下左右のタイルの段の合計1つにつき +3倍' },
+  kokeshi:{ e: '🪆', name: 'こけし', w: 5, tier: 2, from: 0, only: 'stack', desc: '+4点。上下左右のタイルの段の合計1つにつき +3倍、さらに 倍率×0.05ずつ上乗せ' },
   ladder: { e: '🪜', name: '梯子',   w: 3, tier: 3, from: 2, only: 'stack', desc: '上下のタイルを もう一度発動させる。上下のタイルの段が高いほど、そのタイルは多く発動する' },
-  tower:  { e: '🗼', name: '塔',     w: 3, tier: 3, from: 2, only: 'stack', desc: '盤面でいちばん高い段1つにつき 倍率×0.25ずつ上乗せ' },
+  tower:  { e: '🛕', name: '五重塔',     w: 3, tier: 3, from: 2, only: 'stack', desc: '盤面でいちばん高い段1つにつき 倍率×0.25ずつ上乗せ' },
   queen:  { e: '👑', name: '女王蜂', w: 5, tier: 3, from: 3, only: 'bee', desc: '盤面の🐝1つにつき 倍率を×0.25ずつ上乗せ。さらに🐝を全部 もう一度発動させる' },
 };
 // ===== 属性（どのタイルにも1〜2個）=====
@@ -431,7 +431,7 @@ const RELICS = {
   clockwork:    { e: '🔩', name: 'からくり', only: 'gear', desc: '導火線の 3・6・9…番目のタイルは 1回多く発動' },
   oil:          { e: '🛢️', name: '油差し',   only: 'gear', desc: '⚙️歯車の掛け算が、続く⚙️1つにつき ×0.4 → ×0.55' },
   key:          { e: '🗝️', name: '鍵',       only: 'gear', desc: '🎯的の掛け算が、導火線1マスにつき ×0.35 → ×0.5' },
-  metronome:    { e: '🎼', name: '拍子',     only: 'gear', desc: '導火線が 4マスごとに曲がっていると（4・8・12…番目が角）、その角のタイルは 2回多く発動' },
+  metronome:    { e: '🥁', name: '拍子',     only: 'gear', desc: '導火線が 4マスごとに曲がっていると（4・8・12…番目が角）、その角のタイルは 2回多く発動' },
   tailwind:     { e: '🧣', name: '追い風',   only: 'wind', desc: '導火線で進む向きと 矢印の向きが同じタイルは 1回多く発動' },
   fan:          { e: '🪭', name: '扇',       only: 'wind', desc: '向きを変えられる回数が 1ラウンド 3回 → 5回' },
   sail:         { e: '⛵', name: '帆',       only: 'wind', desc: '🪁凧が、矢印の先のタイルを 2回ずつ発動させる' },
@@ -440,14 +440,27 @@ const RELICS = {
   whirl:        { e: '🌀', name: '渦',       desc: 'まん中のマスのタイルは さらに2回発動' },
   vanguard:     { e: '🚩', name: '先駆け',   desc: '最初に発動するタイル（いちばん左上のタイル）は さらに2回発動' },
   tea:          { e: '🍵', name: '茶室',     desc: '盤面のタイルが8種類以上なら、最後に倍率×2' },
-  chigiri:      { e: '🪢', name: '契り',     only: 'pair',  desc: '「対」になったタイル（軸をはさんで左右の同じ位置に同じタイル）と、軸（真ん中の縦の列）のタイルは 1回多く発動' },
+  chigiri:      { e: '💍', name: '契り',     only: 'pair',  desc: '「対」になったタイル（軸をはさんで左右の同じ位置に同じタイル）と、軸（真ん中の縦の列）のタイルは 1回多く発動' },
   hangetsu:     { e: '🌓', name: '半月',     only: 'pair',  desc: '5マスとも埋まって 左右対称になっている横の列のタイルは さらに1回多く発動' },
   momo:         { e: '🍑', name: '桃の節句', only: 'pair',  desc: '🎎雛の掛け算が ×1.5 → ×2.0' },
-  toumyou:      { e: '🪔', name: '灯明',     only: 'pair',  desc: '⛩️鳥居が 対のタイルを発動させる回数 +1' },
-  ishizue:      { e: '🧱', name: '礎',       only: 'stack', desc: '2段以上に重ねたタイルは さらに1回多く発動' },
+  toumyou:      { e: '🎀', name: '水引',     only: 'pair',  desc: '⛩️鳥居が 対のタイルを発動させる回数 +1' },
+  ishizue:      { e: '🏛️', name: '礎',       only: 'stack', desc: '3段以上に重ねたタイルは さらに1回多く発動' },
   kourou:       { e: '🏙️', name: '高楼',     only: 'stack', desc: '🏯城の掛け算が 段1つにつき ×0.2 → ×0.3' },
   ashiba:       { e: '🏗️', name: '足場',     only: 'stack', desc: '重ねた段の合計1つにつき、最後に倍率×0.1ずつ上乗せ' },
   juubako:      { e: '🍱', name: '重箱',     only: 'stack', desc: '3段以上に重ねたタイルは さらに2回多く発動' },
+  nabe:         { e: '🍲', name: '鍋',       only: 'fire',  desc: '🍠焼き芋と🏮提灯は 1回多く発動' },
+  toolbox:      { e: '🧰', name: '工具箱',   only: 'gear',  desc: '🔀転轍機が 次のタイルを 2回 → 3回多く発動させる' },
+  wheel:        { e: '🛞', name: '車輪',     only: 'gear',  desc: '🧭羅針盤の掛け算が 曲がり1つにつき ×0.4 → ×0.6' },
+  magnet:       { e: '🧲', name: '磁石',     only: 'gear',  desc: '導火線の上の🪞鏡と⚡雷は 1回多く発動' },
+  gale:         { e: '💨', name: '疾風',     only: 'wind',  desc: '🌪️竜巻の掛け算が 同じ向き1つにつき ×0.25 → ×0.35' },
+  feather:      { e: '🪶', name: '羽根',     only: 'wind',  desc: '🎏鯉のぼりの掛け算が 並ぶタイル1つにつき ×0.26 → ×0.36' },
+  fukinagashi:  { e: '🏳️', name: '吹き流し', only: 'wind',  desc: '同じ向きの矢印タイルが3つ以上あれば、その向きの矢印タイルは 1回多く発動' },
+  futago:       { e: '👯', name: '双子',     only: 'pair',  desc: '🦋蝶が 反対側の効果を2回まねる' },
+  shuugen:      { e: '🎊', name: '祝言',     only: 'pair',  desc: '盤面の「対」1組につき、最後に倍率×0.1ずつ上乗せ' },
+  tenbin:       { e: '⚖️', name: '天秤',     only: 'pair',  desc: '軸の左と右のタイルの数が同じなら、軸のタイルは さらに2回多く発動' },
+  tozan:        { e: '🧗', name: '登攀',     only: 'stack', desc: '🪜梯子が 上下のタイルを発動させる回数が2倍' },
+  itadaki:      { e: '🏔️', name: '頂',       only: 'stack', desc: '盤面でいちばん高い段のタイル（2段以上）は さらに1回多く発動' },
+  hakozumi:     { e: '📦', name: '箱積み',   only: 'stack', desc: '🪆こけしの掛け算が 段1つにつき ×0.05 → ×0.08' },
   jelly:        { e: '🫙', name: 'ローヤルゼリー', only: 'bee', desc: '👑女王蜂の掛け算が 🐝1つにつき ×0.25 → ×0.4' },
 };
 const THEMES = {
@@ -457,7 +470,7 @@ const THEMES = {
   gear:  { e: '⚙️', name: 'からくりの庭', lv: 'ふつう', locked: 2, teaser: '導火線の道筋で勝負する', tiles: '⚙️🔀🪞', boost: { mirror: 1.6, thunder: 1.6, rock: 1.2 }, relic: 'clockwork', elems: ['術', '地'], factor: '道筋', desc: '上級者向け。<b>導火線の道筋</b>がすべて。⚙️歯車を一直線につなぎ、🔀転轍機の次に強いタイルを通し、🧭羅針盤のために曲がり、🎯的で締める。' },
   wind:  { e: '🌬️', name: '風の庭', lv: 'ふつう', locked: 3, teaser: '矢印の向きで勝負する', tiles: '🪁🍃🌪️', boost: { star: 1.3, sprout: 1.2 }, relic: 'tailwind', elems: ['天', '草'], factor: '風向き', desc: '上級者向け。矢印タイルの<b>向き</b>がすべて。タップで向きを変え（1ラウンド3回）、🪁凧の風を強いタイルの列に通し、🍃木の葉で追い風を送る。' },
   pair:  { e: '🎎', name: '対の庭', lv: 'ふつう', locked: 4, tiles: '🎎🦋⛩️', boost: { mirror: 0.5 }, relic: 'chigiri', elems: ['術'], factor: '対', teaser: '左右対称に置いて勝負する', desc: '上級者向け。盤面の<b>真ん中の縦の列が軸</b>。軸をはさんで左右の同じ位置に同じタイルを置くと<b>「対」</b>になり、1回多く発動する（軸のタイルも1回多く）。🎎雛は対で掛け算、🦋蝶は反対側をまねてどれとも対になり、⛩️鳥居は軸から対を呼び起こす。' },
-  stack: { e: '🏯', name: '重ねの庭', lv: 'ふつう', locked: 5, tiles: '🏯🪆🪜', boost: {}, relic: 'ishizue', elems: ['地'], factor: '段', teaser: 'タイルを高く重ねて勝負する', desc: '上級者向け。手札のタイルを<b>同じタイルの上に重ねる</b>と段が上がり、<b>段の数だけ発動</b>する。ただし重ねたぶん庭に空きが残る。🏯城は高いほど掛け算、🪆こけしは周りの段で稼ぎ、🪜梯子が上下の高いタイルを起こす。' },
+  stack: { e: '🏯', name: '重ねの庭', lv: 'ふつう', locked: 5, tiles: '🏯🪆🛕', boost: {}, relic: 'ishizue', elems: ['地'], factor: '段', teaser: 'タイルを高く重ねて勝負する', desc: '上級者向け。手札のタイルを<b>同じタイルの上に重ねる</b>と段が上がり、<b>段の数だけ発動</b>する。ただし重ねたぶん庭に空きが残る。🏯城は高いほど掛け算、🪆こけしは周りの段で稼ぎ、🪜梯子が上下の高いタイルを起こす。' },
   bee:   { e: '🐝', name: '蜂の庭',   lv: 'ふつう', tiles: '🐝🌱', boost: { bee: 3.0, sprout: 1.6 }, relic: 'swarm', elems: ['虫'], factor: '群れ', desc: '蜂を寄せ集める庭。<b>つながった蜂の群れ</b>が大きいほど🪺巣が稼ぎ、👑女王蜂が群れごと掛け算にする。' },
 };
 const THEME_REL = 1.25;
@@ -619,39 +632,39 @@ function scoreBoard(board, relics, ctx) {
       case 'switch': add(i, 'c', 5, type); break;
       case 'compass': {
         let turns = 0; for (let k = 1; k < path.length - 1; k++) if (path[k + 1] - path[k] !== path[k] - path[k - 1]) turns++;
-        if (turns) add(i, 'x', Math.round((1 + 0.4 * turns) * 100) / 100, type, []); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        add(i, 'c', 5, type); if (turns) add(i, 'x', Math.round((1 + (R.has('wheel') ? 0.6 : 0.4) * turns) * 100) / 100, type, []);
         break;
       }
       case 'target': {
+        add(i, 'c', 6, type);
         if (path.length && path[path.length - 1] === i) add(i, 'x', Math.round((1 + (R.has('key') ? 0.5 : 0.35) * path.length) * 100) / 100, type, [path[path.length - 2]].filter(j => j != null));
-        else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
         break;
       }
       case 'leaf': add(i, 'c', 6, type); add(i, 'm', 1, type); break;
       case 'tornado': {
         const same = board.map((t, j) => j !== i && isArrow(t) && dirOf(j) === dirOf(i) ? j : -1).filter(j => j >= 0);
-        if (same.length) add(i, 'x', Math.round((1 + 0.25 * same.length) * 100) / 100, type, same); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        if (same.length) add(i, 'x', Math.round((1 + (R.has('gale') ? 0.35 : 0.25) * same.length) * 100) / 100, type, same); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
         break;
       }
       case 'koi': {
         const ln = []; let j = stepDir(i, dirOf(i)); while (j >= 0 && board[j]) { ln.push(j); j = stepDir(j, dirOf(i)); }
-        if (ln.length) add(i, 'x', Math.round((1 + 0.26 * ln.length) * 100) / 100, type, ln); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        if (ln.length) add(i, 'x', Math.round((1 + (R.has('feather') ? 0.36 : 0.26) * ln.length) * 100) / 100, type, ln); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
         break;
       }
       case 'bamboo': {
-        add(i, 'c', 6, type);
-        add(i, 'm', 3 + 3 * ageOf(i), type);
+        add(i, 'c', 6, type); add(i, 'm', 3, type);
+        add(i, 'x', Math.round((1 + 0.12 * (ageOf(i) + 1)) * 100) / 100, type);
         break;
       }
       case 'yam': {
-        if (heat) { const ln = board.map((t, j) => t === 'fire' ? j : -1).filter(j => j >= 0 && j < i).slice(-8); add(i, 'c', 6 * heat, type, ln); add(i, 'm', heat, type, ln); }
+        if (heat) { const ln = board.map((t, j) => t === 'fire' ? j : -1).filter(j => j >= 0 && j < i).slice(-8); add(i, 'c', 6 * heat, type, ln); add(i, 'm', heat, type, ln); if (heat >= 8) add(i, 'x', 1.3, type, ln); }
         else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
         break;
       }
       case 'scope': {
         const ln = []; for (let k = 0; k < N; k++) { const a = Math.floor(i / N) * N + k, b = k * N + i % N; if (a !== i && board[a] === 'star') ln.push(a); if (b !== i && board[b] === 'star') ln.push(b); }
         if (R.has('ring')) for (const [dr, dc] of [[1,1],[1,-1],[-1,1],[-1,-1]]) { let r = Math.floor(i / N) + dr, c = i % N + dc; while (r >= 0 && r < N && c >= 0 && c < N) { if (board[r * N + c] === 'star') ln.push(r * N + c); r += dr; c += dc; } }
-        if (ln.length) add(i, 'x', Math.round((1 + 0.15 * ln.length) * 100) / 100, type, ln);
+        if (ln.length) add(i, 'x', Math.round((1 + 0.25 * ln.length) * 100) / 100, type, ln);
         else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
         break;
       }
@@ -659,7 +672,7 @@ function scoreBoard(board, relics, ctx) {
         const gs = new Set(neighbors(i).filter(j => board[j] === 'bee').map(j => groupOf[j]));
         let n = 0; gs.forEach(g => n += groupSize[g]);
         const ln = board.map((t, j) => t === 'bee' && gs.has(groupOf[j]) ? j : -1).filter(j => j >= 0);
-        if (n) { add(i, 'c', 6 * n, type, ln); add(i, 'm', (R.has('buzz') ? 4 : 3) * n, type, ln); if (n >= 5) add(i, 'x', 1.5, type, ln); }
+        if (n) { add(i, 'c', 6 * n, type, ln); add(i, 'm', (R.has('buzz') ? 4 : 3) * n, type, ln); add(i, 'x', Math.round((1 + 0.25 * n) * 100) / 100, type, ln); }
         else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
         break;
       }
@@ -669,7 +682,7 @@ function scoreBoard(board, relics, ctx) {
       }
       case 'lantern': {
         const fs = board.map((t, j) => t === 'fire' ? j : -1).filter(j => j >= 0);
-        if (fs.length) { add(i, 'c', (R.has('hanabi') ? 16 : 8) * fs.length, type, fs); add(i, 'm', fs.length, type, fs); } else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        if (fs.length) { add(i, 'c', (R.has('hanabi') ? 16 : 8) * fs.length, type, fs); add(i, 'm', fs.length, type, fs); add(i, 'x', Math.round((1 + 0.02 * fs.length) * 100) / 100, type, fs); } else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
         break;
       }
       case 'dragon': {
@@ -679,7 +692,7 @@ function scoreBoard(board, relics, ctx) {
       }
       case 'sunflwr': {
         add(i, 'c', 10, type);
-        const nb = adjList(i, 'bee').concat(adjList(i, 'sprout')); if (nb.length) { add(i, 'm', 5 * nb.length, type, nb); add(i, 'x', 1 + 0.2 * nb.length, type, nb); }
+        const nb = adjList(i, 'bee').concat(adjList(i, 'sprout')); if (nb.length) { add(i, 'm', 5 * nb.length, type, nb); add(i, 'x', Math.round((1 + 0.4 * nb.length) * 100) / 100, type, nb); }
         break;
       }
       // もう一度発動させる系（星・雷・梟・日・流星・女王蜂）
@@ -706,6 +719,7 @@ function scoreBoard(board, relics, ctx) {
         else if (type === 'owl') times += diagonals(i).filter(j => board[j] === 'star' || board[j] === 'owl').length;
         else if (type === 'kite' && R.has('sail')) times = 2;
         else if (type === 'torii') times = (onAxis(i) ? 2 : 1) + (R.has('toumyou') ? 1 : 0);
+        else if (type === 'ladder' && R.has('tozan')) times = 2;
         const boosters = type === 'star' ? neighbors(i).filter(j => board[j] === 'star') : [];
         tg = tg.filter(j => board[j] && j !== i && !RE.has(board[j]));
         if (!tg.length) { pushEv({ i, kind: 'n', chips, mult, src: type, links: boosters, by: curBy }); break; }
@@ -724,6 +738,7 @@ function scoreBoard(board, relics, ctx) {
         const j = mirrorOf(i), L = board[j];
         if (onAxis(i) || !L || L === 'chou' || L === 'mirror' || (depth > 0 && RETRIG.has(L))) { add(i, 'c', 5, type); break; }
         pushEv({ i, kind: 'r', chips, mult, src: type, as: L, links: [j], by: curBy }); trigAs(i, L, depth + 1);
+        if (R.has('futago')) { pushEv({ i, kind: 'r', chips, mult, src: type, as: L, links: [j], by: curBy }); trigAs(i, L, depth + 1); }
         break;
       }
       case 'fuda': {
@@ -738,7 +753,7 @@ function scoreBoard(board, relics, ctx) {
       }
       case 'kokeshi': {
         const nb = neighbors(i).filter(j => board[j]); const sum = nb.reduce((a, j) => a + lvOf(j), 0);
-        add(i, 'c', 4, type); if (sum) add(i, 'm', 3 * sum, type, nb);
+        add(i, 'c', 4, type); if (sum) { add(i, 'm', 3 * sum, type, nb); add(i, 'x', Math.round((1 + (R.has('hakozumi') ? 0.08 : 0.05) * sum) * 100) / 100, type, nb); }
         break;
       }
       case 'tower': {
@@ -779,6 +794,10 @@ function scoreBoard(board, relics, ctx) {
   if (ctx && ctx.onlyPath) { order.splice(0, order.length, ...path); } // 最初・最後のタイルは本番と同じ（なぞらなかった分も含めた順）で判定する
   const dirOf = i => (ctx && ctx.dirs && ctx.dirs[i] != null) ? ctx.dirs[i] : 1;
   const ph = ctx && ctx.phase;
+  let lc = 0, rc = 0; for (let j = 0; j < N * N; j++) if (board[j]) { if (j % N < (N - 1) / 2) lc++; else if (j % N > (N - 1) / 2) rc++; }
+  const balanced = lc > 0 && lc === rc;
+  const arrowDir3 = new Set(); { const cnt = [0, 0, 0, 0]; board.forEach((t, j) => { if (isArrow(t)) cnt[dirOf(j)]++; }); cnt.forEach((c, d) => { if (c >= 3) arrowDir3.add(d); }); }
+  let maxLv = 1; board.forEach((t, j) => { if (t) maxLv = Math.max(maxLv, lvOf(j)); });
   for (const i of order) {
     let reps = 1;
     if (ph && phaseActive(board[i], ph)) reps++;
@@ -787,7 +806,7 @@ function scoreBoard(board, relics, ctx) {
     { const lv = neighbors(i).filter(j => board[j] === 'leaf' && stepDir(j, dirOf(j)) === i); if (lv.length) { reps += lv.length * (R.has('windmill') ? 2 : 1); pushEv({ i, kind: 'n', lbl: `🍃追い風×${lv.length}`, chips, mult, src: 'leaf', links: lv, by: null }); } }
     // 🧣追い風（遺物）：導火線で次へ進む向き（終点は来た向き）と矢印が同じ
     if (R.has('tailwind') && pk != null && isArrow(board[i])) { const nx = path[pk + 1], pv = path[pk - 1]; const d = nx != null ? [0, 1, 2, 3].find(q => stepDir(i, q) === nx) : pv != null ? [0, 1, 2, 3].find(q => stepDir(pv, q) === i) : null; if (d != null && d === dirOf(i)) reps++; }
-    if (pk > 0 && board[path[pk - 1]] === 'switch') { reps += 2; pushEv({ i, kind: 'n', lbl: '🔀×2回', chips, mult, src: 'switch', links: [path[pk - 1]], by: null }); }
+    if (pk > 0 && board[path[pk - 1]] === 'switch') { reps += R.has('toolbox') ? 3 : 2; pushEv({ i, kind: 'n', lbl: R.has('toolbox') ? '🔀×3回' : '🔀×2回', chips, mult, src: 'switch', links: [path[pk - 1]], by: null }); }
     if (pk != null && R.has('clockwork') && (pk + 1) % 3 === 0) reps++;
     if (pk != null && R.has('metronome') && (pk + 1) % 4 === 0 && pk < path.length - 1 && path[pk + 1] - i !== i - path[pk - 1]) reps += 2;
     if (pk > 0 && shareTag(board[path[pk - 1]], board[i])) { reps++; pushEv({ i, kind: 'n', lbl: '⚡伝導', chips, mult, src: 'fuse', links: [path[pk - 1]], by: null }); }
@@ -800,9 +819,14 @@ function scoreBoard(board, relics, ctx) {
     if (R.has('latenight') && Math.floor(i / N) >= N - 2) reps++;
     if (R.has('swarming') && board[i] === 'bee' && groupSize[groupOf[i]] >= 6) reps++;
     if (R.has('chigiri') && isPair(i)) reps++;
+    if (R.has('tenbin') && onAxis(i) && balanced) reps += 2;
+    if (R.has('nabe') && (board[i] === 'yam' || board[i] === 'lantern')) reps++;
+    if (R.has('magnet') && pk != null && (board[i] === 'mirror' || board[i] === 'thunder')) reps++;
+    if (R.has('fukinagashi') && isArrow(board[i]) && arrowDir3.has(dirOf(i))) reps++;
+    if (R.has('itadaki') && board[i] && lvOf(i) > 1 && lvOf(i) === maxLv) reps++;
     if (R.has('chigiri') && onAxis(i)) reps++;
     if (R.has('hangetsu') && rowSym(Math.floor(i / N))) reps++;
-    { const L = lvOf(i); if (L > 1) { reps += L - 1; if (R.has('ishizue')) reps++; if (R.has('juubako') && L >= 3) reps += 2; } }
+    { const L = lvOf(i); if (L > 1) { reps += L - 1; if (R.has('ishizue') && L >= 3) reps++; if (R.has('juubako') && L >= 3) reps += 2; } }
     for (let k = 0; k < reps; k++) {
       trig(i, board[i], 0);
       // 共鳴：同じ属性を持つ隣のタイル1つにつき +1倍（最初の発動のときだけ）
@@ -821,6 +845,7 @@ function scoreBoard(board, relics, ctx) {
   }
   if (path.length >= 5 && path.length === board.filter(Boolean).length) { curBy = null; const x = R.has('firecracker') ? 2.5 : 1.5; add(path[path.length - 1], 'x', x, 'fuse', [path[path.length - 2]]); ev[ev.length - 1].lbl = `🏁完走 ×${x}`; }
   if (R.has('gogyo') && lastTile >= 0) { const el = new Set(); board.forEach(t => tagsOf(t).forEach(x => el.add(x))); if (el.size) { curBy = null; add(lastTile, 'x', Math.round((1 + 0.15 * el.size) * 100) / 100, 'gogyo', []); } }
+  if (R.has('shuugen') && lastTile >= 0) { const pc = pairCount(); if (pc) { curBy = null; add(lastTile, 'x', Math.round((1 + 0.1 * pc) * 100) / 100, 'shuugen', []); } }
   if (R.has('ashiba') && lastTile >= 0) { let ex = 0; for (let j = 0; j < N * N; j++) if (board[j]) ex += lvOf(j) - 1; if (ex) { curBy = null; add(lastTile, 'x', Math.round((1 + 0.1 * ex) * 100) / 100, 'ashiba', []); } }
   if (R.has('tea') && lastTile >= 0 && new Set(board.filter(x => x)).size >= 8) { curBy = null; add(lastTile, 'x', 2, 'tea', []); }
   let conduct = 0; for (let k = 1; k < path.length; k++) if (shareTag(board[path[k - 1]], board[path[k]])) conduct++;
