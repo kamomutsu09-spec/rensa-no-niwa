@@ -1136,8 +1136,8 @@ function showPreview() {
   if (S.fuse) {
     const rp = scoreBoard(S.board, S.relics, Object.assign(ctxNow(), { onlyPath: true }));
     $('chips').textContent = '？'; $('mult').textContent = '？';
-    const t = $('total'); t.className = 'small'; t.textContent = 'なぞったタイルだけで🎯まで届くか（なぞらなかった分は あとから足される）';
     const ratio = S.fuse.path.length ? rp.total / TARGETS[S.round] : 0;
+    const t = $('total'); t.className = 'small'; t.textContent = ratio >= 1 ? 'なぞった分で🎯到達！' : 'なぞった分で🎯に届く？';
     $('bar').className = 'gauge' + (ratio >= 1 ? ' over' : '');
     $('barin').style.width = Math.min(100, Math.sqrt(ratio) * 100) + '%';
     return;
