@@ -167,7 +167,6 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 #board.fusing .cell.t{cursor:crosshair}
 .fusebar{display:flex;gap:8px;flex:1;justify-content:center;align-items:center}
 .fusebar .btn{height:58px;padding:0 16px;font-size:15px}
-.ring{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:4px solid var(--gold);pointer-events:none;z-index:6;box-shadow:0 0 14px rgba(242,185,56,.8)}
 .cell.evo{animation:evo .7s ease-out}
 @keyframes evo{0%{transform:scale(.6) rotate(-10deg);filter:brightness(2)}100%{transform:none;filter:none}}
 #evo{position:fixed;left:50%;top:14px;transform:translate(-50%,-20px);z-index:42;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;
@@ -1393,28 +1392,10 @@ $('rerollBtn').onclick = () => { if (S.busy || S.rerolls <= 0) return; S.rerolls
 
 // ===== スコア計算の演出 =====
 let speed = 1, canFast = false;
-// 発動中：金色の輪が出たタイルをタップすると「大当たり」（倍率×HIT_X）。それ以外のタップは早送り
-const HIT_X = 1.15, MAX_RINGS = 4;
-let ring = null, bonus = 1, hits = 0, justHit = false;
-$('boardwrap').addEventListener('pointerdown', e => {
-  if (!scoring || !ring) return;
-  const c = e.target.closest && e.target.closest('.cell'); if (!c) return;
-  if (+c.dataset.i === ring.i && performance.now() <= ring.until) {
-    justHit = true; hits++; bonus *= HIT_X; const r0 = ring; ring = null; r0.el.remove();
-    pop(r0.i, `大当たり！×${HIT_X}`, 'x'); tone(1320, 'triangle', .12, .12); setTimeout(() => tone(1760, 'triangle', .15, .1), 70);
-    if (!lightFx) kick($('mult'), [{ transform: 'scale(1.5)' }, { transform: 'scale(1)' }], 200);
-  }
-}, true);
+// 発動中のタップは早送り（大当たりの金色の輪はなくした）
+const bonus = 1;
+let justHit = false;
 $('boardwrap').addEventListener('click', () => { if (justHit) { justHit = false; return; } if (canFast && speed < 1) { speed = 1; return; } if (canFast && speed === 1) { speed = 3; info('早送り中 ▶▶'); } });
-function showRing(i, ms) {
-  if (ring) ring.el.remove();
-  const c = centers[i]; if (!c) return;
-  const el = document.createElement('div'); el.className = 'ring'; el.style.left = c.x + 'px'; el.style.top = c.y + 'px';
-  $('boardwrap').appendChild(el);
-  el.animate([{ transform: 'scale(1.8)', opacity: .3 }, { transform: 'scale(1)', opacity: 1, offset: .25 }, { transform: 'scale(.9)', opacity: 1 }], { duration: ms });
-  const r = { i, el, until: performance.now() + ms }; ring = r;
-  setTimeout(() => { if (ring === r) { r.el.remove(); ring = null; } }, ms);
-}
 // ===== 演出（軽くするため：位置は最初に1回だけ測る／動きは transform と opacity だけ／同時に出す数に上限）=====
 let lightFx = false; try { lightFx = localStorage.getItem('rensa-light') === '1'; } catch (e) {}
 let centers = [], tgtPos = {};
@@ -1509,8 +1490,7 @@ async function runScoring(opt) {
   const res = scoreBoard(S.board, S.relics, ctxNow());
   if (!replay) collectStats(res);
   speed = replay ? 0.45 : 1; canFast = false; scoring = true;
-  info(replay ? '🎞️ スロー再生中…（タップで少し速く）' : '導火線に沿って発動していく…　<b>金色の輪</b>が出たら そのタイルをタップで大当たり！（ほかの所をタップで早送り）');
-  bonus = 1; hits = 0; ring = null;
+  info(replay ? '🎞️ スロー再生中…（タップで少し速く）' : '導火線に沿って発動していく…（タップで早送り）');
   $('bar').className = ''; setNums(0, 1); glowLevel = -1; glow(1); $('total').className = ''; $('total').textContent = ''; $('barin').style.width = '0%';
   await sleep(450); canFast = true;
   measure();
@@ -1520,13 +1500,8 @@ async function runScoring(opt) {
   cellBadges(res);
   if (S.theme === 'fire') factorBar(res, 0);
   let shownHeat = 0;
-  // 大当たりの輪を出すイベント：×と多重の再発動から、まんべんなく最大 MAX_RINGS 個
-  const cand = replay ? [] : res.ev.map((e, j) => (e.kind === 'x' || (e.kind === 's' && e.times > 1)) ? j : -1).filter(j => j >= 0);
-  if (replay) bonus = opt.bonus || 1;
-  const ringAt = new Set(); for (let q = 0; q < Math.min(MAX_RINGS, cand.length); q++) ringAt.add(cand[Math.floor((q + 0.5) * cand.length / Math.min(MAX_RINGS, cand.length))]);
   let ei = 0;
   for (const e of res.ev) {
-    if (ringAt.has(ei)) showRing(e.i, Math.max(450, delay * 5) / speed);
     ei++;
     delayNow = delay / speed;
     if (S.theme === 'fire' && e.heat !== shownHeat && $('heatv')) { shownHeat = e.heat; $('heatv').textContent = e.heat; if (!lightFx) kick($('heatv'), [{ transform: 'scale(1.4)' }, { transform: 'scale(1)' }], 120); }
@@ -1562,9 +1537,7 @@ async function runScoring(opt) {
     await sleep(delay / speed); delay = Math.max(minDelay, delay * 0.9);
   }
   await sleep(450 / speed);
-  if (ring) { ring.el.remove(); ring = null; }
   setNums(res.chips, res.mult * bonus); glow(res.mult * bonus);
-  if (hits) info(`大当たり ${hits}回！ 倍率×${bonus.toFixed(2)}`);
   canFast = false; scoring = false;
   $('combo').classList.remove('on');
   // 合計をカウントアップ
@@ -1676,7 +1649,6 @@ function help(first, fromMenu) {
   <p>導火線のごほうび：<b>🔥導火</b>＝つないだタイル1マスごとに+1倍。<b>⚡伝導</b>＝直前のタイルと同じ属性なら1回多く発動。<b>🏁完走</b>＝盤面のタイルを全部（5枚以上）つなぐと最後に×1.5。</p>
   <p><b>☀️昼と🌙夜</b>：ラウンドごとに入れ替わる。昼は「草・火・虫」、夜は「天・水・術」のタイルが<b>1回多く発動</b>（金の枠で光る）。最後のラウンドは🌆黄昏で両方。</p>
   <p><b>🌱生きている庭</b>：ラウンドの合間に庭が変わる。🌱は2ラウンドで🌿若葉に（水辺ではさらに3ラウンドで🌳大樹に）、🔥が3つ以上かたまると隣の🌱🌿を燃やして🌫️灰に、🐝は花へ1歩近づく。</p>
-  <p><b>✨大当たり</b>：発動中に<b>金色の輪</b>が出たら、そのタイルをすばやくタップ。1回ごとに倍率×1.15（1ラウンド最大4回）。</p>
   <div class="tilelist">${Object.entries(TILES).filter(([k, t]) => !t.only || !S.theme || t.only === S.theme).map(([k, t]) => `<span>${t.e} ${t.name}</span><span>${tierOf(k) > 1 ? `<b>［${t.only ? THEMES[t.only].name + '専用・' : ''}R${startOf(k) + 1}〜］</b>` : ''}${t.desc}</span>`).join('')}</div>
   <p>コツ：🌙の×は、それまでに貯めた倍率にかかる。だから<b>後ろ（右下）で発動させるほど強い</b>。</p>
   <div class="choices"><button class="choice" id="closeHelp" style="text-align:center"><b>${first ? '庭を選ぶ' : fromMenu ? 'メニューに戻る' : 'とじる'}</b></button></div>`);
