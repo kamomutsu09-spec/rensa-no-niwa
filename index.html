@@ -707,7 +707,7 @@ function scoreBoard(board, relics, ctx) {
   if (ctx && ctx.order) for (const i of ctx.order) { if (!board[i] || path.includes(i)) break; if (path.length && !neighbors(path[path.length - 1]).includes(i)) break; path.push(i); }
   const pathPos = {}; path.forEach((i, k) => pathPos[i] = k);
   // なぞった所だけ発動（なぞっている間のゲージ用）
-  if (ctx && ctx.onlyPath) { order.splice(0, order.length, ...path); firstTile = path.length ? path[0] : -1; lastTile = path.length ? path[path.length - 1] : -1; }
+  if (ctx && ctx.onlyPath) { order.splice(0, order.length, ...path); } // 最初・最後のタイルは本番と同じ（なぞらなかった分も含めた順）で判定する
   const dirOf = i => (ctx && ctx.dirs && ctx.dirs[i] != null) ? ctx.dirs[i] : 1;
   const ph = ctx && ctx.phase;
   for (const i of order) {
@@ -746,7 +746,7 @@ function scoreBoard(board, relics, ctx) {
       }
     }
   }
-  if (path.length >= 5 && path.length === order.length) { curBy = null; const x = R.has('firecracker') ? 2.5 : 1.5; add(path[path.length - 1], 'x', x, 'fuse', [path[path.length - 2]]); ev[ev.length - 1].lbl = `🏁完走 ×${x}`; }
+  if (path.length >= 5 && path.length === board.filter(Boolean).length) { curBy = null; const x = R.has('firecracker') ? 2.5 : 1.5; add(path[path.length - 1], 'x', x, 'fuse', [path[path.length - 2]]); ev[ev.length - 1].lbl = `🏁完走 ×${x}`; }
   if (R.has('gogyo') && lastTile >= 0) { const el = new Set(); board.forEach(t => tagsOf(t).forEach(x => el.add(x))); if (el.size) { curBy = null; add(lastTile, 'x', Math.round((1 + 0.15 * el.size) * 100) / 100, 'gogyo', []); } }
   if (R.has('tea') && lastTile >= 0 && new Set(board.filter(x => x)).size >= 8) { curBy = null; add(lastTile, 'x', 2, 'tea', []); }
   let conduct = 0; for (let k = 1; k < path.length; k++) if (shareTag(board[path[k - 1]], board[path[k]])) conduct++;
