@@ -134,6 +134,14 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 #factor .fs{font-size:11px}
 .cell .badge{position:absolute;right:3px;top:3px;font-size:10px;font-weight:700;line-height:1;padding:2px 4px;border-radius:8px;background:var(--sumi);color:var(--kinari)}
 .cell .badge.g{background:#c99a00;color:#1b1712}
+.cell .badge.p{background:#a0509a;color:#fff}
+.cell.axis:not(.t){background:rgba(160,80,154,.12) linear-gradient(90deg,transparent 47%,rgba(160,80,154,.55) 47%,rgba(160,80,154,.55) 53%,transparent 53%)}
+.cell.axis.t{box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 2px 0 rgba(0,0,0,.35),0 0 0 2px rgba(160,80,154,.8)}
+.cell .lvb{position:absolute;left:3px;top:3px;font-size:10px;font-weight:900;line-height:1;padding:2px 4px;border-radius:3px;background:#8a6a45;color:#fff7ea}
+.cell.lv{box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 2px 0 rgba(0,0,0,.35),0 4px 0 #8a6a45,0 6px 0 rgba(0,0,0,.3)}
+.cell.stackok{outline:3px solid var(--gold);outline-offset:1px;cursor:copy;animation:stkp 1s ease-in-out infinite}
+@keyframes stkp{50%{transform:translateY(-3px)}}
+.cell .stk{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);font-size:10px;font-weight:900;white-space:nowrap;padding:2px 5px;border-radius:3px;background:var(--gold);color:var(--sumi);line-height:1;z-index:2}
 .rk-row{display:grid;grid-template-columns:28px auto 1fr;gap:8px;align-items:center;background:#fffaf0;border:1.5px solid rgba(27,23,18,.35);border-radius:3px;padding:6px 8px}
 .rk-row.me{border:2px solid var(--mult);background:#fff1dc}
 .rk-n{font-family:"Dela Gothic One",sans-serif;font-size:18px;text-align:center}
@@ -314,28 +322,28 @@ const TILES = {
   star:   { e: '⭐', name: '星', w: 3,  desc: '上下左右のタイルを もう一度発動させる。隣の⭐1つにつき 回数+1（星を固めるほど増える）' },
   mirror: { e: '🪞', name: '鏡', w: 3,  desc: '左隣のタイルと同じ効果で発動する' },
   // ── ラウンド3から出る（tier 2）──
-  sakura: { e: '🌸', name: '桜', w: 4, tier: 2, desc: '+4点。上下左右のタイルの種類1つにつき +1倍' },
+  sakura: { e: '🌸', name: '桜', w: 4, tier: 2, desc: '+6点。周り8マス（斜めも）のタイルの種類1つにつき +2倍（いろいろ混ぜるほど強い）' },
   mush:   { e: '🍄', name: '茸', w: 4, tier: 2, desc: '盤面のタイル1枚につき +2点。庭が埋まるほど強い' },
   thunder:{ e: '⚡', name: '雷', w: 3, tier: 2, desc: '同じ縦の列のタイルを全部 もう一度発動させる。同じ列の⚡1つにつき 回数+1' },
   // ── ラウンド5から出る（tier 3）──
   rainbow:{ e: '🌈', name: '虹', w: 3, tier: 3, desc: '盤面のタイルの種類1つにつき 倍率を×0.2ずつ上乗せ（8種類なら×2.6）。ただし効くのは盤面で最初の🌈だけ' },
   // ── 庭ごとの専用タイル（only の庭でしか出ない）──
   lotus:  { e: '🪷', name: '蓮',   w: 5, tier: 2, from: 1, only: 'water', desc: '倍率を×1.5。隣の💧1つにつき さらに×0.25' },
-  bamboo: { e: '🎋', name: '竹',   w: 5, tier: 2, from: 1, only: 'water', desc: '+4点と+2倍。置いてから経ったラウンド1つにつき さらに+2倍（長く残すほど育つ）' },
+  bamboo: { e: '🎋', name: '竹',   w: 5, tier: 2, from: 1, only: 'water', desc: '+6点と+3倍。置いてから経ったラウンド1つにつき さらに+3倍（長く残すほど育つ）' },
   bigtree:{ e: '🌳', name: '大樹', w: 3, tier: 3, from: 3, only: 'water', desc: '盤面の「草」「水」のタイル（🌳以外）1つにつき 倍率×0.09ずつ上乗せ。さらに置いてから経ったラウンド1つにつき ×0.14（育てるほど掛け算が膨らむ）' },
   sprig:  { e: '🌿', name: '若葉', w: 0, born: true, desc: '+6点。隣の💧1つにつき +4点（🌱が2ラウンド残ると育つ。水辺の庭では さらに3ラウンドで🌳大樹に）' },
   ash:    { e: '🌫️', name: '灰',   w: 0, born: true, desc: '+4点。隣の🌱🌿1つにつき +2倍（大きな火が芽を燃やした焼け跡。肥えている）' },
   sun:    { e: '☀️', name: '日',   w: 3, tier: 3, from: 3, only: 'water', desc: '盤面の🌱・💧・🪷を全部 もう一度発動させる' },
-  lantern:{ e: '🏮', name: '提灯', w: 5, tier: 2, from: 1, only: 'fire',  desc: '盤面の🔥1つにつき +8点' },
-  yam:    { e: '🍠', name: '焼き芋', w: 5, tier: 2, from: 1, only: 'fire', desc: 'いまの「熱」1つにつき +5点。熱は このラウンドで それまでに🔥が発動した回数（右下に置くほど熱い）' },
+  lantern:{ e: '🏮', name: '提灯', w: 5, tier: 2, from: 1, only: 'fire',  desc: '盤面の🔥1つにつき +8点と+1倍' },
+  yam:    { e: '🍠', name: '焼き芋', w: 5, tier: 2, from: 1, only: 'fire', desc: 'いまの「熱」1つにつき +6点と+1倍。熱は このラウンドで それまでに🔥が発動した回数（右下に置くほど熱い）' },
   volcano:{ e: '🌋', name: '火山', w: 5, tier: 3, from: 3, only: 'fire', desc: 'いまの熱1つにつき 倍率×0.14ずつ上乗せ（🔥をたくさん燃やした後ろに置くほど強い）' },
   dragon: { e: '🐉', name: '竜',   w: 5, tier: 3, from: 3, only: 'fire',  desc: '隣の🔥1つにつき 倍率を×1.8' },
   owl:    { e: '🦉', name: '梟',   w: 5, tier: 2, from: 1, only: 'night', desc: '+8点。斜め4方向のタイルを もう一度発動させる。斜めの⭐🦉1つにつき 回数+1' },
   scope:  { e: '🔭', name: '望遠鏡', w: 5, tier: 2, from: 1, only: 'night', desc: '同じ縦の列と横の列にある⭐1つにつき 倍率を×0.15ずつ上乗せ' },
   venus:  { e: '🌟', name: '明星', w: 3, tier: 3, from: 3, only: 'night', desc: '盤面の「天」のタイル（🌟以外）1つにつき 倍率×0.02ずつ上乗せ。同じ縦横の列にある「天」は さらに×0.03ずつ' },
   comet:  { e: '🌠', name: '流星', w: 3, tier: 3, from: 3, only: 'night', desc: '盤面の🌙を全部 もう一度発動させる' },
-  sunflwr:{ e: '🌻', name: '向日葵', w: 6, tier: 2, from: 1, only: 'bee', desc: '+6点。隣の🐝と🌱1つにつき +3倍' },
-  nest:   { e: '🪺', name: '巣',   w: 5, tier: 2, from: 1, only: 'bee', desc: '隣の🐝の「群れ」（上下左右につながった🐝全部）1匹につき +5点と+2倍' },
+  sunflwr:{ e: '🌻', name: '向日葵', w: 6, tier: 2, from: 1, only: 'bee', desc: '+10点。隣の🐝と🌱1つにつき +5倍、さらに 倍率×0.2ずつ上乗せ（4つ囲めば ×1.8）' },
+  nest:   { e: '🪺', name: '巣',   w: 5, tier: 2, from: 1, only: 'bee', desc: '隣の🐝の「群れ」（上下左右につながった🐝全部）1匹につき +6点と+3倍。群れが5匹以上なら さらに倍率×1.5' },
   ladybug:{ e: '🐞', name: '天道虫', w: 3, tier: 3, from: 3, only: 'bee', desc: '隣の🐝の群れ（つながった🐝全部）1匹につき 倍率×0.75ずつ上乗せ' },
   gear:   { e: '⚙️', name: '歯車',   w: 6, tier: 2, from: 0, only: 'gear', desc: '+4点。導火線で⚙️が続くほど 倍率×0.4ずつ上乗せ（3つ続けば ×2.2）。導火線の外では ×1.1' },
   switch: { e: '🔀', name: '転轍機', w: 4, tier: 2, from: 0, only: 'gear', desc: '+5点。導火線で この次に通るタイルを 2回多く発動させる' },
@@ -345,11 +353,20 @@ const TILES = {
   leaf:   { e: '🍃', name: '木の葉', w: 6, tier: 2, from: 0, only: 'wind', arrow: true, desc: '+6点と+1倍。矢印の先の隣のタイルを 1回多く発動させる（追い風）' },
   tornado:{ e: '🌪️', name: '竜巻',   w: 3, tier: 3, from: 2, only: 'wind', arrow: true, desc: '盤面で自分と同じ向きの矢印タイル1つにつき 倍率×0.25ずつ上乗せ' },
   koi:    { e: '🎏', name: '鯉のぼり', w: 3, tier: 3, from: 2, only: 'wind', arrow: true, desc: '矢印の先に途切れず並ぶタイル1つにつき 倍率×0.26ずつ上乗せ' },
+  hina:   { e: '🎎', name: '雛',     w: 7, tier: 2, from: 0, only: 'pair', desc: '+8点と+3倍。「対」になっていれば 倍率×1.5' },
+  chou:   { e: '🦋', name: '蝶',     w: 6, tier: 2, from: 0, only: 'pair', desc: '軸をはさんだ反対側のタイルと同じ効果で発動し、どんなタイルとも「対」になる（反対側が空・🦋・真ん中の列なら +5点）' },
+  torii:  { e: '⛩️', name: '鳥居',   w: 3, tier: 3, from: 2, only: 'pair', desc: '+4点。同じ横の列の「対」のタイルを全部 もう一度発動させる。真ん中の縦の列（軸）に置けば 2回ずつ' },
+  fuda:   { e: '🎴', name: '花札',   w: 3, tier: 3, from: 2, only: 'pair', desc: '盤面の「対」1組につき 倍率×0.2ずつ上乗せ' },
+  castle: { e: '🏯', name: '城',     w: 6, tier: 2, from: 0, only: 'stack', desc: '+5点。自分の段1つにつき 倍率×0.2ずつ上乗せ（重ねるほど掛け算が太り、発動の回数も増える）' },
+  kokeshi:{ e: '🪆', name: 'こけし', w: 5, tier: 2, from: 0, only: 'stack', desc: '+4点。上下左右のタイルの段の合計1つにつき +3倍' },
+  ladder: { e: '🪜', name: '梯子',   w: 3, tier: 3, from: 2, only: 'stack', desc: '上下のタイルを もう一度発動させる。上下のタイルの段が高いほど、そのタイルは多く発動する' },
+  tower:  { e: '🗼', name: '塔',     w: 3, tier: 3, from: 2, only: 'stack', desc: '盤面でいちばん高い段1つにつき 倍率×0.25ずつ上乗せ' },
   queen:  { e: '👑', name: '女王蜂', w: 5, tier: 3, from: 3, only: 'bee', desc: '盤面の🐝1つにつき 倍率を×0.25ずつ上乗せ。さらに🐝を全部 もう一度発動させる' },
 };
 // ===== 属性（どのタイルにも1〜2個）=====
 const ELEM = { 草: '#4f9d5d', 水: '#3a86c8', 火: '#d9532b', 地: '#8a6a45', 虫: '#c99a00', 天: '#6a5acd', 術: '#a0509a' };
 const TAGS = {
+  hina: ['術'], chou: ['虫', '天'], torii: ['術', '地'], fuda: ['術', '草'], castle: ['地', '術'], kokeshi: ['草', '術'], ladder: ['地'], tower: ['術', '天'],
   sprout: ['草'], water: ['水'], fire: ['火'], rock: ['地'], bee: ['虫'], moon: ['天'], star: ['天'], mirror: ['術'],
   sakura: ['草'], mush: ['草', '地'], thunder: ['天', '術'], rainbow: ['天', '水'],
   lotus: ['草', '水'], bamboo: ['草'], sun: ['天', '火'], lantern: ['火', '術'], yam: ['火', '地'], dragon: ['火', '天'],
@@ -384,7 +401,7 @@ const RELICS = {
   kaleido:      { e: '🔮', name: '万華鏡', only: 'night',   desc: '🪞が左隣だけでなく、右隣のタイルも真似て発動する' },
   windchime:    { e: '🎐', name: '風鈴',     desc: '再発動で動いたタイルは、そのたびに +4点' },
   echo:         { e: '🔔', name: '余韻',     desc: '最後に発動するタイル（いちばん右下のタイル）は さらに2回発動' },
-  hanami:       { e: '🍡', name: '花見',     desc: '🌸は、周りのタイルの種類1つにつき +1倍 → +2倍' },
+  hanami:       { e: '🍡', name: '花見',     desc: '🌸は、周りのタイルの種類1つにつき +2倍 → +4倍' },
   compost:      { e: '🍂', name: '腐葉土',   desc: '🍄は、盤面のタイル1枚につき +2点 → +4点' },
   rod:          { e: '🗼', name: '避雷針',   desc: '⚡雷が、縦の列に加えて横の列も もう一度発動させる' },
   fertilizer:   { e: '🪴', name: '肥料', only: 'water',     desc: '🌱は、置いてから経ったラウンド1つにつき さらに+3点' },
@@ -404,7 +421,7 @@ const RELICS = {
   ring:         { e: '🪐', name: '土星の輪', only: 'night', desc: '🔭望遠鏡が、斜めの線の上の⭐も数える' },
   moonlight:    { e: '🌝', name: '月光',     only: 'night', desc: '⭐は、隣の🌙1つにつき +2倍' },
   pollen:       { e: '🌺', name: '花粉',     only: 'bee',   desc: '🌱は、隣の🐝1つにつき +4点' },
-  buzz:         { e: '🎶', name: '羽音',     only: 'bee',   desc: '🪺巣が、群れの🐝1匹につき +2倍 → +3倍' },
+  buzz:         { e: '🎶', name: '羽音',     only: 'bee',   desc: '🪺巣が、群れの🐝1匹につき +3倍 → +4倍' },
   harmony:      { e: '☯️', name: '調和',     desc: '共鳴が、同じ属性の隣1つにつき +1倍 → +2倍' },
   hyakka:       { e: '💮', name: '百花',     desc: '「草」のタイルは、盤面の「草」1つにつき +2点' },
   gogyo:        { e: '🧭', name: '五行',     desc: '盤面の属性の種類1つにつき、最後に倍率×0.15ずつ上乗せ（7種類なら×2.05）' },
@@ -424,14 +441,24 @@ const RELICS = {
   whirl:        { e: '🌀', name: '渦',       desc: 'まん中のマスのタイルは さらに2回発動' },
   vanguard:     { e: '🚩', name: '先駆け',   desc: '最初に発動するタイル（いちばん左上のタイル）は さらに2回発動' },
   tea:          { e: '🍵', name: '茶室',     desc: '盤面のタイルが8種類以上なら、最後に倍率×2' },
+  chigiri:      { e: '🪢', name: '契り',     only: 'pair',  desc: '「対」になったタイル（軸をはさんで左右の同じ位置に同じタイル）と、軸（真ん中の縦の列）のタイルは 1回多く発動' },
+  hangetsu:     { e: '🌓', name: '半月',     only: 'pair',  desc: '5マスとも埋まって 左右対称になっている横の列のタイルは さらに1回多く発動' },
+  momo:         { e: '🍑', name: '桃の節句', only: 'pair',  desc: '🎎雛の掛け算が ×1.5 → ×2.0' },
+  toumyou:      { e: '🪔', name: '灯明',     only: 'pair',  desc: '⛩️鳥居が 対のタイルを発動させる回数 +1' },
+  ishizue:      { e: '🧱', name: '礎',       only: 'stack', desc: '2段以上に重ねたタイルは さらに1回多く発動' },
+  kourou:       { e: '🏙️', name: '高楼',     only: 'stack', desc: '🏯城の掛け算が 段1つにつき ×0.2 → ×0.3' },
+  ashiba:       { e: '🏗️', name: '足場',     only: 'stack', desc: '重ねた段の合計1つにつき、最後に倍率×0.1ずつ上乗せ' },
+  juubako:      { e: '🍱', name: '重箱',     only: 'stack', desc: '3段以上に重ねたタイルは さらに2回多く発動' },
   jelly:        { e: '🫙', name: 'ローヤルゼリー', only: 'bee', desc: '👑女王蜂の掛け算が 🐝1つにつき ×0.25 → ×0.4' },
 };
 const THEMES = {
   water: { e: '🌱', name: '水辺の庭', lv: 'ふつう', tiles: '🌱💧', boost: { sprout: 2.0, water: 2.0 }, relic: 'greenhouse', elems: ['草', '水'], factor: '育つ', desc: '芽と水をとなり合わせて育てる。<b>置いてからのラウンド数</b>で🎋竹が育ち、🪷蓮が掛け算、☀️日で庭ごともう一度咲かせる。' },
   fire:  { e: '🔥', name: '火の庭',   lv: 'やさしい', tiles: '🔥', boost: { fire: 2.2 }, relic: 'wildfire', elems: ['火'], factor: '熱', desc: '火を固めて倍率を跳ね上げる。🔥が燃えるほど<b>熱</b>がたまり、後ろの🍠焼き芋が熱で稼ぐ。🐉竜は火の塊を掛け算に。' },
   night: { e: '🌙', name: '夜の庭',   lv: 'ふつう', tiles: '⭐🪞', boost: { moon: 1.0, star: 1.1, mirror: 1.1 }, relic: 'constellation', elems: ['天'], factor: '列', desc: '星と鏡と月の庭。<b>縦横の列</b>に星を並べて🔭望遠鏡で掛け、🌠流星で月を何度も起こす。' },
-  gear:  { e: '⚙️', name: 'からくりの庭', lv: 'ふつう', locked: 2, tiles: '⚙️🔀🪞', boost: { mirror: 1.6, thunder: 1.6, rock: 1.2 }, relic: 'clockwork', elems: ['術', '地'], factor: '道筋', desc: '上級者向け。<b>導火線の道筋</b>がすべて。⚙️歯車を一直線につなぎ、🔀転轍機の次に強いタイルを通し、🧭羅針盤のために曲がり、🎯的で締める。' },
-  wind:  { e: '🌬️', name: '風の庭', lv: 'ふつう', locked: 3, tiles: '🪁🍃🌪️', boost: { star: 1.3, sprout: 1.2 }, relic: 'tailwind', elems: ['天', '草'], factor: '風向き', desc: '上級者向け。矢印タイルの<b>向き</b>がすべて。タップで向きを変え（1ラウンド3回）、🪁凧の風を強いタイルの列に通し、🍃木の葉で追い風を送る。' },
+  gear:  { e: '⚙️', name: 'からくりの庭', lv: 'ふつう', locked: 2, teaser: '導火線の道筋で勝負する', tiles: '⚙️🔀🪞', boost: { mirror: 1.6, thunder: 1.6, rock: 1.2 }, relic: 'clockwork', elems: ['術', '地'], factor: '道筋', desc: '上級者向け。<b>導火線の道筋</b>がすべて。⚙️歯車を一直線につなぎ、🔀転轍機の次に強いタイルを通し、🧭羅針盤のために曲がり、🎯的で締める。' },
+  wind:  { e: '🌬️', name: '風の庭', lv: 'ふつう', locked: 3, teaser: '矢印の向きで勝負する', tiles: '🪁🍃🌪️', boost: { star: 1.3, sprout: 1.2 }, relic: 'tailwind', elems: ['天', '草'], factor: '風向き', desc: '上級者向け。矢印タイルの<b>向き</b>がすべて。タップで向きを変え（1ラウンド3回）、🪁凧の風を強いタイルの列に通し、🍃木の葉で追い風を送る。' },
+  pair:  { e: '🎎', name: '対の庭', lv: 'ふつう', locked: 4, tiles: '🎎🦋⛩️', boost: { mirror: 0.5 }, relic: 'chigiri', elems: ['術'], factor: '対', teaser: '左右対称に置いて勝負する', desc: '上級者向け。盤面の<b>真ん中の縦の列が軸</b>。軸をはさんで左右の同じ位置に同じタイルを置くと<b>「対」</b>になり、1回多く発動する（軸のタイルも1回多く）。🎎雛は対で掛け算、🦋蝶は反対側をまねてどれとも対になり、⛩️鳥居は軸から対を呼び起こす。' },
+  stack: { e: '🏯', name: '重ねの庭', lv: 'ふつう', locked: 5, tiles: '🏯🪆🪜', boost: {}, relic: 'ishizue', elems: ['地'], factor: '段', teaser: 'タイルを高く重ねて勝負する', desc: '上級者向け。手札のタイルを<b>同じタイルの上に重ねる</b>と段が上がり、<b>段の数だけ発動</b>する。ただし重ねたぶん庭に空きが残る。🏯城は高いほど掛け算、🪆こけしは周りの段で稼ぎ、🪜梯子が上下の高いタイルを起こす。' },
   bee:   { e: '🐝', name: '蜂の庭',   lv: 'ふつう', tiles: '🐝🌱', boost: { bee: 3.0, sprout: 1.6 }, relic: 'swarm', elems: ['虫'], factor: '群れ', desc: '蜂を寄せ集める庭。<b>つながった蜂の群れ</b>が大きいほど🪺巣が稼ぎ、👑女王蜂が群れごと掛け算にする。' },
 };
 const THEME_REL = 1.25;
@@ -458,7 +485,11 @@ function diagonals(i) {
 const PHASE = { day: { e: '☀️', name: '昼', tags: ['草', '火', '虫'] }, night: { e: '🌙', name: '夜', tags: ['天', '水', '術'] }, dusk: { e: '🌆', name: '黄昏', tags: ['草', '火', '虫', '天', '水', '術'] } };
 const phaseOf = round => round >= 7 ? 'dusk' : round % 2 === 0 ? 'day' : 'night';
 const phaseActive = (t, ph) => !!t && tagsOf(t).some(x => PHASE[ph].tags.includes(x));
-const RETRIG = new Set(['star', 'thunder', 'owl', 'sun', 'comet', 'queen', 'kite']);
+const RETRIG = new Set(['star', 'thunder', 'owl', 'sun', 'comet', 'queen', 'kite', 'torii', 'ladder']);
+// ===== 対：軸（真ん中の縦の列）をはさんだ反対側のマス／段：重ねた高さ =====
+const mirrorOf = i => Math.floor(i / N) * N + (N - 1 - i % N);
+const onAxis = i => i % N === (N - 1) / 2;
+const pairAt = i => { if (onAxis(i) || !S.board[i]) return false; const m = S.board[mirrorOf(i)]; return !!m && (m === S.board[i] || m === 'chou' || S.board[i] === 'chou'); };
 // ===== 風向き：矢印タイルの向き 0=↑ 1=→ 2=↓ 3=← =====
 const ARROWS = ['↑', '→', '↓', '←'];
 const stepDir = (i, d) => { const r = Math.floor(i / N), c = i % N; const nr = r + [-1, 0, 1, 0][d], nc = c + [0, 1, 0, -1][d]; return nr >= 0 && nr < N && nc >= 0 && nc < N ? nr * N + nc : -1; };
@@ -477,6 +508,10 @@ function scoreBoard(board, relics, ctx) {
     pushEv({ i, kind, v, chips, mult, src, links: links || [], by: curBy });
   };
   const fired = {};
+  const isPair = i => { if (onAxis(i) || !board[i]) return false; const m = board[mirrorOf(i)]; return !!m && (m === board[i] || m === 'chou' || board[i] === 'chou'); };
+  const pairCount = () => { let n = 0; for (let i = 0; i < N * N; i++) if (i % N < (N - 1) / 2 && isPair(i)) n++; return n; };
+  const lvOf = i => (ctx && ctx.levels && ctx.levels[i]) || 1;
+  const rowSym = r => { for (let c = 0; c < N; c++) if (!board[r * N + c] || board[r * N + c] !== board[r * N + N - 1 - c]) return false; return true; };
   // 新しい要素：育つ（置いてからのラウンド数）／熱（このラウンドで🔥が発動した回数）／群れ（つながった🐝の数）
   const ageOf = i => ctx && ctx.ages && ctx.ages[i] != null ? Math.max(0, ctx.round - ctx.ages[i]) : 0;
   let heat = 0;
@@ -532,10 +567,10 @@ function scoreBoard(board, relics, ctx) {
         add(i, 'x', Math.round(x * 100) / 100, type, [...new Set(ln)]); break;
       }
       case 'sakura': {
-        const nb = neighbors(i).filter(j => board[j]);
+        const nb = neighbors(i, true).filter(j => board[j]);
         const kinds = new Set(nb.map(j => board[j])).size;
-        add(i, 'c', 4, type);
-        if (kinds) add(i, 'm', kinds * (R.has('hanami') ? 2 : 1), type, nb);
+        add(i, 'c', 6, type);
+        if (kinds) add(i, 'm', kinds * (R.has('hanami') ? 4 : 2), type, nb);
         break;
       }
       case 'mush': {
@@ -605,12 +640,12 @@ function scoreBoard(board, relics, ctx) {
         break;
       }
       case 'bamboo': {
-        add(i, 'c', 4, type);
-        add(i, 'm', 2 + 2 * ageOf(i), type);
+        add(i, 'c', 6, type);
+        add(i, 'm', 3 + 3 * ageOf(i), type);
         break;
       }
       case 'yam': {
-        if (heat) add(i, 'c', 5 * heat, type, board.map((t, j) => t === 'fire' ? j : -1).filter(j => j >= 0 && j < i).slice(-8));
+        if (heat) { const ln = board.map((t, j) => t === 'fire' ? j : -1).filter(j => j >= 0 && j < i).slice(-8); add(i, 'c', 6 * heat, type, ln); add(i, 'm', heat, type, ln); }
         else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
         break;
       }
@@ -625,7 +660,7 @@ function scoreBoard(board, relics, ctx) {
         const gs = new Set(neighbors(i).filter(j => board[j] === 'bee').map(j => groupOf[j]));
         let n = 0; gs.forEach(g => n += groupSize[g]);
         const ln = board.map((t, j) => t === 'bee' && gs.has(groupOf[j]) ? j : -1).filter(j => j >= 0);
-        if (n) { add(i, 'c', 5 * n, type, ln); add(i, 'm', (R.has('buzz') ? 3 : 2) * n, type, ln); }
+        if (n) { add(i, 'c', 6 * n, type, ln); add(i, 'm', (R.has('buzz') ? 4 : 3) * n, type, ln); if (n >= 5) add(i, 'x', 1.5, type, ln); }
         else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
         break;
       }
@@ -635,7 +670,7 @@ function scoreBoard(board, relics, ctx) {
       }
       case 'lantern': {
         const fs = board.map((t, j) => t === 'fire' ? j : -1).filter(j => j >= 0);
-        if (fs.length) add(i, 'c', (R.has('hanabi') ? 16 : 8) * fs.length, type, fs); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        if (fs.length) { add(i, 'c', (R.has('hanabi') ? 16 : 8) * fs.length, type, fs); add(i, 'm', fs.length, type, fs); } else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
         break;
       }
       case 'dragon': {
@@ -644,21 +679,24 @@ function scoreBoard(board, relics, ctx) {
         break;
       }
       case 'sunflwr': {
-        add(i, 'c', 6, type);
-        const nb = adjList(i, 'bee').concat(adjList(i, 'sprout')); if (nb.length) add(i, 'm', 3 * nb.length, type, nb);
+        add(i, 'c', 10, type);
+        const nb = adjList(i, 'bee').concat(adjList(i, 'sprout')); if (nb.length) { add(i, 'm', 5 * nb.length, type, nb); add(i, 'x', 1 + 0.2 * nb.length, type, nb); }
         break;
       }
       // もう一度発動させる系（星・雷・梟・日・流星・女王蜂）
-      case 'star': case 'thunder': case 'owl': case 'sun': case 'comet': case 'queen': case 'kite': {
+      case 'star': case 'thunder': case 'owl': case 'sun': case 'comet': case 'queen': case 'kite': case 'torii': case 'ladder': {
         const RE = RETRIG;
         let tg;
         if (type === 'star' && R.has('constellation')) { add(i, 'c', 6, type); add(i, 'm', 1, type); }
         if (type === 'star' && R.has('moonlight') && adj(i, 'moon')) add(i, 'm', 2 * adj(i, 'moon'), type, adjList(i, 'moon'));
         if (type === 'owl') add(i, 'c', 8, type);
+        if (type === 'torii') add(i, 'c', 4, type);
         if (type === 'queen') { const bs = countAll('bee'); if (bs) add(i, 'x', Math.round((1 + (R.has('jelly') ? 0.4 : 0.25) * bs) * 100) / 100, type); }
         if (type === 'star') tg = neighbors(i);
         else if (type === 'thunder') { tg = []; for (let r = 0; r < N; r++) if (r !== Math.floor(i / N)) tg.push(r * N + i % N); if (R.has('rod')) for (let c = 0; c < N; c++) if (c !== i % N) tg.push(Math.floor(i / N) * N + c); }
         else if (type === 'owl') tg = diagonals(i);
+        else if (type === 'torii') { tg = []; for (let c = 0; c < N; c++) { const j = Math.floor(i / N) * N + c; if (isPair(j)) tg.push(j); } }
+        else if (type === 'ladder') { tg = []; let up = 1, dn = 1; if (i - N >= 0) { tg.push(i - N); up = lvOf(i - N); } if (i + N < N * N) { tg.push(i + N); dn = lvOf(i + N); } tg = [].concat(...tg.map(j => Array(lvOf(j)).fill(j))); }
         else if (type === 'kite') { tg = []; let j = stepDir(i, dirOf(i)); while (j >= 0) { tg.push(j); j = stepDir(j, dirOf(i)); } }
         else { const want = type === 'sun' ? ['sprout', 'water', 'lotus'] : type === 'comet' ? ['moon'] : ['bee']; tg = board.map((t, j) => want.includes(t) ? j : -1).filter(j => j >= 0); }
         // 再発動系（⭐⚡🦉☀️🌠👑）どうしは発動させ合わない。代わりに「回数」を増やし合う（無限ループにならない）
@@ -668,6 +706,7 @@ function scoreBoard(board, relics, ctx) {
         else if (type === 'thunder') { for (let r = 0; r < N; r++) if (r !== Math.floor(i / N) && board[r * N + i % N] === 'thunder') times++; if (R.has('rod')) for (let c = 0; c < N; c++) if (c !== i % N && board[Math.floor(i / N) * N + c] === 'thunder') times++; }
         else if (type === 'owl') times += diagonals(i).filter(j => board[j] === 'star' || board[j] === 'owl').length;
         else if (type === 'kite' && R.has('sail')) times = 2;
+        else if (type === 'torii') times = (onAxis(i) ? 2 : 1) + (R.has('toumyou') ? 1 : 0);
         const boosters = type === 'star' ? neighbors(i).filter(j => board[j] === 'star') : [];
         tg = tg.filter(j => board[j] && j !== i && !RE.has(board[j]));
         if (!tg.length) { pushEv({ i, kind: 'n', chips, mult, src: type, links: boosters, by: curBy }); break; }
@@ -675,6 +714,37 @@ function scoreBoard(board, relics, ctx) {
         const saved = curBy;
         for (let t = 0; t < times; t++) for (const j of tg) { curBy = i; trig(j, board[j], depth + 1); }
         curBy = saved;
+        break;
+      }
+      case 'hina': {
+        add(i, 'c', 8, type); add(i, 'm', 3, type);
+        if (isPair(i)) add(i, 'x', R.has('momo') ? 2.0 : 1.5, type, [mirrorOf(i)]);
+        break;
+      }
+      case 'chou': {
+        const j = mirrorOf(i), L = board[j];
+        if (onAxis(i) || !L || L === 'chou' || L === 'mirror' || (depth > 0 && RETRIG.has(L))) { add(i, 'c', 5, type); break; }
+        pushEv({ i, kind: 'r', chips, mult, src: type, as: L, links: [j], by: curBy }); trigAs(i, L, depth + 1);
+        break;
+      }
+      case 'fuda': {
+        const n = pairCount(); const ln = []; for (let j = 0; j < N * N; j++) if (isPair(j)) ln.push(j);
+        if (n) add(i, 'x', Math.round((1 + 0.2 * n) * 100) / 100, type, ln); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+      case 'castle': {
+        add(i, 'c', 5, type);
+        add(i, 'x', Math.round((1 + (R.has('kourou') ? 0.3 : 0.2) * lvOf(i)) * 100) / 100, type);
+        break;
+      }
+      case 'kokeshi': {
+        const nb = neighbors(i).filter(j => board[j]); const sum = nb.reduce((a, j) => a + lvOf(j), 0);
+        add(i, 'c', 4, type); if (sum) add(i, 'm', 3 * sum, type, nb);
+        break;
+      }
+      case 'tower': {
+        let mx = 0, at = -1; for (let j = 0; j < N * N; j++) if (board[j] && lvOf(j) > mx) { mx = lvOf(j); at = j; }
+        add(i, 'x', Math.round((1 + 0.25 * mx) * 100) / 100, type, at >= 0 && at !== i ? [at] : []);
         break;
       }
       case 'mirror': {
@@ -730,6 +800,10 @@ function scoreBoard(board, relics, ctx) {
     if (R.has('vanguard') && i === firstTile) reps += 2;
     if (R.has('latenight') && Math.floor(i / N) >= N - 2) reps++;
     if (R.has('swarming') && board[i] === 'bee' && groupSize[groupOf[i]] >= 6) reps++;
+    if (R.has('chigiri') && isPair(i)) reps++;
+    if (R.has('chigiri') && onAxis(i)) reps++;
+    if (R.has('hangetsu') && rowSym(Math.floor(i / N))) reps++;
+    { const L = lvOf(i); if (L > 1) { reps += L - 1; if (R.has('ishizue')) reps++; if (R.has('juubako') && L >= 3) reps += 2; } }
     for (let k = 0; k < reps; k++) {
       trig(i, board[i], 0);
       // 共鳴：同じ属性を持つ隣のタイル1つにつき +1倍（最初の発動のときだけ）
@@ -748,6 +822,7 @@ function scoreBoard(board, relics, ctx) {
   }
   if (path.length >= 5 && path.length === board.filter(Boolean).length) { curBy = null; const x = R.has('firecracker') ? 2.5 : 1.5; add(path[path.length - 1], 'x', x, 'fuse', [path[path.length - 2]]); ev[ev.length - 1].lbl = `🏁完走 ×${x}`; }
   if (R.has('gogyo') && lastTile >= 0) { const el = new Set(); board.forEach(t => tagsOf(t).forEach(x => el.add(x))); if (el.size) { curBy = null; add(lastTile, 'x', Math.round((1 + 0.15 * el.size) * 100) / 100, 'gogyo', []); } }
+  if (R.has('ashiba') && lastTile >= 0) { let ex = 0; for (let j = 0; j < N * N; j++) if (board[j]) ex += lvOf(j) - 1; if (ex) { curBy = null; add(lastTile, 'x', Math.round((1 + 0.1 * ex) * 100) / 100, 'ashiba', []); } }
   if (R.has('tea') && lastTile >= 0 && new Set(board.filter(x => x)).size >= 8) { curBy = null; add(lastTile, 'x', 2, 'tea', []); }
   let conduct = 0; for (let k = 1; k < path.length; k++) if (shareTag(board[path[k - 1]], board[path[k]])) conduct++;
   return { ev, chips, mult, total: Math.floor(chips * mult), fired, heat, groupOf, groupSize, order, path, conduct };
@@ -757,8 +832,8 @@ function scoreBoard(board, relics, ctx) {
 //  ① 🌱は置いてから2ラウンドで🌿若葉に。水辺の庭では🌿がさらに3ラウンドで🌳大樹に
 //  ② 🔥が2つ以上隣り合う「大きな火」は、隣の🌱🌿を1つ燃やして🌫️灰にする
 //  ③ 🐝は、いちばん近い花（🌱🌿🌸🌻🪷）へ、空いているマスを1歩進む
-function evolve(board, ages, nextRound, theme) {
-  const b = board.slice(), a = ages.slice(), ch = [];
+function evolve(board, ages, nextRound, theme, levels) {
+  const b = board.slice(), a = ages.slice(), ch = [], l = levels ? levels.slice() : null;
   const age = i => a[i] != null ? nextRound - a[i] : 0;
   for (let i = 0; i < N * N; i++) {
     if (b[i] === 'sprout' && age(i) >= 2) { b[i] = 'sprig'; ch.push({ kind: 'grow', i, from: 'sprout', to: 'sprig' }); }
@@ -770,7 +845,7 @@ function evolve(board, ages, nextRound, theme) {
     const fn = neighbors(i).filter(j => b[j] === 'fire').length;
     if (fn < 2) continue;
     const tg = neighbors(i).find(j => (b[j] === 'sprout' || b[j] === 'sprig') && !burnt.has(j));
-    if (tg != null) { ch.push({ kind: 'burn', i: tg, by: i, from: b[tg], to: 'ash' }); b[tg] = 'ash'; a[tg] = nextRound; burnt.add(tg); }
+    if (tg != null) { ch.push({ kind: 'burn', i: tg, by: i, from: b[tg], to: 'ash' }); b[tg] = 'ash'; a[tg] = nextRound; if (l) l[tg] = 1; burnt.add(tg); }
   }
   const FLOWER = ['sprout', 'sprig', 'sakura', 'sunflwr', 'lotus'];
   const flowers = () => b.map((t, j) => FLOWER.includes(t) ? j : -1).filter(j => j >= 0);
@@ -782,9 +857,9 @@ function evolve(board, ages, nextRound, theme) {
     const d0 = Math.min(...fl.map(f => dist(i, f)));
     if (d0 <= 1) continue;
     const step = neighbors(i).filter(j => !b[j]).map(j => [j, Math.min(...fl.map(f => dist(j, f)))]).filter(([, d]) => d < d0).sort((x, y) => x[1] - y[1])[0];
-    if (step) { const j = step[0]; b[j] = 'bee'; a[j] = a[i]; b[i] = null; a[i] = null; moved.add(j); ch.push({ kind: 'move', i: j, from: i, to: 'bee' }); }
+    if (step) { const j = step[0]; b[j] = 'bee'; a[j] = a[i]; b[i] = null; a[i] = null; if (l) { l[j] = l[i]; l[i] = 1; } moved.add(j); ch.push({ kind: 'move', i: j, from: i, to: 'bee' }); }
   }
-  return { board: b, ages: a, changes: ch };
+  return { board: b, ages: a, levels: l, changes: ch };
 }
 
 // ラウンドが進むほど強いタイルが出る。tier の開始ラウンドで出始め、その後どんどん出やすくなる。
@@ -854,7 +929,7 @@ const note = k => 262 * Math.pow(2, Math.min(k, 30) / 12);
 
 // ===== ゲームの状態 =====
 let S;
-const ctxNow = () => ({ ages: S.ages, round: S.round, order: S.fuse ? S.fuse.path : null, phase: phaseOf(S.round), dirs: S.dirs });
+const ctxNow = () => ({ ages: S.ages, round: S.round, order: S.fuse ? S.fuse.path : null, phase: phaseOf(S.round), dirs: S.dirs, levels: S.levels });
 // ===== 統計：どのタイルが活躍したか =====
 // 活躍度：そのラウンドの点数（点×倍率）が増えた分を、タイルごとに割り振る。
 //   点  … log(点の合計) を、足した点の割合で分ける
@@ -915,10 +990,10 @@ function statsHtml() {
     <p class="st-note">活躍度＝各ラウンドの点数（点×倍率）が、そのタイルのおかげでどれだけ増えたかの割合。もう一度発動させた分は、動かしたタイルと動いたタイルで半分ずつ。後半の大きいラウンドほど重く数える。</p>`;
 }
 function newGame(theme) {
-  S = { board: Array(N * N).fill(null), relics: theme ? [THEMES[theme].relic] : [], theme, round: 0, placed: 0, hand: [], sel: -1, rerolls: 0, busy: false, lives: LIVES, ages: Array(N * N).fill(null), stats: newStats(), held: null, swaps: 1, swap: null, holdUsed: false, fuse: null, dirs: Array(N * N).fill(null), turns: 3 };
+  S = { board: Array(N * N).fill(null), relics: theme ? [THEMES[theme].relic] : [], theme, round: 0, placed: 0, hand: [], sel: -1, rerolls: 0, busy: false, lives: LIVES, ages: Array(N * N).fill(null), stats: newStats(), held: null, swaps: 1, swap: null, holdUsed: false, fuse: null, dirs: Array(N * N).fill(null), levels: Array(N * N).fill(1), turns: 3 };
   startRound();
 }
-// ===== 解放：からくりの庭は、ほかの庭を2つ全クリアすると遊べる =====
+// ===== 解放：上級の庭（からくり・風・対・重ね）は、ほかの庭を locked の数だけ全クリアすると遊べる =====
 function clearedSet() { try { return new Set(JSON.parse(localStorage.getItem('rensa-cleared') || '[]')); } catch (e) { return new Set(); } }
 function markCleared(th) { const c = clearedSet(); const before = c.size; c.add(th); try { localStorage.setItem('rensa-cleared', JSON.stringify([...c])); } catch (e) {} return c; }
 function isUnlocked(k) { const t = THEMES[k]; if (!t.locked) return true; const c = clearedSet(); c.delete(k); return c.size >= t.locked; }
@@ -939,7 +1014,7 @@ function themeDetail(k) {
   if (!isUnlocked(k)) {
     const have = Math.min(t.locked, [...clearedSet()].filter(x => x !== k).length);
     return `<div class="tdet lockd"><div class="tdh"><span class="te">🔒</span><b>？？？の庭</b></div>
-      <p>${t.factor === '道筋' ? '導火線の道筋で勝負する' : '矢印の向きで勝負する'}、上級者向けの庭。</p>
+      <p>${t.teaser || ''}、上級者向けの庭。</p>
       <div class="tprog"><span style="width:${have / t.locked * 100}%"></span></div>
       <p class="tsm">ほかの庭を <b>${t.locked}つ</b> 全クリアすると解放（いま ${have}/${t.locked}）</p></div>`;
   }
@@ -953,7 +1028,7 @@ function themeDetail(k) {
 function chooseTheme() {
   $('factor').className = '';
   menuOpen = false;
-  S = { board: Array(N * N).fill(null), relics: [], round: 0, placed: 0, hand: [], sel: -1, rerolls: 0, busy: true, lives: LIVES, ages: Array(N * N).fill(null), stats: newStats(), held: null, swaps: 1, swap: null, holdUsed: false, fuse: null, dirs: Array(N * N).fill(null), turns: 3 };
+  S = { board: Array(N * N).fill(null), relics: [], round: 0, placed: 0, hand: [], sel: -1, rerolls: 0, busy: true, lives: LIVES, ages: Array(N * N).fill(null), stats: newStats(), held: null, swaps: 1, swap: null, holdUsed: false, fuse: null, dirs: Array(N * N).fill(null), levels: Array(N * N).fill(1), turns: 3 };
   render(); setNums(0, 1); $('total').textContent = '';
   const open = Object.keys(THEMES).filter(k => !THEMES[k].locked), adv = Object.keys(THEMES).filter(k => THEMES[k].locked).sort((a, b) => THEMES[a].locked - THEMES[b].locked);
   let cur; try { cur = localStorage.getItem(LAST_KEY); } catch (e) {}
@@ -1017,7 +1092,9 @@ function render() {
   const bd = $('board'); bd.innerHTML = ''; bd.classList.toggle('fusing', !!S.fuse);
   S.board.forEach((t, i) => {
     const c = document.createElement('div'); c.className = 'cell'; c.dataset.i = i;
-    if (t) { c.innerHTML = `${TILES[t].e}<span class="els">${tagHtml(t)}</span>`; c.classList.add('t'); } else if (S.sel !== -1 && !S.busy) c.classList.add('can');
+    if (t) { c.innerHTML = `${TILES[t].e}<span class="els">${tagHtml(t)}</span>`; c.classList.add('t'); if (canStack(i)) { c.classList.add('stackok'); c.insertAdjacentHTML('beforeend', '<span class="stk">＋重ねる</span>'); } } else if (S.sel !== -1 && !S.busy) c.classList.add('can');
+    if (S.theme === 'pair' && onAxis(i)) c.classList.add('axis');
+    if (t && S.levels && S.levels[i] > 1) { c.classList.add('lv'); c.insertAdjacentHTML('beforeend', `<span class="lvb">${S.levels[i]}段</span>`); }
     if (S.swap) { if (S.swap.from === i) c.classList.add('swapsrc'); else if (S.swap.from != null) c.classList.add('swapok'); }
     if (t && S.theme && phaseActive(t, ph)) c.classList.add('act');
     if (t && isArrow(t)) c.insertAdjacentHTML('beforeend', `<span class="dir">${ARROWS[S.dirs[i] == null ? 1 : S.dirs[i]]}</span>`);
@@ -1111,6 +1188,13 @@ function factorBar(r, liveHeat) {
     let turns = 0; for (let k = 1; k < p.length - 1; k++) if (p[k + 1] - p[k] !== p[k] - p[k - 1]) turns++;
     let run = 0, cur = 0; p.forEach(i => { cur = S.board[i] === 'gear' ? cur + 1 : 0; run = Math.max(run, cur); });
     h = `<span class="fk">⚙️ 道筋</span><span class="fv">${p.length}</span><span class="fs">導火線のマス・曲がり ${turns}・⚙️の連なり ${run}${p.length && S.board[p[p.length - 1]] === 'target' ? '・🎯終点' : ''}</span>`;
+  } else if (th === 'pair') {
+    let pairs = 0, sym = 0; for (let i = 0; i < N * N; i++) if (i % N < (N - 1) / 2 && pairAt(i)) pairs++;
+    for (let rr = 0; rr < N; rr++) { let ok = true; for (let c = 0; c < N; c++) if (!S.board[rr * N + c] || S.board[rr * N + c] !== S.board[rr * N + N - 1 - c]) ok = false; if (ok) sym++; }
+    h = `<span class="fk">🎎 対</span><span class="fv">${pairs}</span><span class="fs">そろった組・左右対称の列 ${sym}</span>`;
+  } else if (th === 'stack') {
+    const L = S.levels || []; let mx = 1, ex = 0; S.board.forEach((t, i) => { if (t) { mx = Math.max(mx, L[i] || 1); ex += (L[i] || 1) - 1; } });
+    h = `<span class="fk">🏯 段</span><span class="fv">${mx}</span><span class="fs">最高の段・重ねた合計 ${ex}</span>`;
   } else if (th === 'night') {
     const sky = S.board.filter(t => tagsOf(t).includes('天')).length;
     let line = 0; for (let k = 0; k < N; k++) { line = Math.max(line, [0,1,2,3,4].filter(c => tagsOf(S.board[k * N + c]).includes('天')).length, [0,1,2,3,4].filter(rr => tagsOf(S.board[rr * N + k]).includes('天')).length); }
@@ -1125,6 +1209,7 @@ function cellBadges(r) {
     let b = '';
     if (S.theme === 'water' && S.ages[i] != null) { const a = S.round - S.ages[i]; if (a > 0) b = `<span class="badge">${a}R</span>`; }
     if (S.theme === 'bee' && t === 'bee' && r && r.groupOf[i] >= 0) b = `<span class="badge g">${r.groupSize[r.groupOf[i]]}</span>`;
+    if (S.theme === 'pair' && pairAt(i)) b = `<span class="badge p">対</span>`;
     const old = c.querySelector('.badge'); if (old) old.remove();
     if (b) c.insertAdjacentHTML('beforeend', b);
   });
@@ -1152,8 +1237,11 @@ function onCard(k) {
   if (S.busy) return; ensureAudio();
   if (S.swap) { S.swap = null; }
   S.sel = S.sel === k ? -1 : k; render();
-  if (S.sel >= 0) { const t = S.hand[k]; info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}`); tone(660, 'sine', .05, .06); }
+  if (S.sel >= 0) { const t = S.hand[k]; info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}${S.theme === 'stack' && S.board.includes(t) ? '　<b>（盤面の同じタイルの上に重ねられる）</b>' : ''}`); tone(660, 'sine', .05, .06); }
 }
+// 重ねの庭：選んでいる手札（またはとっておき）と同じタイルの上に重ねられる
+const selTile = () => S.sel === 'hold' ? S.held : S.sel >= 0 ? S.hand[S.sel] : null;
+const canStack = i => S.theme === 'stack' && !S.busy && !S.fuse && !S.swap && !!S.board[i] && selTile() === S.board[i];
 function onCell(i) {
   if (S.fuse) return;
   if (S.busy) return; ensureAudio();
@@ -1166,11 +1254,19 @@ function onCell(i) {
     }
     info(`向きを変えられるのは 1ラウンド${S.relics.includes('fan') ? 5 : 3}回まで。`);
   }
-  if (t) { info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}`); const a = S.ages[i] != null ? S.round - S.ages[i] : 0; tileTip(t, a ? `置いてから ${a} ラウンド` : 'このラウンドに置いた'); return; }
+  if (t && canStack(i)) {
+    if (S.sel === 'hold') { S.held = null; S.holdUsed = true; }
+    S.levels[i] = (S.levels[i] || 1) + 1; S.sel = -1; S.placed++;
+    tone(440 + 60 * S.levels[i], 'triangle', .1, .1);
+    if (S.placed >= perRound(S.round)) { S.hand = []; flashNew(i); startFuse(); return; }
+    dealHand(); render(); flashNew(i); showPreview();
+    info(`${TILES[t].e} を重ねて <b>${S.levels[i]}段</b> になった（${S.levels[i]}回発動する）。次のタイルを選ぼう。`); return;
+  }
+  if (t) { info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}${S.levels && S.levels[i] > 1 ? `　<b>（${S.levels[i]}段）</b>` : ''}`); const a = S.ages[i] != null ? S.round - S.ages[i] : 0; tileTip(t, a ? `置いてから ${a} ラウンド` : 'このラウンドに置いた'); return; }
   if (S.sel === -1) { info('先に下のタイルを1枚選んでね。'); return; }
   if (S.sel === 'hold') { S.board[i] = S.held; S.held = null; S.holdUsed = true; S.sel = -1; }
   else S.board[i] = S.hand[S.sel];
-  S.ages[i] = S.round; S.dirs[i] = isArrow(S.board[i]) ? 1 : null; S.placed++;
+  S.ages[i] = S.round; S.dirs[i] = isArrow(S.board[i]) ? 1 : null; if (S.levels) S.levels[i] = 1; S.placed++;
   tone(520, 'sine', .08, .1);
   if (S.placed >= perRound(S.round)) { S.hand = []; S.sel = -1; flashNew(i); startFuse(); return; }
   dealHand(); render(); flashNew(i); showPreview();
@@ -1203,7 +1299,7 @@ function onSwapCell(i) {
   if (sw.from == null) { if (!S.board[i]) { info('動かしたいのは、置いてあるタイル。'); return; } sw.from = i; render(); info(`<b>${TILES[S.board[i]].e}</b> をどこへ？ 空きマスなら移動、タイルなら入れ替え。`); return; }
   if (sw.from === i) { sw.from = null; render(); info('植え替え：動かしたいタイルをタップ。'); return; }
   const a = sw.from;
-  [S.board[a], S.board[i]] = [S.board[i], S.board[a]]; [S.ages[a], S.ages[i]] = [S.ages[i], S.ages[a]]; [S.dirs[a], S.dirs[i]] = [S.dirs[i], S.dirs[a]];
+  [S.board[a], S.board[i]] = [S.board[i], S.board[a]]; [S.ages[a], S.ages[i]] = [S.ages[i], S.ages[a]]; [S.dirs[a], S.dirs[i]] = [S.dirs[i], S.dirs[a]]; if (S.levels) [S.levels[a], S.levels[i]] = [S.levels[i], S.levels[a]];
   S.swaps--; S.swap = null; render(); showPreview(); tone(700, 'triangle', .1, .08);
   $('board').children[i].classList.add('new'); if (S.board[a]) $('board').children[a].classList.add('new');
   info(S.board[a] ? '2つのタイルを入れ替えた。' : 'タイルを動かした。');
@@ -1275,8 +1371,8 @@ function ignite() {
 // ===== 生きている庭：次のラウンドへ進むとき =====
 async function nextRoundWithEvolve(after) {
   S.round++;
-  const r = evolve(S.board, S.ages, S.round, S.theme);
-  S.board = r.board; S.ages = r.ages; S.order = null; S.fuse = null;
+  const r = evolve(S.board, S.ages, S.round, S.theme, S.levels);
+  S.board = r.board; S.ages = r.ages; if (r.levels) S.levels = r.levels; S.order = null; S.fuse = null;
   startRound();
   if (r.changes.length) {
     const cells = $('board').children;
@@ -1488,7 +1584,7 @@ async function runScoring(opt) {
   if (!replay) await mileBanner(T);
   if (replay) { await sleep(900); return T; }
   // いちばんの連鎖を覚えておく（スロー再生用）
-  if (!S.bestReplay || T > S.bestReplay.score) S.bestReplay = { score: T, round: S.round, board: S.board.slice(), ages: S.ages.slice(), dirs: (S.dirs || []).slice(), relics: S.relics.slice(), path: S.fuse ? S.fuse.path.slice() : [], bonus };
+  if (!S.bestReplay || T > S.bestReplay.score) S.bestReplay = { score: T, round: S.round, board: S.board.slice(), ages: S.ages.slice(), dirs: (S.dirs || []).slice(), levels: (S.levels || []).slice(), relics: S.relics.slice(), path: S.fuse ? S.fuse.path.slice() : [], bonus };
   const ok = T >= TARGETS[S.round];
   $('total').className = ok ? 'win' : 'lose';
   if (T > best) { best = T; try { localStorage.setItem('synergy-best', best); } catch (e) {} }
@@ -1543,7 +1639,7 @@ function missed(T) {
 }
 function finished(T, ok) {
   burst(16);
-  endScreen(`<h2>庭が埋まった</h2><div class="big">${fmt(T)}</div><div style="display:flex;justify-content:center;margin:6px 0">${miniBoard(S.board, true)}</div><p style="text-align:center">25マスがすべて埋まった。最後の目標 ${fmt(TARGETS[S.round])} にはあと一歩。</p>
+  endScreen(`<h2>庭が埋まった</h2><div class="big">${fmt(T)}</div><div style="display:flex;justify-content:center;margin:6px 0">${miniBoard(S.board, true)}</div><p style="text-align:center">${S.board.every(x => x) ? '25マスがすべて埋まった。' : '最後のラウンドが終わった。'}最後の目標 ${fmt(TARGETS[S.round])} にはあと一歩。</p>
     <p style="text-align:center">遺物：${S.relics.map(k => RELICS[k].e).join(' ')}</p><p style="text-align:center">最高スコア：${fmt(best)}</p>`, T, 'full');
 }
 function gameOver(T) {
@@ -1574,6 +1670,8 @@ function help(first, fromMenu) {
   <p><b>🔥導火線</b>：タイルを置き終わったら、盤面を<b>なぞって</b>発動の順番を決めてから点火。上下左右につながったタイルを一筆書き。なぞらなかったタイルは、あとからいつもの順（左上→右下）。</p>
   <p><b>⚙️からくりの庭</b>：ほかの庭を2つ全クリアすると解放される上級者向けの庭。導火線の道筋（何番目に通るか・どこで曲がるか・どこで終わるか）で強さが変わる。</p>
   <p><b>🌬️風の庭</b>：ほかの庭を3つ全クリアすると解放。矢印のあるタイル（🪁🍃🌪️🎏）は、置いたあとタップすると向きが90°回る（1ラウンド3回）。向きで効く先が変わる。</p>
+  <p><b>🎎対の庭</b>：ほかの庭を4つ全クリアすると解放。真ん中の縦の列が軸で、左右の同じ位置に同じタイルを置くと「対」になり 1回多く発動する（軸のタイルも1回多く。🦋蝶はどのタイルとも対になる）。</p>
+  <p><b>🏯重ねの庭</b>：ほかの庭を5つ全クリアすると解放。手札のタイルを、盤面の同じタイルの上にタップすると重なって段が上がり、段の数だけ発動する（そのぶん庭に空きが残る）。</p>
   <p>なぞっている途中で<b>1つ前のタイルに戻ると1つ短く</b>なる。<b>盤面の外まで指を出すとリセット</b>。</p>
   <p>導火線のごほうび：<b>🔥導火</b>＝つないだタイル1マスごとに+1倍。<b>⚡伝導</b>＝直前のタイルと同じ属性なら1回多く発動。<b>🏁完走</b>＝盤面のタイルを全部（5枚以上）つなぐと最後に×1.5。</p>
   <p><b>☀️昼と🌙夜</b>：ラウンドごとに入れ替わる。昼は「草・火・虫」、夜は「天・水・術」のタイルが<b>1回多く発動</b>（金の枠で光る）。最後のラウンドは🌆黄昏で両方。</p>
@@ -1725,8 +1823,8 @@ async function mileBanner(T) {
 // ===== いちばんの連鎖をスロー再生 =====
 async function replayBest() {
   const b = S.bestReplay; if (!b) return;
-  const keep = { board: S.board, ages: S.ages, dirs: S.dirs, relics: S.relics, round: S.round, fuse: S.fuse, busy: S.busy, hand: S.hand };
-  Object.assign(S, { board: b.board.slice(), ages: b.ages.slice(), dirs: b.dirs.slice(), relics: b.relics.slice(), round: b.round, fuse: { path: b.path.slice() }, busy: true, hand: [] });
+  const keep = { board: S.board, ages: S.ages, dirs: S.dirs, levels: S.levels, relics: S.relics, round: S.round, fuse: S.fuse, busy: S.busy, hand: S.hand };
+  Object.assign(S, { board: b.board.slice(), ages: b.ages.slice(), dirs: b.dirs.slice(), levels: (b.levels || []).slice(), relics: b.relics.slice(), round: b.round, fuse: { path: b.path.slice() }, busy: true, hand: [] });
   closeModal(); render(); drawFuse();
   info(`🎞️ ラウンド ${b.round + 1} の連鎖（${fmt(b.score)} 点）をスロー再生`);
   await sleep(700);
