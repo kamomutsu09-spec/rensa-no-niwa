@@ -20,7 +20,7 @@ html,body{overflow:hidden}
 header{display:flex;align-items:center;gap:10px}
 header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24px;margin:0;flex:1;letter-spacing:.06em;color:var(--kinari)}
 .iconbtn{background:none;border:1.5px solid var(--kinari);color:var(--kinari);border-radius:3px;min-width:38px;height:32px;padding:0 8px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}
-.iconbtn:focus-visible,.card:focus-visible,.btn:focus-visible,.choice:focus-visible,.theme:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.iconbtn:focus-visible,.card:focus-visible,.btn:focus-visible,.choice:focus-visible,.tcard:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 #status{display:flex;gap:16px;font-size:13px;color:var(--sub);align-items:baseline}
 #status b{color:var(--kinari);font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:17px;margin-left:3px}
 #status .tg{margin-left:auto}
@@ -228,20 +228,39 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 .choice{background:#fffaf0;border:2px solid var(--sumi);border-radius:3px;padding:10px 12px;cursor:pointer;text-align:left;color:var(--sumi);font-family:inherit;font-size:14px;line-height:1.55;box-shadow:0 3px 0 var(--sumi)}
 .choice:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sumi)}
 .choice b{font-size:16px}
-.themes{display:flex;gap:10px;margin:4px -18px 10px;padding:4px 18px 8px;overflow-x:auto;scroll-snap-type:x mandatory}
-.themes .theme{flex:none;width:168px;scroll-snap-align:start}
-.trow-h{font-size:12px;font-weight:700;color:#7a6f5c;margin-top:10px;border-bottom:1px dashed rgba(27,23,18,.3);padding-bottom:2px}
-#modal:has(.themes){max-width:min(760px,96vw)}
-.theme.lockd{opacity:.55;cursor:default;background:#e9e2d2}
-.theme.adv{background:#efe6f4;border-color:#5b3a6e;box-shadow:0 3px 0 #5b3a6e}
-.theme{background:#fffaf0;border:2px solid var(--sumi);border-radius:4px;padding:12px 8px 10px;cursor:pointer;color:var(--sumi);font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 3px 0 var(--sumi);text-align:center}
-.theme:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sumi)}
-.theme .te{font-size:26px;letter-spacing:2px}
-.theme .tn{font-family:"Dela Gothic One",sans-serif;font-size:17px}
-.theme .lv{font-size:11px;font-weight:700;color:#7a6f5c}
-.theme .td{font-size:12px;line-height:1.5;color:#4d4538}
-.theme .tx{font-size:11px;font-weight:700;color:#7a6f5c}
-.theme .tr{font-size:11px;font-weight:700;margin-top:2px;padding:2px 6px;border-left:3px solid var(--mult);background:rgba(27,23,18,.06)}
+#modal:has(.tgrid){max-width:min(560px,96vw)}
+.trow-h{font-size:12px;font-weight:700;color:#7a6f5c;margin-top:10px;border-bottom:1px dashed rgba(27,23,18,.3);padding-bottom:2px;text-align:left}
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 8px}
+.tgrid.adv{grid-template-columns:repeat(4,1fr)}
+.tcard{position:relative;background:#fffaf0;border:2px solid var(--sumi);border-radius:4px;padding:8px 2px 6px;cursor:pointer;color:var(--sumi);font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 3px 0 var(--sumi);min-width:0;transition:transform .12s}
+.tcard:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sumi)}
+.tcard .te{font-size:24px;line-height:1.1;white-space:nowrap}
+.tcard .tn{font-family:"Dela Gothic One",sans-serif;font-size:14px;white-space:nowrap}
+.tcard .ts{font-size:9.5px;font-weight:700;color:#7a6f5c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tcard .tck{position:absolute;top:-7px;right:-6px;background:var(--gold,#c9a227);color:#1b1712;font-size:11px;font-weight:900;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--sumi)}
+.tcard.adv{background:#efe6f4;border-color:#5b3a6e;box-shadow:0 3px 0 #5b3a6e}
+.tcard.lockd{opacity:.6;background:#e9e2d2;border-style:dashed;box-shadow:none}
+.tcard.on{transform:translateY(-3px);background:#fff3cf;outline:3px solid var(--mult);outline-offset:1px}
+.tcard.adv.on{background:#f6ecfb}
+.tcard.lockd.on{opacity:.85}
+.tdet{margin:10px 0 4px;padding:12px;border:2px solid var(--sumi);border-radius:4px;background:#fffaf0;text-align:left}
+.tdet.adv{background:#f6ecfb;border-color:#5b3a6e}
+.tdet.lockd{background:#e9e2d2;border-style:dashed}
+.tdh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tdh .te{font-size:24px}
+.tdh b{font-family:"Dela Gothic One",sans-serif;font-size:18px;font-weight:400}
+.tlv{margin-left:auto;font-size:11px;font-weight:700;padding:2px 7px;border-radius:2px;background:rgba(27,23,18,.1)}
+.tlv.easy{background:var(--mult);color:#fff}
+.tdet p{font-size:13px;line-height:1.6;margin:8px 0;color:#3d362b}
+.tdet .tsm{font-size:12px;margin:6px 0 0}
+.tfacts{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:11.5px;color:#5d5444}
+.tfacts b{color:var(--sumi)}
+.tprog{height:8px;background:rgba(27,23,18,.12);border-radius:4px;overflow:hidden}
+.tprog span{display:block;height:100%;background:#5b3a6e}
+.btn.tgo{display:block;width:100%;margin-top:12px;font-size:16px;font-family:"Dela Gothic One",sans-serif;padding:12px;background:var(--mult);color:#fff7ea;border:none;border-radius:3px;box-shadow:inset 0 0 0 2px rgba(255,247,234,.85),inset 0 0 0 4px var(--mult),0 3px 0 var(--sumi)}
+.btn.tgo:active{transform:translateY(2px);box-shadow:inset 0 0 0 2px rgba(255,247,234,.85),inset 0 0 0 4px var(--mult),0 1px 0 var(--sumi)}
+.tdet.adv .btn.tgo{background:#5b3a6e;box-shadow:inset 0 0 0 2px rgba(255,247,234,.85),inset 0 0 0 4px #5b3a6e,0 3px 0 var(--sumi)}
+@media (max-width:360px){.tcard .tn{font-size:12px}.tcard .te{font-size:17px}.tfacts{grid-template-columns:1fr}}
 .textbtn{display:block;margin:10px auto 0;background:none;border:none;font-family:inherit;font-weight:700;font-size:13px;color:var(--sumi);text-decoration:underline;cursor:pointer}
 .big{font-family:"Dela Gothic One",sans-serif;font-size:40px;text-align:center;color:var(--sumi);margin:6px 0}
 .tilelist{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;font-size:13px;margin:8px 0;line-height:1.5}
@@ -903,26 +922,65 @@ function newGame(theme) {
 function clearedSet() { try { return new Set(JSON.parse(localStorage.getItem('rensa-cleared') || '[]')); } catch (e) { return new Set(); } }
 function markCleared(th) { const c = clearedSet(); const before = c.size; c.add(th); try { localStorage.setItem('rensa-cleared', JSON.stringify([...c])); } catch (e) {} return c; }
 function isUnlocked(k) { const t = THEMES[k]; if (!t.locked) return true; const c = clearedSet(); c.delete(k); return c.size >= t.locked; }
+const LAST_KEY = 'rensa-last-theme';
+const shortName = k => THEMES[k].name.replace('の庭', '');
+function themeBest(k) { const l = readRank(k); return l.length ? l[0].score : 0; }
 function themeCard(k) {
   const t = THEMES[k];
-  if (!isUnlocked(k)) return `<button class="theme lockd" disabled><span class="te">🔒</span><span class="tn">？？？の庭</span><span class="lv">ほかの庭を ${t.locked}つ 全クリアで解放（いま ${Math.min(t.locked, [...clearedSet()].filter(x => x !== k).length)}/${t.locked}）</span><span class="td">${t.factor === '道筋' ? '導火線の道筋で勝負する' : '矢印の向きで勝負する'}、上級者向けの庭。</span></button>`;
-  return `<button class="theme${t.locked ? ' adv' : ''}" data-k="${k}"><span class="te">${t.tiles}</span><span class="tn">${t.name}</span><span class="lv">立ち上がり：${t.lv}</span><span class="td">${t.desc}</span><span class="tr">${RELICS[t.relic].e} ${RELICS[t.relic].name}</span><span class="tx">要素「${t.factor}」・専用 ${Object.keys(TILES).filter(j => TILES[j].only === k).map(j => TILES[j].e).join('')}</span></button>`;
+  if (!isUnlocked(k)) {
+    const have = Math.min(t.locked, [...clearedSet()].filter(x => x !== k).length);
+    return `<button class="tcard lockd" data-k="${k}"><span class="te">🔒</span><span class="tn">？？？</span><span class="ts">あと${t.locked - have}つ</span></button>`;
+  }
+  const cl = clearedSet().has(k), b = themeBest(k);
+  return `<button class="tcard${t.locked ? ' adv' : ''}${cl ? ' clr' : ''}" data-k="${k}">${cl ? '<span class="tck">✓</span>' : ''}<span class="te">${t.e}</span><span class="tn">${shortName(k)}</span><span class="ts">${b ? '最高 ' + fmt(b) : 'まだ遊んでない'}</span></button>`;
+}
+function themeDetail(k) {
+  const t = THEMES[k];
+  if (!isUnlocked(k)) {
+    const have = Math.min(t.locked, [...clearedSet()].filter(x => x !== k).length);
+    return `<div class="tdet lockd"><div class="tdh"><span class="te">🔒</span><b>？？？の庭</b></div>
+      <p>${t.factor === '道筋' ? '導火線の道筋で勝負する' : '矢印の向きで勝負する'}、上級者向けの庭。</p>
+      <div class="tprog"><span style="width:${have / t.locked * 100}%"></span></div>
+      <p class="tsm">ほかの庭を <b>${t.locked}つ</b> 全クリアすると解放（いま ${have}/${t.locked}）</p></div>`;
+  }
+  const only = Object.keys(TILES).filter(j => TILES[j].only === k).map(j => TILES[j].e).join('');
+  const b = themeBest(k), cl = clearedSet().has(k);
+  return `<div class="tdet${t.locked ? ' adv' : ''}"><div class="tdh"><span class="te">${t.tiles}</span><b>${t.name}</b><span class="tlv ${t.lv === 'やさしい' ? 'easy' : ''}">${t.lv === 'やさしい' ? 'はじめてならここ' : t.locked ? '上級' : '立ち上がり ' + t.lv}</span></div>
+    <p>${t.desc}</p>
+    <div class="tfacts"><span>最初の遺物 <b>${RELICS[t.relic].e} ${RELICS[t.relic].name}</b></span><span>要素 <b>「${t.factor}」</b></span><span>専用タイル <b>${only}</b></span><span>${cl ? '✓ 全クリア済み' : '未クリア'}${b ? '・最高 <b>' + fmt(b) + '</b>' : ''}</span></div>
+    <button class="btn tgo" id="tgo">${t.e} ${t.name}で始める</button></div>`;
 }
 function chooseTheme() {
   $('factor').className = '';
   menuOpen = false;
   S = { board: Array(N * N).fill(null), relics: [], round: 0, placed: 0, hand: [], sel: -1, rerolls: 0, busy: true, lives: LIVES, ages: Array(N * N).fill(null), stats: newStats(), held: null, swaps: 1, swap: null, holdUsed: false, fuse: null, dirs: Array(N * N).fill(null), turns: 3 };
   render(); setNums(0, 1); $('total').textContent = '';
+  const open = Object.keys(THEMES).filter(k => !THEMES[k].locked), adv = Object.keys(THEMES).filter(k => THEMES[k].locked).sort((a, b) => THEMES[a].locked - THEMES[b].locked);
+  let cur; try { cur = localStorage.getItem(LAST_KEY); } catch (e) {}
+  if (!THEMES[cur] || !isUnlocked(cur)) cur = clearedSet().size ? open[0] : 'fire';
   modal(`<h2>どんな庭にする？</h2><p class="lead">選んだ庭のタイルが多く出て、その庭の遺物を1つ持って始まる。</p>
-    <div class="trow-h">最初から遊べる庭</div>
-    <div class="themes">${Object.keys(THEMES).filter(k => !THEMES[k].locked).map(themeCard).join('')}</div>
-    <div class="trow-h">ほかの庭をクリアすると解放される庭</div>
-    <div class="themes">${Object.keys(THEMES).filter(k => THEMES[k].locked).sort((a, b) => THEMES[a].locked - THEMES[b].locked).map(themeCard).join('')}</div>
+    <div class="tgrid">${open.map(themeCard).join('')}</div>
+    <div class="trow-h">上級の庭（ほかの庭のクリアで解放）</div>
+    <div class="tgrid adv">${adv.map(themeCard).join('')}</div>
+    <div id="tdet"></div>
     <button class="textbtn" id="howto">遊び方を見る</button>`);
-  document.querySelectorAll('.theme:not(.lockd)').forEach(b => b.onclick = () => {
-    ensureAudio(); closeModal(); newGame(b.dataset.k); tone(660, 'triangle', .15, .1);
-    info(`<b>${THEMES[b.dataset.k].name}</b>で始める。タイルを1枚選んで、空いているマスに置こう。`);
+  const start = k => {
+    try { localStorage.setItem(LAST_KEY, k); } catch (e) {}
+    ensureAudio(); closeModal(); newGame(k); tone(660, 'triangle', .15, .1);
+    info(`<b>${THEMES[k].name}</b>で始める。タイルを1枚選んで、空いているマスに置こう。`);
+  };
+  const pick = k => {
+    cur = k;
+    document.querySelectorAll('.tcard').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+    $('tdet').innerHTML = themeDetail(k);
+    const g = $('tgo'); if (g) g.onclick = () => start(k);
+  };
+  document.querySelectorAll('.tcard').forEach(b => b.onclick = () => {
+    const k = b.dataset.k;
+    if (k === cur && isUnlocked(k) && b.classList.contains('on')) return start(k); // 選んでいる庭をもう一度タップしたら始める
+    tone(isUnlocked(k) ? 520 : 220, 'triangle', .06, .05); pick(k);
   });
+  pick(cur);
   $('howto').onclick = () => help(true);
 }
 const handSize = () => S.relics.includes('wide') ? 4 : 3;
