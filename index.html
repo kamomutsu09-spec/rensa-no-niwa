@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>連鎖の庭</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* 藍染の布に、花札のようなタイルを並べる */
+:root{--ai:#1d2a4d;--ai-deep:#131c36;--stitch:rgba(233,221,196,.18);--kinari:#ece0c6;--sumi:#1b1712;--chips:#4fc2a8;--mult:#ef5a3c;--x:#f2b938;--gold:#f2b938;--sub:#a9b3cc;--txt:#f3ead6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;color:var(--txt);font-family:"Zen Kaku Gothic New",system-ui,sans-serif;overscroll-behavior:none;background:var(--ai)}
+body{min-height:100vh;padding:calc(env(safe-area-inset-top) + 10px) calc(env(safe-area-inset-right) + 12px) calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 12px);user-select:none;-webkit-user-select:none;
+  background-color:var(--ai);
+  background-image:linear-gradient(90deg,transparent 47%,rgba(255,255,255,.035) 47%,rgba(255,255,255,.035) 53%,transparent 53%),linear-gradient(0deg,transparent 47%,rgba(255,255,255,.035) 47%,rgba(255,255,255,.035) 53%,transparent 53%);
+  background-size:22px 22px}
+#app{width:440px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+html,body{overflow:hidden}
+header{display:flex;align-items:center;gap:10px}
+header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24px;margin:0;flex:1;letter-spacing:.06em;color:var(--kinari)}
+.iconbtn{background:none;border:1.5px solid var(--kinari);color:var(--kinari);border-radius:3px;min-width:38px;height:32px;padding:0 8px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}
+.iconbtn:focus-visible,.card:focus-visible,.btn:focus-visible,.choice:focus-visible,.theme:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+#status{display:flex;gap:16px;font-size:13px;color:var(--sub);align-items:baseline}
+#status b{color:var(--kinari);font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:17px;margin-left:3px}
+#status .tg{margin-left:auto}
+#relics{display:flex;gap:6px;flex-wrap:nowrap;height:28px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+#relics::-webkit-scrollbar{display:none}
+.relic{flex:none;white-space:nowrap}
+.relic{background:var(--kinari);color:var(--sumi);border-radius:2px;padding:3px 8px 3px 7px;font-size:12px;font-weight:700;cursor:pointer;border-left:4px solid var(--mult)}
+.relic.empty{background:none;color:var(--sub);border:1px dashed var(--stitch);font-weight:500;cursor:default}
+#scorebox{position:relative;padding:4px 0 10px;border-bottom:2px solid var(--stitch)}
+#eq{display:flex;align-items:flex-end;justify-content:center;gap:12px}
+.numwrap{display:flex;flex-direction:column;align-items:center;min-width:110px}
+.numwrap small{font-size:12px;color:var(--sub);font-weight:700}
+.num{font-family:"Dela Gothic One",sans-serif;font-size:38px;line-height:1.05;text-align:center;transition:transform .08s}
+#chips{color:var(--chips)}
+#mult{color:var(--mult)}
+.op{color:var(--sub);font-size:26px;font-family:"Dela Gothic One",sans-serif;padding-bottom:4px}
+#total{font-family:"Dela Gothic One",sans-serif;font-size:30px;text-align:center;margin-top:4px;min-height:40px;color:var(--kinari)}
+#total.small{font-family:"Zen Kaku Gothic New",sans-serif;font-weight:700;font-size:15px;color:var(--sub);padding-top:10px}
+#total.win{color:var(--gold);font-size:40px}
+#total.lose{color:var(--mult)}
+#bar{height:3px;background:rgba(0,0,0,.25);margin-top:6px;overflow:hidden}
+#barin{height:100%;width:0;background:var(--gold);transition:width .15s}
+#bar.gauge{height:14px;border-radius:7px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1.5px var(--stitch);position:relative;overflow:visible}
+#bar.gauge #barin{border-radius:7px;background:linear-gradient(90deg,#8a6a2a,var(--gold));transition:width .25s}
+#bar.gauge::after{content:'🎯';position:absolute;right:-6px;top:50%;transform:translateY(-50%);font-size:16px}
+#bar.gauge.over #barin{background:linear-gradient(90deg,var(--gold),#fff2b0);box-shadow:0 0 12px rgba(242,185,56,.9)}
+#bar.gauge.over{animation:gpulse 1s ease-in-out infinite}
+@keyframes gpulse{50%{box-shadow:inset 0 0 0 1.5px var(--gold),0 0 10px rgba(242,185,56,.6)}}
+.bump{transform:scale(1.2)}
+#combo{will-change:transform;position:absolute;left:0;right:0;top:64px;text-align:center;z-index:6;font-family:"Dela Gothic One",sans-serif;font-size:20px;pointer-events:none;opacity:0;transition:opacity .2s;-webkit-text-stroke:1px rgba(0,0,0,.35)}
+#combo.on{opacity:1}
+#combo.pump{animation:pump .18s ease-out}
+@keyframes pump{0%{transform:scale(1.5)}100%{transform:scale(1)}}
+#boardwrap{position:relative}
+#board{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;padding:18px;background:var(--ai-deep);border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--stitch)}
+.cell{aspect-ratio:1;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer;position:relative;outline:1.5px dashed var(--stitch);outline-offset:-1.5px;transition:background .15s}
+.cell.t{will-change:transform;background:var(--kinari);outline:none;box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 2px 0 rgba(0,0,0,.35)}
+.cell.can{background:rgba(242,185,56,.12);outline-color:rgba(242,185,56,.7)}
+.cell.new{animation:place .25s ease-out}
+.cell.fire{animation:fire .22s ease-out}
+.cell.fire.x{animation:firex .32s ease-out}
+@keyframes place{from{transform:scale(.4) rotate(-10deg)}to{transform:scale(1)}}
+@keyframes fire{0%{transform:scale(1)}40%{transform:scale(1.22) translateY(-3px)}100%{transform:scale(1)}}
+@keyframes firex{0%{transform:scale(1) rotate(0)}40%{transform:scale(1.4) rotate(-8deg);filter:drop-shadow(0 0 10px var(--x))}100%{transform:scale(1)}}
+#fx{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:visible}
+#fx line{stroke-linecap:round;opacity:0}
+@keyframes beam{0%{opacity:0;stroke-dashoffset:var(--len)}20%{opacity:1}60%{opacity:1;stroke-dashoffset:0}100%{opacity:0;stroke-dashoffset:0}}
+.pop{position:absolute;pointer-events:none;font-family:"Dela Gothic One",sans-serif;font-size:17px;transform:translate(-50%,-50%);opacity:0;will-change:transform,opacity;white-space:nowrap;z-index:5;-webkit-text-stroke:3px var(--sumi);paint-order:stroke fill}
+.pop.c{color:var(--chips)}.pop.m{color:var(--mult)}.pop.x{color:var(--x);font-size:24px}.pop.s{color:var(--gold)}.pop.n{color:var(--sub)}
+@keyframes pop{0%{opacity:0;margin-top:6px}15%{opacity:1}100%{opacity:0;margin-top:-34px}}
+.fly{position:fixed;z-index:25;pointer-events:none;font-family:"Dela Gothic One",sans-serif;font-size:16px;-webkit-text-stroke:3px var(--sumi);paint-order:stroke fill;transform:translate(-50%,-50%);will-change:transform,opacity}
+.shake{animation:shake .25s}
+@keyframes shake{25%{transform:translate(-4px,2px)}50%{transform:translate(4px,-2px)}75%{transform:translate(-2px,1px)}}
+.flash{animation:flash .6s ease-out}
+@keyframes flash{0%{background:rgba(242,185,56,.35)}100%{background:transparent}}
+#info{height:62px;overflow-y:auto;font-size:13px;color:var(--sub);line-height:1.6;padding:0 2px;scrollbar-width:none}
+#info::-webkit-scrollbar{display:none}
+#info b{color:var(--kinari)}
+#handrow{display:flex;gap:6px;align-items:flex-end}
+#hand{display:flex;gap:6px;flex:1;justify-content:center;min-height:96px;align-items:flex-end}
+.card{width:60px;height:86px;background:var(--kinari);color:var(--sumi);border:none;border-radius:4px;box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 3px 0 rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s;font-family:inherit}
+.card:nth-child(1){transform:rotate(-4deg)}.card:nth-child(3){transform:rotate(4deg)}.card:nth-child(4){transform:rotate(7deg)}
+.card{position:relative}
+.card .tag{position:absolute;top:5px;right:5px;font-size:9px;font-weight:700;line-height:1;padding:2px 3px;border-radius:2px;background:var(--ai);color:var(--kinari)}
+.card.t2{background:#e3e7f1}
+.card.t3{background:#f6e2a6;box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px #f6e2a6,inset 0 0 0 5px rgba(27,23,18,.35),0 3px 0 rgba(0,0,0,.4),0 0 12px rgba(242,185,56,.55)}
+.card.only .tag{background:var(--mult);color:#fff7ea}
+.card.t3 .tag{background:#b8860b;color:#fff7ea}
+.card .e{font-size:30px;line-height:1.2}.card .n{font-size:12px;font-weight:700;margin-top:4px}
+.card.sel{transform:translateY(-12px) rotate(0);box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 0 0 3px var(--gold),0 8px 0 rgba(0,0,0,.3)}
+#side{display:flex;flex-direction:column;gap:6px;align-items:center;width:68px;flex:none}
+#left{font-size:12px;color:var(--sub);text-align:center}
+.btn{font-family:inherit;cursor:pointer}
+.btn.sub{width:64px;height:64px;background:var(--mult);color:#fff7ea;border:none;border-radius:3px;font-weight:700;font-size:12px;line-height:1.35;box-shadow:inset 0 0 0 2px rgba(255,247,234,.85),inset 0 0 0 4px var(--mult),0 3px 0 rgba(0,0,0,.35)}
+.btn:disabled{opacity:.35}
+#overlay{position:fixed;inset:0;background:rgba(10,15,32,.78);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}
+#overlay.show{display:flex}
+
+.st-mvp{display:flex;gap:14px;align-items:center;justify-content:center;background:#f6e2a6;border:2px solid var(--sumi);border-radius:4px;padding:10px;margin:6px 0 10px;box-shadow:0 3px 0 var(--sumi)}
+.st-big{font-size:54px;line-height:1}
+.st-lbl{font-size:12px;font-weight:700;color:#7a6f5c}.st-name{font-family:"Dela Gothic One",sans-serif;font-size:24px}.st-sub{font-size:12px;color:#4d4538}
+.st-line{font-size:13px;margin:4px 2px}.st-flow{font-size:18px;letter-spacing:2px}
+.st-list{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.st-row{display:grid;grid-template-columns:20px 34px 1fr auto;gap:6px;align-items:center;background:#fffaf0;border:1.5px solid rgba(27,23,18,.35);border-radius:3px;padding:5px 8px}
+.st-row.mvp{border:2px solid var(--mult)}
+.st-rank{font-family:"Dela Gothic One",sans-serif;font-size:14px;color:#7a6f5c;text-align:center}
+.st-e{font-size:24px;text-align:center}
+.st-main b{font-size:14px}.st-main small{display:block;font-size:11px;color:#4d4538;line-height:1.4}
+.st-bar{display:block;height:5px;background:rgba(27,23,18,.1);border-radius:3px;margin-top:3px;overflow:hidden}.st-bar span{display:block;height:100%;background:var(--mult)}
+.st-pct{font-family:"Dela Gothic One",sans-serif;font-size:16px;min-width:44px;text-align:right}
+.st-note{font-size:11px;color:#7a6f5c;line-height:1.6;margin-top:10px}
+i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-height:1;color:#fff;padding:2px 3px;border-radius:2px;margin:0 1px}
+.card .els{margin-top:3px;line-height:1}
+.cell .els{position:absolute;left:3px;bottom:3px;display:flex;gap:1px;line-height:1}
+.cell .els i.el{font-size:8px;padding:1px 2px}
+.cell.swapsrc{box-shadow:0 0 0 3px var(--gold) !important}
+.cell.swapok{outline:2px dashed var(--gold);outline-offset:-2px}
+#hold{width:60px;height:86px;border-radius:4px;border:2px dashed var(--stitch);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--sub);font-size:10px;font-weight:700;cursor:pointer;background:none;font-family:inherit;flex:none;padding:0}
+#hold.has{border:none;background:var(--kinari);color:var(--sumi);box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 3px 0 rgba(0,0,0,.4)}
+#hold.sel{box-shadow:inset 0 0 0 2px var(--sumi),0 0 0 3px var(--gold);transform:translateY(-8px)}
+#hold.can{border-color:var(--gold);color:var(--gold)}
+#hold .e{font-size:26px;line-height:1.2}
+#hold .hl{font-size:9px;margin-top:2px}
+.btn.sub.mini{width:66px;height:48px;font-size:11px;line-height:1.4;padding:4px 0 0;white-space:nowrap;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.btn.sub.alt{background:var(--chips)}
+.btn.sub.on{background:var(--gold);color:var(--sumi)}
+#factor{display:flex;visibility:hidden;align-items:center;gap:10px;font-size:13px;color:var(--sub);height:26px;overflow:hidden;white-space:nowrap;padding:0 2px}
+#factor.on{visibility:visible}
+#factor .fk{font-weight:700;color:var(--kinari);background:rgba(236,224,198,.1);border:1px solid var(--stitch);border-radius:3px;padding:1px 8px}
+#factor .fv{font-family:"Dela Gothic One",sans-serif;font-size:18px;color:var(--gold);min-width:28px;display:inline-block;transition:transform .08s}
+#factor .fs{font-size:11px}
+.cell .badge{position:absolute;right:3px;top:3px;font-size:10px;font-weight:700;line-height:1;padding:2px 4px;border-radius:8px;background:var(--sumi);color:var(--kinari)}
+.cell .badge.g{background:#c99a00;color:#1b1712}
+.rk-row{display:grid;grid-template-columns:28px auto 1fr;gap:8px;align-items:center;background:#fffaf0;border:1.5px solid rgba(27,23,18,.35);border-radius:3px;padding:6px 8px}
+.rk-row.me{border:2px solid var(--mult);background:#fff1dc}
+.rk-n{font-family:"Dela Gothic One",sans-serif;font-size:18px;text-align:center}
+.rk-n.g1{color:#b8860b}.rk-n.g2{color:#7d8794}.rk-n.g3{color:#a0522d}
+.rk-s{font-family:"Dela Gothic One",sans-serif;font-size:17px}
+.rk-d{font-size:11px;color:#4d4538;line-height:1.5}
+.mini.s{grid-template-columns:repeat(5,9px);gap:1px;padding:2px}.mini.s span{width:9px;height:9px;font-size:7px;line-height:9px}
+.rk-me{text-align:center;font-family:"Dela Gothic One",sans-serif;font-size:18px;color:#c23b20;margin:6px 0}
+#hov{position:fixed;z-index:45;pointer-events:none;width:220px;background:var(--kinari);color:var(--sumi);border-radius:4px;padding:8px 10px;font-size:12.5px;line-height:1.55;
+  box-shadow:inset 0 0 0 2px var(--sumi),0 6px 18px rgba(0,0,0,.5);opacity:0;transform:translateY(4px);transition:opacity .1s,transform .1s}
+#hov.on{opacity:1;transform:none}
+#hov.t2{background:#e3e7f1}#hov.t3{background:#f6e2a6}
+#hov .hh{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+#hov .he{font-size:22px;line-height:1}
+#hov .hn{font-family:"Dela Gothic One",sans-serif;font-size:15px}
+#hov .ht{font-size:10px;font-weight:700;padding:1px 4px;border-radius:2px;background:var(--ai);color:var(--kinari)}
+#hov .ht.o{background:var(--mult);color:#fff7ea}
+#phase{font-weight:700;color:var(--kinari)}
+.cell.act{box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),0 0 0 2px var(--gold) !important}
+.cell .ord{position:absolute;left:3px;top:3px;font-size:10px;font-weight:700;line-height:1;padding:2px 4px;border-radius:8px;background:var(--mult);color:#fff7ea}
+#fuseline{fill:none;stroke:var(--mult);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2 9;opacity:.9}
+#board.fusing{touch-action:none}
+#board.fusing .cell.t{cursor:crosshair}
+.fusebar{display:flex;gap:8px;flex:1;justify-content:center;align-items:center}
+.fusebar .btn{height:58px;padding:0 16px;font-size:15px}
+.ring{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:4px solid var(--gold);pointer-events:none;z-index:6;box-shadow:0 0 14px rgba(242,185,56,.8)}
+.cell.evo{animation:evo .7s ease-out}
+@keyframes evo{0%{transform:scale(.6) rotate(-10deg);filter:brightness(2)}100%{transform:none;filter:none}}
+#evo{position:fixed;left:50%;top:14px;transform:translate(-50%,-20px);z-index:42;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;
+  background:#1f3a2a;color:#e8f5e4;border:2px solid #7fc48a;border-radius:6px;padding:8px 14px;font-size:13px;font-weight:700;max-width:92vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+#evo.on{opacity:1;transform:translate(-50%,0)}
+.cell .dir{position:absolute;right:2px;bottom:1px;font-size:15px;font-weight:900;line-height:1;color:#2b6cb0;text-shadow:0 0 2px #fff,0 0 2px #fff}
+#mile{position:fixed;inset:0;z-index:44;pointer-events:none;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:0}
+#mile .mk{font-family:"Dela Gothic One",sans-serif;font-size:min(13vw,64px);color:var(--gold);text-shadow:0 0 18px rgba(242,185,56,.9),0 4px 0 #1b1712;-webkit-text-stroke:2px #1b1712;paint-order:stroke fill;white-space:nowrap}
+#mile .ms{font-family:"Dela Gothic One",sans-serif;font-size:20px;color:#fff7ea;-webkit-text-stroke:1.5px #1b1712;paint-order:stroke fill;margin-top:6px}
+#mile .mf{font-size:14px;font-weight:700;color:#1b1712;background:var(--gold);padding:2px 10px;border-radius:12px;margin-top:8px}
+#mile.big .mk{background:linear-gradient(90deg,#ff5e5e,#ffd23f,#5ee38b,#5ec8ff,#b65eff);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:0;text-shadow:none;filter:drop-shadow(0 0 12px rgba(255,255,255,.7))}
+#flashall{position:fixed;inset:0;z-index:43;pointer-events:none;opacity:0;background:radial-gradient(circle,rgba(255,246,200,.95),rgba(242,185,56,.5) 40%,transparent 75%)}
+.ttl{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:9px;background:var(--ai);color:var(--kinari);vertical-align:middle}
+.ttl.ttl-rb{background:linear-gradient(90deg,#c2410c,#b8860b,#15803d,#1d4ed8,#7e22ce);color:#fff}
+.ttl.ttl-g{box-shadow:0 0 8px rgba(242,185,56,.9)}
+.mpop{position:fixed;z-index:44;pointer-events:none;font-family:"Dela Gothic One",sans-serif;font-size:18px;color:var(--gold);-webkit-text-stroke:1.5px #1b1712;paint-order:stroke fill}
+#tip{position:fixed;left:50%;top:46%;transform:translate(-50%,-50%) scale(.92);width:min(88vw,380px);z-index:40;pointer-events:none;opacity:0;transition:opacity .12s,transform .12s;
+  background:var(--kinari);color:var(--sumi);border-radius:6px;padding:18px 18px 16px;box-shadow:inset 0 0 0 3px var(--sumi),inset 0 0 0 6px var(--kinari),inset 0 0 0 7px rgba(27,23,18,.4),0 12px 40px rgba(0,0,0,.55);text-align:center}
+#tip.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#tip.t2{background:#e3e7f1}#tip.t3{background:#f6e2a6}
+#tip .te{font-size:58px;line-height:1.1}
+#tip .tels{margin:2px 0 4px}#tip .tels i.el{font-size:13px;padding:3px 7px}
+#tip .tn{font-family:"Dela Gothic One",sans-serif;font-size:24px;margin:4px 0 2px}
+#tip .tg{display:inline-block;font-size:12px;font-weight:700;padding:2px 7px;border-radius:2px;background:var(--ai);color:var(--kinari);margin:2px 3px}
+#tip .tg.o{background:var(--mult);color:#fff7ea}
+#tip .td{font-size:17px;line-height:1.7;margin-top:8px;font-weight:700}
+#tip .tx{font-size:13px;color:#5b5243;margin-top:8px;line-height:1.6}
+#tip .hint{font-size:11px;color:#7a6f5c;margin-top:10px}
+.menu{display:flex;flex-direction:column;gap:8px;margin:12px 0 4px}
+.menu .choice{text-align:center}
+.menu .choice small{display:block;font-size:12px;color:#5b5243;font-weight:500}
+.menu .danger{border-color:#c23b20;color:#c23b20;box-shadow:0 3px 0 #c23b20}
+.cl-h{font-family:"Dela Gothic One",sans-serif;font-size:15px;margin:14px 0 4px;padding-left:6px;border-left:4px solid var(--mult)}
+.cl-h small{font-family:"Zen Kaku Gothic New",sans-serif;font-size:11px;color:#7a6f5c;margin-left:6px}
+.cl{display:flex;flex-direction:column;gap:5px}
+.cl-i{display:grid;grid-template-columns:40px 1fr;gap:8px;align-items:center;background:#fffaf0;border:1.5px solid rgba(27,23,18,.35);border-radius:3px;padding:5px 8px;font-size:12.5px;line-height:1.5}
+.cl-i.t2{background:#e3e7f1}.cl-i.t3{background:#f6e2a6}
+.cl-i.mine{border:2px solid var(--mult)}
+.cl-i.off{opacity:.45}
+.cl-i .ce{font-size:26px;text-align:center}
+.cl-i b{font-size:13.5px}
+.tabs{display:flex;gap:6px;margin:4px 0 6px}
+.tabs button{flex:1;font-family:inherit;font-weight:700;font-size:13px;padding:7px 0;border:2px solid var(--sumi);background:#fffaf0;color:var(--sumi);border-radius:3px;cursor:pointer}
+.tabs button.on{background:var(--sumi);color:var(--kinari)}
+.slot{background:#fffaf0;border:2px solid var(--sumi);border-radius:3px;padding:10px;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;box-shadow:0 3px 0 var(--sumi)}
+.slot.empty{border-style:dashed;box-shadow:none}
+.mini{display:grid;grid-template-columns:repeat(5,15px);gap:2px;background:var(--ai-deep);padding:4px;border-radius:2px}
+.mini span{width:15px;height:15px;font-size:11px;line-height:15px;text-align:center;background:rgba(236,224,198,.12);border-radius:1px}
+.mini span.f{background:var(--kinari)}
+.slot .sn{font-family:"Dela Gothic One",sans-serif;font-size:15px}
+.slot .sd{font-size:12px;line-height:1.55;color:#4d4538}
+.slot .sb{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.slot .sb button{font-family:inherit;font-weight:700;font-size:12px;padding:5px 10px;border:2px solid var(--sumi);background:#fff;color:var(--sumi);border-radius:3px;cursor:pointer}
+.slot .sb button.p{background:var(--sumi);color:var(--kinari)}
+.slot .sb button.d{border-color:#c23b20;color:#c23b20}
+.slot .sb button:disabled{opacity:.35;cursor:default}
+.mini.l{grid-template-columns:repeat(5,22px)}.mini.l span{width:22px;height:22px;font-size:15px;line-height:22px}
+.slot .score{font-family:"Dela Gothic One",sans-serif;font-size:20px;color:var(--sumi)}
+.slot .res{font-size:11px;font-weight:700;padding:1px 5px;border-radius:2px;margin-left:4px;background:var(--gold);color:var(--sumi)}
+.slot .res.no{background:rgba(27,23,18,.12)}
+#modal{background:var(--kinari);color:var(--sumi);border-radius:5px;padding:20px 18px;max-width:400px;width:100%;max-height:90vh;overflow:auto;box-shadow:inset 0 0 0 3px var(--sumi),inset 0 0 0 6px var(--kinari),inset 0 0 0 7px rgba(27,23,18,.4)}
+#modal h2{font-family:"Dela Gothic One",sans-serif;font-weight:400;margin:4px 0 10px;font-size:24px;text-align:center}
+#modal p{font-size:14px;line-height:1.75;margin:6px 0}
+#modal .lead{text-align:center;color:#5b5243}
+.choices{display:flex;flex-direction:column;gap:8px;margin:12px 0 4px}
+.choice{background:#fffaf0;border:2px solid var(--sumi);border-radius:3px;padding:10px 12px;cursor:pointer;text-align:left;color:var(--sumi);font-family:inherit;font-size:14px;line-height:1.55;box-shadow:0 3px 0 var(--sumi)}
+.choice:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sumi)}
+.choice b{font-size:16px}
+.themes{display:flex;gap:10px;margin:4px -18px 10px;padding:4px 18px 8px;overflow-x:auto;scroll-snap-type:x mandatory}
+.themes .theme{flex:none;width:168px;scroll-snap-align:start}
+.trow-h{font-size:12px;font-weight:700;color:#7a6f5c;margin-top:10px;border-bottom:1px dashed rgba(27,23,18,.3);padding-bottom:2px}
+#modal:has(.themes){max-width:min(760px,96vw)}
+.theme.lockd{opacity:.55;cursor:default;background:#e9e2d2}
+.theme.adv{background:#efe6f4;border-color:#5b3a6e;box-shadow:0 3px 0 #5b3a6e}
+.theme{background:#fffaf0;border:2px solid var(--sumi);border-radius:4px;padding:12px 8px 10px;cursor:pointer;color:var(--sumi);font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 3px 0 var(--sumi);text-align:center}
+.theme:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sumi)}
+.theme .te{font-size:26px;letter-spacing:2px}
+.theme .tn{font-family:"Dela Gothic One",sans-serif;font-size:17px}
+.theme .lv{font-size:11px;font-weight:700;color:#7a6f5c}
+.theme .td{font-size:12px;line-height:1.5;color:#4d4538}
+.theme .tx{font-size:11px;font-weight:700;color:#7a6f5c}
+.theme .tr{font-size:11px;font-weight:700;margin-top:2px;padding:2px 6px;border-left:3px solid var(--mult);background:rgba(27,23,18,.06)}
+.textbtn{display:block;margin:10px auto 0;background:none;border:none;font-family:inherit;font-weight:700;font-size:13px;color:var(--sumi);text-decoration:underline;cursor:pointer}
+.big{font-family:"Dela Gothic One",sans-serif;font-size:40px;text-align:center;color:var(--sumi);margin:6px 0}
+.tilelist{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;font-size:13px;margin:8px 0;line-height:1.5}
+.burst{position:fixed;pointer-events:none;font-size:26px;z-index:30;animation:burst 1s ease-out forwards}
+@keyframes burst{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
+@media (prefers-reduced-motion:reduce){.card,.card:nth-child(n){transform:none}.shake{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>連鎖の庭</h1>
+    <button class="iconbtn" id="soundBtn" aria-label="音の切り替え">音 ON</button>
+    <button class="iconbtn" id="menuBtn" aria-label="メニュー">☰ メニュー</button>
+  </header>
+  <div id="status"><span>ラウンド<b id="round">1</b> / 8</span><span>いのち<b id="lives">🍃🍃🍃</b></span><span id="phase"></span><span>最高<b id="best">-</b></span><span class="tg">目標<b id="target">0</b></span></div>
+  <div id="relics"></div>
+  <div id="factor"></div>
+  <div id="scorebox">
+    <div id="eq"><div class="numwrap"><small>点</small><div class="num" id="chips">0</div></div><span class="op">×</span><div class="numwrap"><small>倍率</small><div class="num" id="mult">1</div></div></div>
+    <div id="total">0</div><div id="combo"></div>
+    <div id="bar"><div id="barin"></div></div>
+  </div>
+  <div id="boardwrap"><div id="board"></div><svg id="fx"></svg></div>
+  <div id="info">タイルを1枚選んで、盤面の空いているマスに置こう。</div>
+  <div id="handrow">
+    <button id="hold" aria-label="とっておき">とっておき</button>
+    <div id="hand"></div>
+    <div id="side">
+      <div id="left"></div>
+      <button class="btn sub mini" id="rerollBtn">引き直す</button>
+      <button class="btn sub mini alt" id="swapBtn">植え替え</button>
+    </div>
+  </div>
+</div>
+<div id="tip" aria-live="polite"></div>
+<div id="hov"></div>
+<div id="evo"></div>
+<div id="mile"></div>
+<div id="flashall"></div>
+<div id="overlay"><div id="modal"></div></div>
+<script>
+const N = 5;
+const TILES = {
+  sprout: { e: '🌱', name: '芽', w: 10, desc: '+3点。隣の💧1つにつき さらに+3点' },
+  water:  { e: '💧', name: '水', w: 10, desc: '+2点。隣の🌱1つにつき +1倍' },
+  fire:   { e: '🔥', name: '火', w: 8,  desc: '+2倍。隣の🔥1つにつき さらに+2倍' },
+  rock:   { e: '🪨', name: '岩', w: 6,  desc: '+8点。隣の🔥1つにつき 熱+2（焼け石。火の塊に混ぜると熱が上がる）' },
+  bee:    { e: '🐝', name: '蜂', w: 5,  desc: '+3点。盤面の🌱1つにつき +3点。隣の花（🌱🌸🌻🪷）1つにつき +1倍' },
+  moon:   { e: '🌙', name: '月', w: 3,  desc: '倍率を×1.25。上下左右が全部埋まっていれば×1.5。後に発動するほど強い' },
+  star:   { e: '⭐', name: '星', w: 3,  desc: '上下左右のタイルを もう一度発動させる。隣の⭐1つにつき 回数+1（星を固めるほど増える）' },
+  mirror: { e: '🪞', name: '鏡', w: 3,  desc: '左隣のタイルと同じ効果で発動する' },
+  // ── ラウンド3から出る（tier 2）──
+  sakura: { e: '🌸', name: '桜', w: 4, tier: 2, desc: '+4点。上下左右のタイルの種類1つにつき +1倍' },
+  mush:   { e: '🍄', name: '茸', w: 4, tier: 2, desc: '盤面のタイル1枚につき +2点。庭が埋まるほど強い' },
+  thunder:{ e: '⚡', name: '雷', w: 3, tier: 2, desc: '同じ縦の列のタイルを全部 もう一度発動させる。同じ列の⚡1つにつき 回数+1' },
+  // ── ラウンド5から出る（tier 3）──
+  rainbow:{ e: '🌈', name: '虹', w: 3, tier: 3, desc: '盤面のタイルの種類1つにつき 倍率を×0.2ずつ上乗せ（8種類なら×2.6）。ただし効くのは盤面で最初の🌈だけ' },
+  // ── 庭ごとの専用タイル（only の庭でしか出ない）──
+  lotus:  { e: '🪷', name: '蓮',   w: 5, tier: 2, from: 1, only: 'water', desc: '倍率を×1.5。隣の💧1つにつき さらに×0.25' },
+  bamboo: { e: '🎋', name: '竹',   w: 5, tier: 2, from: 1, only: 'water', desc: '+4点と+2倍。置いてから経ったラウンド1つにつき さらに+2倍（長く残すほど育つ）' },
+  bigtree:{ e: '🌳', name: '大樹', w: 3, tier: 3, from: 3, only: 'water', desc: '盤面の「草」「水」のタイル（🌳以外）1つにつき 倍率×0.09ずつ上乗せ。さらに置いてから経ったラウンド1つにつき ×0.14（育てるほど掛け算が膨らむ）' },
+  sprig:  { e: '🌿', name: '若葉', w: 0, born: true, desc: '+6点。隣の💧1つにつき +4点（🌱が2ラウンド残ると育つ。水辺の庭では さらに3ラウンドで🌳大樹に）' },
+  ash:    { e: '🌫️', name: '灰',   w: 0, born: true, desc: '+4点。隣の🌱🌿1つにつき +2倍（大きな火が芽を燃やした焼け跡。肥えている）' },
+  sun:    { e: '☀️', name: '日',   w: 3, tier: 3, from: 3, only: 'water', desc: '盤面の🌱・💧・🪷を全部 もう一度発動させる' },
+  lantern:{ e: '🏮', name: '提灯', w: 5, tier: 2, from: 1, only: 'fire',  desc: '盤面の🔥1つにつき +8点' },
+  yam:    { e: '🍠', name: '焼き芋', w: 5, tier: 2, from: 1, only: 'fire', desc: 'いまの「熱」1つにつき +5点。熱は このラウンドで それまでに🔥が発動した回数（右下に置くほど熱い）' },
+  volcano:{ e: '🌋', name: '火山', w: 5, tier: 3, from: 3, only: 'fire', desc: 'いまの熱1つにつき 倍率×0.14ずつ上乗せ（🔥をたくさん燃やした後ろに置くほど強い）' },
+  dragon: { e: '🐉', name: '竜',   w: 5, tier: 3, from: 3, only: 'fire',  desc: '隣の🔥1つにつき 倍率を×1.8' },
+  owl:    { e: '🦉', name: '梟',   w: 5, tier: 2, from: 1, only: 'night', desc: '+8点。斜め4方向のタイルを もう一度発動させる。斜めの⭐🦉1つにつき 回数+1' },
+  scope:  { e: '🔭', name: '望遠鏡', w: 5, tier: 2, from: 1, only: 'night', desc: '同じ縦の列と横の列にある⭐1つにつき 倍率を×0.15ずつ上乗せ' },
+  venus:  { e: '🌟', name: '明星', w: 3, tier: 3, from: 3, only: 'night', desc: '盤面の「天」のタイル（🌟以外）1つにつき 倍率×0.02ずつ上乗せ。同じ縦横の列にある「天」は さらに×0.03ずつ' },
+  comet:  { e: '🌠', name: '流星', w: 3, tier: 3, from: 3, only: 'night', desc: '盤面の🌙を全部 もう一度発動させる' },
+  sunflwr:{ e: '🌻', name: '向日葵', w: 6, tier: 2, from: 1, only: 'bee', desc: '+6点。隣の🐝と🌱1つにつき +3倍' },
+  nest:   { e: '🪺', name: '巣',   w: 5, tier: 2, from: 1, only: 'bee', desc: '隣の🐝の「群れ」（上下左右につながった🐝全部）1匹につき +5点と+2倍' },
+  ladybug:{ e: '🐞', name: '天道虫', w: 3, tier: 3, from: 3, only: 'bee', desc: '隣の🐝の群れ（つながった🐝全部）1匹につき 倍率×0.75ずつ上乗せ' },
+  gear:   { e: '⚙️', name: '歯車',   w: 6, tier: 2, from: 0, only: 'gear', desc: '+4点。導火線で⚙️が続くほど 倍率×0.4ずつ上乗せ（3つ続けば ×2.2）。導火線の外では ×1.1' },
+  switch: { e: '🔀', name: '転轍機', w: 4, tier: 2, from: 0, only: 'gear', desc: '+5点。導火線で この次に通るタイルを 2回多く発動させる' },
+  compass:{ e: '🧭', name: '羅針盤', w: 3, tier: 3, from: 2, only: 'gear', desc: '導火線が曲がった回数1つにつき 倍率×0.4ずつ上乗せ' },
+  target: { e: '🎯', name: '的',     w: 3, tier: 3, from: 2, only: 'gear', desc: '導火線の終点にあれば、導火線の長さ1マスにつき 倍率×0.35ずつ上乗せ。終点でなければ何もしない' },
+  kite:   { e: '🪁', name: '凧',     w: 5, tier: 2, from: 0, only: 'wind', arrow: true, desc: '矢印の先に一直線に並ぶタイルを全部 もう一度発動させる（タップで向きを変えられる）' },
+  leaf:   { e: '🍃', name: '木の葉', w: 6, tier: 2, from: 0, only: 'wind', arrow: true, desc: '+6点と+1倍。矢印の先の隣のタイルを 1回多く発動させる（追い風）' },
+  tornado:{ e: '🌪️', name: '竜巻',   w: 3, tier: 3, from: 2, only: 'wind', arrow: true, desc: '盤面で自分と同じ向きの矢印タイル1つにつき 倍率×0.25ずつ上乗せ' },
+  koi:    { e: '🎏', name: '鯉のぼり', w: 3, tier: 3, from: 2, only: 'wind', arrow: true, desc: '矢印の先に途切れず並ぶタイル1つにつき 倍率×0.26ずつ上乗せ' },
+  queen:  { e: '👑', name: '女王蜂', w: 5, tier: 3, from: 3, only: 'bee', desc: '盤面の🐝1つにつき 倍率を×0.25ずつ上乗せ。さらに🐝を全部 もう一度発動させる' },
+};
+// ===== 属性（どのタイルにも1〜2個）=====
+const ELEM = { 草: '#4f9d5d', 水: '#3a86c8', 火: '#d9532b', 地: '#8a6a45', 虫: '#c99a00', 天: '#6a5acd', 術: '#a0509a' };
+const TAGS = {
+  sprout: ['草'], water: ['水'], fire: ['火'], rock: ['地'], bee: ['虫'], moon: ['天'], star: ['天'], mirror: ['術'],
+  sakura: ['草'], mush: ['草', '地'], thunder: ['天', '術'], rainbow: ['天', '水'],
+  lotus: ['草', '水'], bamboo: ['草'], sun: ['天', '火'], lantern: ['火', '術'], yam: ['火', '地'], dragon: ['火', '天'],
+  owl: ['天', '虫'], kite: ['天'], leaf: ['草'], tornado: ['天', '地'], koi: ['水', '天'], gear: ['術', '地'], switch: ['術'], compass: ['術', '天'], target: ['術'], sprig: ['草'], ash: ['地', '火'], bigtree: ['草'], volcano: ['火', '地'], venus: ['天'], ladybug: ['虫'], scope: ['術', '天'], comet: ['天'], sunflwr: ['草', '虫'], nest: ['虫', '草'], queen: ['虫'],
+};
+const tagsOf = k => TAGS[k] || [];
+const shareTag = (a, b) => a && b && tagsOf(a).some(t => tagsOf(b).includes(t));
+const tagHtml = k => tagsOf(k).map(t => `<i class="el" style="background:${ELEM[t]}">${t}</i>`).join('');
+// tier ごとに出始めるラウンド（0始まり）
+const TIER_START = { 1: 0, 2: 2, 3: 4 };
+const tierOf = k => TILES[k].tier || 1;
+// 出始めるラウンド（専用タイルは from で早め）
+const startOf = k => TILES[k].from ?? TIER_START[tierOf(k)];
+const RELICS = {
+  steam:        { e: '♨️', name: '蒸気',     desc: '🔥は、隣の💧1つにつき さらに+3倍' },
+  greenhouse:   { e: '🏡', name: '温室', only: 'water',     desc: '🌱の基本点が +3 → +8。💧は隣の🌱1つにつき +1倍 → +2倍' },
+  corners:      { e: '📐', name: '四隅の祝福', desc: '四隅のタイルは2回発動' },
+  constellation:{ e: '🌌', name: '星座', only: 'night',     desc: '⭐は +6点と+1倍 もくれる' },
+  fullmoon:     { e: '🌕', name: '満月', only: 'night',     desc: '🌙が ×1.25→×1.4、全部埋まりなら ×1.5→×1.8' },
+  swarm:        { e: '🍯', name: '群れ', only: 'bee',     desc: '🐝は、隣の🐝1つにつき さらに +6点、倍率×0.18ずつ上乗せ（隣に🐝が2匹なら×1.36）' },
+  wildfire:     { e: '🌋', name: '燃え広がり', only: 'fire', desc: '🔥の連鎖ボーナスが +2倍 → +4倍。🔥は +6点＋いまの熱の分の点 もくれる' },
+  stoneheart:   { e: '💎', name: '石の心',   desc: '🪨が +1倍 もくれる' },
+  rowchord:     { e: '🎼', name: '和音',     desc: '横一列が全部埋まると、その列のタイルは2回発動' },
+  wide:         { e: '🎴', name: '広い手札', desc: '選べるタイルが 3枚 → 4枚' },
+  reroll:       { e: '🎲', name: 'さいころ', desc: '引き直しが ラウンドごとに +2回' },
+  rain:         { e: '🌧️', name: '恵みの雨', only: 'water', desc: '💧は、盤面の💧1つにつき さらに+2点' },
+  dew:          { e: '🫧', name: '朝露', only: 'water',     desc: '💧の基本点が +2 → +6' },
+  tide:         { e: '🌊', name: '潮',       desc: '🌙は、隣の💧1つにつき さらに×0.5' },
+  newmoon:      { e: '🌑', name: '新月', only: 'night',     desc: '🌙は、盤面の🌙1つにつき さらに×0.05' },
+  kiln:         { e: '🏺', name: '窯', only: 'fire',       desc: '🔥は、盤面の🪨1つにつき さらに+2倍' },
+  wall:         { e: '🧱', name: '石垣',     desc: '🪨は、隣の🪨1つにつき さらに+8点' },
+  kaleido:      { e: '🔮', name: '万華鏡', only: 'night',   desc: '🪞が左隣だけでなく、右隣のタイルも真似て発動する' },
+  windchime:    { e: '🎐', name: '風鈴',     desc: '再発動で動いたタイルは、そのたびに +4点' },
+  echo:         { e: '🔔', name: '余韻',     desc: '最後に発動するタイル（いちばん右下のタイル）は さらに2回発動' },
+  hanami:       { e: '🍡', name: '花見',     desc: '🌸は、周りのタイルの種類1つにつき +1倍 → +2倍' },
+  compost:      { e: '🍂', name: '腐葉土',   desc: '🍄は、盤面のタイル1枚につき +2点 → +4点' },
+  rod:          { e: '🗼', name: '避雷針',   desc: '⚡雷が、縦の列に加えて横の列も もう一度発動させる' },
+  fertilizer:   { e: '🪴', name: '肥料', only: 'water',     desc: '🌱は、置いてから経ったラウンド1つにつき さらに+3点' },
+  moss:         { e: '🌿', name: '苔むす', only: 'water',   desc: '置いてから3ラウンド以上たったタイルは 1回多く発動' },
+  firewood:     { e: '🪵', name: '薪', only: 'fire',       desc: '🔥が発動するたび、熱が +1 → +2' },
+  sparks:       { e: '🎇', name: '火の粉', only: 'fire',   desc: '熱が10以上になったあとで発動する🔥は、倍率×1.2も' },
+  latenight:    { e: '🌃', name: '夜更かし', desc: '下の2行のタイルは 1回多く発動' },
+  dusk:         { e: '🕯️', name: '宵', only: 'night',       desc: '🌙は、同じ縦の列の⭐1つにつき さらに×0.3' },
+  bouquet:      { e: '💐', name: '花束', only: 'bee',     desc: '🐝の受粉が、隣の花1つにつき +1倍 → +2倍' },
+  swarming:     { e: '🧺', name: '分蜂', only: 'bee',     desc: '6匹以上つながった🐝の群れは、群れの🐝が全部 1回多く発動' },
+  nectar:       { e: '🌼', name: '蜜源', only: 'bee',     desc: '🐝は、盤面の🌱1つにつき +3点 → +6点' },
+  hive:         { e: '🛖', name: '巣箱', only: 'bee',     desc: '🐝は、盤面の🐝1つにつき +1倍' },
+  frog:         { e: '🐸', name: '蛙',       only: 'water', desc: '🪷蓮は、隣の🌱1つにつき さらに×0.25' },
+  tsuyu:        { e: '☔', name: '梅雨',     only: 'water', desc: '💧は、置いてから経ったラウンド1つにつき +1倍' },
+  forge:        { e: '⚒️', name: '鍛冶場',   only: 'fire',  desc: '🪨岩は、いまの熱1つにつき +5点' },
+  hanabi:       { e: '🎆', name: '花火大会', only: 'fire',  desc: '🏮提灯が、盤面の🔥1つにつき +8点 → +16点' },
+  ring:         { e: '🪐', name: '土星の輪', only: 'night', desc: '🔭望遠鏡が、斜めの線の上の⭐も数える' },
+  moonlight:    { e: '🌝', name: '月光',     only: 'night', desc: '⭐は、隣の🌙1つにつき +2倍' },
+  pollen:       { e: '🌺', name: '花粉',     only: 'bee',   desc: '🌱は、隣の🐝1つにつき +4点' },
+  buzz:         { e: '🎶', name: '羽音',     only: 'bee',   desc: '🪺巣が、群れの🐝1匹につき +2倍 → +3倍' },
+  harmony:      { e: '☯️', name: '調和',     desc: '共鳴が、同じ属性の隣1つにつき +1倍 → +2倍' },
+  hyakka:       { e: '💮', name: '百花',     desc: '「草」のタイルは、盤面の「草」1つにつき +2点' },
+  gogyo:        { e: '🧭', name: '五行',     desc: '盤面の属性の種類1つにつき、最後に倍率×0.15ずつ上乗せ（7種類なら×2.05）' },
+  kinship:      { e: '🪢', name: '縁',       desc: '共鳴は、斜めの隣も数える' },
+  lamp:         { e: '🪔', name: '灯明',     desc: '導火（導火線でつないだタイル1マスごとの倍率）が +1倍 → +2倍' },
+  firecracker:  { e: '🧨', name: '爆竹',     desc: '完走（全部のタイルを一筆書き）の倍率が ×1.5 → ×2.5' },
+  thread:       { e: '🧵', name: '糸',       desc: '導火線が曲がるたび +3倍' },
+  clockwork:    { e: '🔩', name: 'からくり', only: 'gear', desc: '導火線の 3・6・9…番目のタイルは 1回多く発動' },
+  oil:          { e: '🛢️', name: '油差し',   only: 'gear', desc: '⚙️歯車の掛け算が、続く⚙️1つにつき ×0.4 → ×0.55' },
+  key:          { e: '🗝️', name: '鍵',       only: 'gear', desc: '🎯的の掛け算が、導火線1マスにつき ×0.35 → ×0.5' },
+  metronome:    { e: '🎼', name: '拍子',     only: 'gear', desc: '導火線が 4マスごとに曲がっていると（4・8・12…番目が角）、その角のタイルは 2回多く発動' },
+  tailwind:     { e: '🧣', name: '追い風',   only: 'wind', desc: '導火線で進む向きと 矢印の向きが同じタイルは 1回多く発動' },
+  fan:          { e: '🪭', name: '扇',       only: 'wind', desc: '向きを変えられる回数が 1ラウンド 3回 → 5回' },
+  sail:         { e: '⛵', name: '帆',       only: 'wind', desc: '🪁凧が、矢印の先のタイルを 2回ずつ発動させる' },
+  windmill:     { e: '🎡', name: '風車',     only: 'wind', desc: '🍃木の葉の追い風が 1回 → 2回多く発動' },
+  clover:       { e: '🍀', name: '四つ葉',   desc: '上下左右が全部埋まっているタイルは、発動するたび +5点' },
+  whirl:        { e: '🌀', name: '渦',       desc: 'まん中のマスのタイルは さらに2回発動' },
+  vanguard:     { e: '🚩', name: '先駆け',   desc: '最初に発動するタイル（いちばん左上のタイル）は さらに2回発動' },
+  tea:          { e: '🍵', name: '茶室',     desc: '盤面のタイルが8種類以上なら、最後に倍率×2' },
+  jelly:        { e: '🫙', name: 'ローヤルゼリー', only: 'bee', desc: '👑女王蜂の掛け算が 🐝1つにつき ×0.25 → ×0.4' },
+};
+const THEMES = {
+  water: { e: '🌱', name: '水辺の庭', lv: 'ふつう', tiles: '🌱💧', boost: { sprout: 2.0, water: 2.0 }, relic: 'greenhouse', elems: ['草', '水'], factor: '育つ', desc: '芽と水をとなり合わせて育てる。<b>置いてからのラウンド数</b>で🎋竹が育ち、🪷蓮が掛け算、☀️日で庭ごともう一度咲かせる。' },
+  fire:  { e: '🔥', name: '火の庭',   lv: 'やさしい', tiles: '🔥', boost: { fire: 2.2 }, relic: 'wildfire', elems: ['火'], factor: '熱', desc: '火を固めて倍率を跳ね上げる。🔥が燃えるほど<b>熱</b>がたまり、後ろの🍠焼き芋が熱で稼ぐ。🐉竜は火の塊を掛け算に。' },
+  night: { e: '🌙', name: '夜の庭',   lv: 'ふつう', tiles: '⭐🪞', boost: { moon: 1.0, star: 1.1, mirror: 1.1 }, relic: 'constellation', elems: ['天'], factor: '列', desc: '星と鏡と月の庭。<b>縦横の列</b>に星を並べて🔭望遠鏡で掛け、🌠流星で月を何度も起こす。' },
+  gear:  { e: '⚙️', name: 'からくりの庭', lv: 'ふつう', locked: 2, tiles: '⚙️🔀🪞', boost: { mirror: 1.6, thunder: 1.6, rock: 1.2 }, relic: 'clockwork', elems: ['術', '地'], factor: '道筋', desc: '上級者向け。<b>導火線の道筋</b>がすべて。⚙️歯車を一直線につなぎ、🔀転轍機の次に強いタイルを通し、🧭羅針盤のために曲がり、🎯的で締める。' },
+  wind:  { e: '🌬️', name: '風の庭', lv: 'ふつう', locked: 3, tiles: '🪁🍃🌪️', boost: { star: 1.3, sprout: 1.2 }, relic: 'tailwind', elems: ['天', '草'], factor: '風向き', desc: '上級者向け。矢印タイルの<b>向き</b>がすべて。タップで向きを変え（1ラウンド3回）、🪁凧の風を強いタイルの列に通し、🍃木の葉で追い風を送る。' },
+  bee:   { e: '🐝', name: '蜂の庭',   lv: 'ふつう', tiles: '🐝🌱', boost: { bee: 3.0, sprout: 1.6 }, relic: 'swarm', elems: ['虫'], factor: '群れ', desc: '蜂を寄せ集める庭。<b>つながった蜂の群れ</b>が大きいほど🪺巣が稼ぎ、👑女王蜂が群れごと掛け算にする。' },
+};
+const THEME_REL = 1.25;
+const TARGETS = [100, 1500, 10000, 100000, 10000000, 3000000000, 100000000000000, 1e23];
+// 最後のラウンドだけ4枚置けるので、全8ラウンドでちょうど25マス（庭がぴったり埋まる）
+const perRound = r => r === TARGETS.length - 1 ? 4 : 3;
+const LIVES = 3;
+
+function neighbors(i, diag) {
+  const r = Math.floor(i / N), c = i % N, res = [];
+  const d = [[-1,0],[1,0],[0,-1],[0,1]];
+  if (diag) d.push([-1,-1],[-1,1],[1,-1],[1,1]);
+  for (const [dr, dc] of d) { const rr = r + dr, cc = c + dc; if (rr >= 0 && rr < N && cc >= 0 && cc < N) res.push(rr * N + cc); }
+  return res;
+}
+
+function diagonals(i) {
+  const r = Math.floor(i / N), c = i % N, res = [];
+  for (const [dr, dc] of [[-1,-1],[-1,1],[1,-1],[1,1]]) { const rr = r + dr, cc = c + dc; if (rr >= 0 && rr < N && cc >= 0 && cc < N) res.push(rr * N + cc); }
+  return res;
+}
+
+// ===== 昼と夜：ラウンドごとに入れ替わる。昼は 草・火・虫、夜は 天・水・術 のタイルが1回多く発動。最後のラウンドは黄昏（両方）
+const PHASE = { day: { e: '☀️', name: '昼', tags: ['草', '火', '虫'] }, night: { e: '🌙', name: '夜', tags: ['天', '水', '術'] }, dusk: { e: '🌆', name: '黄昏', tags: ['草', '火', '虫', '天', '水', '術'] } };
+const phaseOf = round => round >= 7 ? 'dusk' : round % 2 === 0 ? 'day' : 'night';
+const phaseActive = (t, ph) => !!t && tagsOf(t).some(x => PHASE[ph].tags.includes(x));
+const RETRIG = new Set(['star', 'thunder', 'owl', 'sun', 'comet', 'queen', 'kite']);
+// ===== 風向き：矢印タイルの向き 0=↑ 1=→ 2=↓ 3=← =====
+const ARROWS = ['↑', '→', '↓', '←'];
+const stepDir = (i, d) => { const r = Math.floor(i / N), c = i % N; const nr = r + [-1, 0, 1, 0][d], nc = c + [0, 1, 0, -1][d]; return nr >= 0 && nr < N && nc >= 0 && nc < N ? nr * N + nc : -1; };
+const isArrow = t => !!(t && TILES[t] && TILES[t].arrow);
+function scoreBoard(board, relics, ctx) {
+  const R = new Set(relics);
+  const ev = [];
+  let chips = 0, mult = 1;
+  const adj = (i, t) => neighbors(i).filter(j => board[j] === t).length;
+  const countAll = t => board.filter(x => x === t).length;
+  let curBy = null;
+  const adjList = (i, t) => neighbors(i).filter(j => board[j] === t);
+  const pushEv = o => { o.heat = heat; ev.push(o); };
+  const add = (i, kind, v, src, links) => {
+    if (kind === 'c') chips += v; else if (kind === 'm') mult += v; else if (kind === 'x') mult *= v;
+    pushEv({ i, kind, v, chips, mult, src, links: links || [], by: curBy });
+  };
+  const fired = {};
+  // 新しい要素：育つ（置いてからのラウンド数）／熱（このラウンドで🔥が発動した回数）／群れ（つながった🐝の数）
+  const ageOf = i => ctx && ctx.ages && ctx.ages[i] != null ? Math.max(0, ctx.round - ctx.ages[i]) : 0;
+  let heat = 0;
+  const groupOf = new Array(N * N).fill(-1), groupSize = [];
+  for (let i = 0; i < N * N; i++) if (board[i] === 'bee' && groupOf[i] < 0) {
+    const g = groupSize.length, st = [i]; groupOf[i] = g; let n = 0;
+    while (st.length) { const j = st.pop(); n++; for (const k of neighbors(j)) if (board[k] === 'bee' && groupOf[k] < 0) { groupOf[k] = g; st.push(k); } }
+    groupSize.push(n);
+  }
+  function trig(i, type, depth) {
+    if (depth > 4) return;
+    fired[i] = (fired[i] || 0) + 1;
+    if (R.has('windchime') && curBy != null && depth > 0) add(i, 'c', 4, 'windchime', []);
+    if (R.has('clover')) { const nb = neighbors(i); if (nb.length === 4 && nb.every(j => board[j])) add(i, 'c', 5, 'clover', []); }
+    switch (type) {
+      case 'sprout': add(i, 'c', (R.has('greenhouse') ? 8 : 3) + 3 * adj(i, 'water') + (R.has('fertilizer') ? 3 * ageOf(i) : 0) + (R.has('pollen') ? 4 * adj(i, 'bee') : 0), type, adjList(i, 'water').concat(R.has('pollen') ? adjList(i, 'bee') : [])); break;
+      case 'water': {
+        let c = R.has('dew') ? 6 : 2; if (R.has('rain')) c += 2 * countAll('water');
+        add(i, 'c', c, type);
+        if (R.has('tsuyu') && ageOf(i)) add(i, 'm', ageOf(i), type);
+        const s = adj(i, 'sprout'); if (s) add(i, 'm', s * (R.has('greenhouse') ? 2 : 1), type, adjList(i, 'sprout'));
+        break;
+      }
+      case 'fire': {
+        heat += R.has('firewood') ? 2 : 1;
+        if (R.has('wildfire')) add(i, 'c', 6 + heat, type);
+        let m = 2 + adj(i, 'fire') * (R.has('wildfire') ? 4 : 2);
+        if (R.has('kiln')) m += 2 * countAll('rock');
+        if (R.has('steam')) m += 3 * adj(i, 'water');
+        add(i, 'm', m, type, adjList(i, 'fire').concat(R.has('steam') ? adjList(i, 'water') : [])); if (R.has('sparks') && heat >= 10) add(i, 'x', 1.2, type); break;
+      }
+      case 'rock': {
+        // 焼け石：隣の🔥の数だけ熱を足す
+        const hf = adj(i, 'fire'); if (hf) { heat += hf * (R.has('firewood') ? 4 : 2); add(i, 'c', 0, type, adjList(i, 'fire')); }
+        if (R.has('forge') && heat) add(i, 'c', 5 * heat, type); if (R.has('wall') && adj(i, 'rock')) add(i, 'c', 8 + 8 * adj(i, 'rock'), type, adjList(i, 'rock')); else add(i, 'c', 8, type); if (R.has('stoneheart')) add(i, 'm', 1, type); break; }
+      case 'bee': {
+        let c = 3 + (R.has('nectar') ? 6 : 3) * countAll('sprout'); if (R.has('swarm')) c += 6 * adj(i, 'bee');
+        add(i, 'c', c, type, board.map((t, j) => t === 'sprout' ? j : -1).filter(j => j >= 0).concat(R.has('swarm') ? adjList(i, 'bee') : []));
+        // 受粉：隣の花ごとに倍率
+        const fl = neighbors(i).filter(j => ['sprout', 'sakura', 'sunflwr', 'lotus'].includes(board[j]));
+        if (fl.length) add(i, 'm', fl.length * (R.has('bouquet') ? 2 : 1), type, fl);
+        if (R.has('swarm') && adj(i, 'bee')) add(i, 'x', Math.round((1 + 0.18 * adj(i, 'bee')) * 100) / 100, type, adjList(i, 'bee'));
+        if (R.has('hive')) add(i, 'm', countAll('bee'), type, board.map((t, j) => t === 'bee' && j !== i ? j : -1).filter(j => j >= 0));
+        break;
+      }
+      case 'moon': {
+        const nb = neighbors(i); const full = nb.length === 4 && nb.every(j => board[j]);
+        let x = full ? (R.has('fullmoon') ? 1.8 : 1.5) : (R.has('fullmoon') ? 1.4 : 1.25);
+        if (R.has('dusk')) { for (let r = 0; r < N; r++) if (board[r * N + i % N] === 'star') x += 0.3; }
+        let ln = full ? nb.slice() : [];
+        if (R.has('tide')) { x += 0.5 * adj(i, 'water'); ln = ln.concat(adjList(i, 'water')); }
+        if (R.has('newmoon')) { x += 0.05 * countAll('moon'); }
+        add(i, 'x', Math.round(x * 100) / 100, type, [...new Set(ln)]); break;
+      }
+      case 'sakura': {
+        const nb = neighbors(i).filter(j => board[j]);
+        const kinds = new Set(nb.map(j => board[j])).size;
+        add(i, 'c', 4, type);
+        if (kinds) add(i, 'm', kinds * (R.has('hanami') ? 2 : 1), type, nb);
+        break;
+      }
+      case 'mush': {
+        const all = board.map((t, j) => t && j !== i ? j : -1).filter(j => j >= 0);
+        add(i, 'c', (R.has('compost') ? 4 : 2) * (all.length + 1), type, all); break;
+      }
+      case 'rainbow': {
+        // 🌈は盤面のいちばん最初の1枚だけが効く（重ねても伸びない）
+        if (board.indexOf('rainbow') !== i) { pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy }); break; }
+        const kinds = new Set(board.filter(x => x)).size;
+        add(i, 'x', Math.round((1 + 0.2 * kinds) * 10) / 10, type, []); break;
+      }
+      case 'bigtree': {
+        const gw = board.filter(t => t !== 'bigtree' && tagsOf(t).some(x => x === '草' || x === '水')).length;
+        add(i, 'x', Math.round((1 + 0.09 * gw + 0.14 * ageOf(i)) * 100) / 100, type, []); break;
+      }
+      case 'volcano': {
+        add(i, 'x', Math.round((1 + 0.14 * heat) * 100) / 100, type, board.map((t, j) => t === 'fire' || t === 'volcano' ? j : -1).filter(j => j >= 0 && j < i).slice(-8)); break;
+      }
+      case 'venus': {
+        const sky = board.filter(t => t !== 'venus' && tagsOf(t).includes('天')).length;
+        const ln = []; for (let k = 0; k < N; k++) { const a = Math.floor(i / N) * N + k, b = k * N + i % N; if (a !== i && tagsOf(board[a]).includes('天')) ln.push(a); if (b !== i && tagsOf(board[b]).includes('天')) ln.push(b); }
+        add(i, 'x', Math.round((1 + 0.02 * sky + 0.03 * ln.length) * 100) / 100, type, ln); break;
+      }
+      case 'ladybug': {
+        const gs = new Set(neighbors(i).filter(j => board[j] === 'bee').map(j => groupOf[j]));
+        let n = 0; gs.forEach(g => n += groupSize[g]);
+        if (n) add(i, 'x', Math.round((1 + 0.75 * n) * 100) / 100, type, board.map((t, j) => t === 'bee' && gs.has(groupOf[j]) ? j : -1).filter(j => j >= 0));
+        else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+      case 'sprig': add(i, 'c', 6 + 4 * adj(i, 'water'), type, adjList(i, 'water')); break;
+      case 'ash': {
+        add(i, 'c', 4, type);
+        const g = neighbors(i).filter(j => board[j] === 'sprout' || board[j] === 'sprig');
+        if (g.length) add(i, 'm', 2 * g.length, type, g);
+        break;
+      }
+      case 'gear': {
+        add(i, 'c', 4, type);
+        const pk2 = pathPos[i];
+        if (pk2 == null) { add(i, 'x', 1.1, type); break; }
+        let a = pk2, b = pk2; while (a > 0 && board[path[a - 1]] === 'gear') a--; while (b < path.length - 1 && board[path[b + 1]] === 'gear') b++;
+        const run = b - a + 1, per = R.has('oil') ? 0.55 : 0.4;
+        add(i, 'x', Math.round((1 + per * run) * 100) / 100, type, path.slice(a, b + 1).filter(j => j !== i)); break;
+      }
+      case 'switch': add(i, 'c', 5, type); break;
+      case 'compass': {
+        let turns = 0; for (let k = 1; k < path.length - 1; k++) if (path[k + 1] - path[k] !== path[k] - path[k - 1]) turns++;
+        if (turns) add(i, 'x', Math.round((1 + 0.4 * turns) * 100) / 100, type, []); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+      case 'target': {
+        if (path.length && path[path.length - 1] === i) add(i, 'x', Math.round((1 + (R.has('key') ? 0.5 : 0.35) * path.length) * 100) / 100, type, [path[path.length - 2]].filter(j => j != null));
+        else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+      case 'leaf': add(i, 'c', 6, type); add(i, 'm', 1, type); break;
+      case 'tornado': {
+        const same = board.map((t, j) => j !== i && isArrow(t) && dirOf(j) === dirOf(i) ? j : -1).filter(j => j >= 0);
+        if (same.length) add(i, 'x', Math.round((1 + 0.25 * same.length) * 100) / 100, type, same); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+      case 'koi': {
+        const ln = []; let j = stepDir(i, dirOf(i)); while (j >= 0 && board[j]) { ln.push(j); j = stepDir(j, dirOf(i)); }
+        if (ln.length) add(i, 'x', Math.round((1 + 0.26 * ln.length) * 100) / 100, type, ln); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+      case 'bamboo': {
+        add(i, 'c', 4, type);
+        add(i, 'm', 2 + 2 * ageOf(i), type);
+        break;
+      }
+      case 'yam': {
+        if (heat) add(i, 'c', 5 * heat, type, board.map((t, j) => t === 'fire' ? j : -1).filter(j => j >= 0 && j < i).slice(-8));
+        else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+      case 'scope': {
+        const ln = []; for (let k = 0; k < N; k++) { const a = Math.floor(i / N) * N + k, b = k * N + i % N; if (a !== i && board[a] === 'star') ln.push(a); if (b !== i && board[b] === 'star') ln.push(b); }
+        if (R.has('ring')) for (const [dr, dc] of [[1,1],[1,-1],[-1,1],[-1,-1]]) { let r = Math.floor(i / N) + dr, c = i % N + dc; while (r >= 0 && r < N && c >= 0 && c < N) { if (board[r * N + c] === 'star') ln.push(r * N + c); r += dr; c += dc; } }
+        if (ln.length) add(i, 'x', Math.round((1 + 0.15 * ln.length) * 100) / 100, type, ln);
+        else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+      case 'nest': {
+        const gs = new Set(neighbors(i).filter(j => board[j] === 'bee').map(j => groupOf[j]));
+        let n = 0; gs.forEach(g => n += groupSize[g]);
+        const ln = board.map((t, j) => t === 'bee' && gs.has(groupOf[j]) ? j : -1).filter(j => j >= 0);
+        if (n) { add(i, 'c', 5 * n, type, ln); add(i, 'm', (R.has('buzz') ? 3 : 2) * n, type, ln); }
+        else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+      case 'lotus': {
+        const w = adj(i, 'water'), sp = R.has('frog') ? adj(i, 'sprout') : 0;
+        add(i, 'x', 1.5 + 0.25 * (w + sp), type, adjList(i, 'water').concat(sp ? adjList(i, 'sprout') : [])); break;
+      }
+      case 'lantern': {
+        const fs = board.map((t, j) => t === 'fire' ? j : -1).filter(j => j >= 0);
+        if (fs.length) add(i, 'c', (R.has('hanabi') ? 16 : 8) * fs.length, type, fs); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+      case 'dragon': {
+        const f = adj(i, 'fire');
+        if (f) add(i, 'x', Math.round(Math.pow(1.8, f) * 100) / 100, type, adjList(i, 'fire')); else pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+      case 'sunflwr': {
+        add(i, 'c', 6, type);
+        const nb = adjList(i, 'bee').concat(adjList(i, 'sprout')); if (nb.length) add(i, 'm', 3 * nb.length, type, nb);
+        break;
+      }
+      // もう一度発動させる系（星・雷・梟・日・流星・女王蜂）
+      case 'star': case 'thunder': case 'owl': case 'sun': case 'comet': case 'queen': case 'kite': {
+        const RE = RETRIG;
+        let tg;
+        if (type === 'star' && R.has('constellation')) { add(i, 'c', 6, type); add(i, 'm', 1, type); }
+        if (type === 'star' && R.has('moonlight') && adj(i, 'moon')) add(i, 'm', 2 * adj(i, 'moon'), type, adjList(i, 'moon'));
+        if (type === 'owl') add(i, 'c', 8, type);
+        if (type === 'queen') { const bs = countAll('bee'); if (bs) add(i, 'x', Math.round((1 + (R.has('jelly') ? 0.4 : 0.25) * bs) * 100) / 100, type); }
+        if (type === 'star') tg = neighbors(i);
+        else if (type === 'thunder') { tg = []; for (let r = 0; r < N; r++) if (r !== Math.floor(i / N)) tg.push(r * N + i % N); if (R.has('rod')) for (let c = 0; c < N; c++) if (c !== i % N) tg.push(Math.floor(i / N) * N + c); }
+        else if (type === 'owl') tg = diagonals(i);
+        else if (type === 'kite') { tg = []; let j = stepDir(i, dirOf(i)); while (j >= 0) { tg.push(j); j = stepDir(j, dirOf(i)); } }
+        else { const want = type === 'sun' ? ['sprout', 'water', 'lotus'] : type === 'comet' ? ['moon'] : ['bee']; tg = board.map((t, j) => want.includes(t) ? j : -1).filter(j => j >= 0); }
+        // 再発動系（⭐⚡🦉☀️🌠👑）どうしは発動させ合わない。代わりに「回数」を増やし合う（無限ループにならない）
+        //   ⭐：1＋隣の⭐の数　⚡：1＋同じ列の⚡の数　🦉：1＋斜めの⭐🦉の数　☀️🌠👑：1回
+        let times = 1;
+        if (type === 'star') times += neighbors(i).filter(j => board[j] === 'star').length;
+        else if (type === 'thunder') { for (let r = 0; r < N; r++) if (r !== Math.floor(i / N) && board[r * N + i % N] === 'thunder') times++; if (R.has('rod')) for (let c = 0; c < N; c++) if (c !== i % N && board[Math.floor(i / N) * N + c] === 'thunder') times++; }
+        else if (type === 'owl') times += diagonals(i).filter(j => board[j] === 'star' || board[j] === 'owl').length;
+        else if (type === 'kite' && R.has('sail')) times = 2;
+        const boosters = type === 'star' ? neighbors(i).filter(j => board[j] === 'star') : [];
+        tg = tg.filter(j => board[j] && j !== i && !RE.has(board[j]));
+        if (!tg.length) { pushEv({ i, kind: 'n', chips, mult, src: type, links: boosters, by: curBy }); break; }
+        pushEv({ i, kind: 's', chips, mult, src: type, links: tg, by: curBy, times, boosters });
+        const saved = curBy;
+        for (let t = 0; t < times; t++) for (const j of tg) { curBy = i; trig(j, board[j], depth + 1); }
+        curBy = saved;
+        break;
+      }
+      case 'mirror': {
+        const sides = [i % N > 0 ? i - 1 : -1];
+        if (R.has('kaleido')) sides.push(i % N < N - 1 ? i + 1 : -1);
+        let any = false;
+        for (const j of sides) {
+          const L = j >= 0 ? board[j] : null;
+          if (!L || L === 'mirror') continue;
+          // 再発動で動かされた🪞は、再発動系（⭐など）をまねない（鏡と星で無限に増えないように）
+          if (depth > 0 && RETRIG.has(L)) continue;
+          any = true; pushEv({ i, kind: 'r', chips, mult, src: type, as: L, links: [j], by: curBy }); trigAs(i, L, depth + 1);
+        }
+        if (!any) pushEv({ i, kind: 'n', chips, mult, src: type, links: [], by: curBy });
+        break;
+      }
+    }
+  }
+  // 鏡が別のタイルとして発動するとき（星を真似たら、鏡の位置から周りを発動）
+  function trigAs(i, L, depth) { trig(i, L, depth); }
+  const rowFull = r => { for (let c = 0; c < N; c++) if (!board[r * N + c]) return false; return true; };
+  const corners = [0, N - 1, N * (N - 1), N * N - 1];
+  // 発動の順番：導火線（ctx.order）で描いた順 → 残りはいつもの順（左上→右下）
+  const order = [];
+  if (ctx && ctx.order) for (const i of ctx.order) if (board[i] && !order.includes(i)) order.push(i);
+  for (let i = 0; i < N * N; i++) if (board[i] && !order.includes(i)) order.push(i);
+  let firstTile = order.length ? order[0] : -1, lastTile = order.length ? order[order.length - 1] : -1;
+  // 導火線（上下左右につながっている所まで）。導火・伝導・曲がり角・完走
+  const path = [];
+  if (ctx && ctx.order) for (const i of ctx.order) { if (!board[i] || path.includes(i)) break; if (path.length && !neighbors(path[path.length - 1]).includes(i)) break; path.push(i); }
+  const pathPos = {}; path.forEach((i, k) => pathPos[i] = k);
+  // なぞった所だけ発動（なぞっている間のゲージ用）
+  if (ctx && ctx.onlyPath) { order.splice(0, order.length, ...path); firstTile = path.length ? path[0] : -1; lastTile = path.length ? path[path.length - 1] : -1; }
+  const dirOf = i => (ctx && ctx.dirs && ctx.dirs[i] != null) ? ctx.dirs[i] : 1;
+  const ph = ctx && ctx.phase;
+  for (const i of order) {
+    let reps = 1;
+    if (ph && phaseActive(board[i], ph)) reps++;
+    const pk = pathPos[i];
+    // 🍃追い風：矢印がこのマスを向いている木の葉の数だけ多く発動
+    { const lv = neighbors(i).filter(j => board[j] === 'leaf' && stepDir(j, dirOf(j)) === i); if (lv.length) { reps += lv.length * (R.has('windmill') ? 2 : 1); pushEv({ i, kind: 'n', lbl: `🍃追い風×${lv.length}`, chips, mult, src: 'leaf', links: lv, by: null }); } }
+    // 🧣追い風（遺物）：導火線で次へ進む向き（終点は来た向き）と矢印が同じ
+    if (R.has('tailwind') && pk != null && isArrow(board[i])) { const nx = path[pk + 1], pv = path[pk - 1]; const d = nx != null ? [0, 1, 2, 3].find(q => stepDir(i, q) === nx) : pv != null ? [0, 1, 2, 3].find(q => stepDir(pv, q) === i) : null; if (d != null && d === dirOf(i)) reps++; }
+    if (pk > 0 && board[path[pk - 1]] === 'switch') { reps += 2; pushEv({ i, kind: 'n', lbl: '🔀×2回', chips, mult, src: 'switch', links: [path[pk - 1]], by: null }); }
+    if (pk != null && R.has('clockwork') && (pk + 1) % 3 === 0) reps++;
+    if (pk != null && R.has('metronome') && (pk + 1) % 4 === 0 && pk < path.length - 1 && path[pk + 1] - i !== i - path[pk - 1]) reps += 2;
+    if (pk > 0 && shareTag(board[path[pk - 1]], board[i])) { reps++; pushEv({ i, kind: 'n', lbl: '⚡伝導', chips, mult, src: 'fuse', links: [path[pk - 1]], by: null }); }
+    if (R.has('corners') && corners.includes(i)) reps++;
+    if (R.has('rowchord') && rowFull(Math.floor(i / N))) reps++;
+    if (R.has('echo') && i === lastTile) reps += 2;
+    if (R.has('moss') && ageOf(i) >= 3) reps++;
+    if (R.has('whirl') && i === 12) reps += 2;
+    if (R.has('vanguard') && i === firstTile) reps += 2;
+    if (R.has('latenight') && Math.floor(i / N) >= N - 2) reps++;
+    if (R.has('swarming') && board[i] === 'bee' && groupSize[groupOf[i]] >= 6) reps++;
+    for (let k = 0; k < reps; k++) {
+      trig(i, board[i], 0);
+      // 共鳴：同じ属性を持つ隣のタイル1つにつき +1倍（最初の発動のときだけ）
+      if (k === 0 && pk != null) {
+        const saved = curBy; curBy = null;
+        add(i, 'm', R.has('lamp') ? 2 : 1, 'fuse', pk > 0 ? [path[pk - 1]] : []);
+        if (R.has('thread') && pk > 0 && pk < path.length - 1) { const a = path[pk - 1], b = path[pk + 1]; if (b - i !== i - a) add(i, 'm', 3, 'fuse', [a, b]); }
+        curBy = saved;
+      }
+      if (k === 0) {
+        const nb = neighbors(i, R.has('kinship')).filter(j => shareTag(board[i], board[j]));
+        if (nb.length) { curBy = null; add(i, 'm', nb.length * (R.has('harmony') ? 2 : 1), 'resonance', nb); }
+        if (R.has('hyakka') && tagsOf(board[i]).includes('草')) { const g = board.filter(t => tagsOf(t).includes('草')).length; if (g) add(i, 'c', 2 * g, 'hyakka', []); }
+      }
+    }
+  }
+  if (path.length >= 5 && path.length === order.length) { curBy = null; const x = R.has('firecracker') ? 2.5 : 1.5; add(path[path.length - 1], 'x', x, 'fuse', [path[path.length - 2]]); ev[ev.length - 1].lbl = `🏁完走 ×${x}`; }
+  if (R.has('gogyo') && lastTile >= 0) { const el = new Set(); board.forEach(t => tagsOf(t).forEach(x => el.add(x))); if (el.size) { curBy = null; add(lastTile, 'x', Math.round((1 + 0.15 * el.size) * 100) / 100, 'gogyo', []); } }
+  if (R.has('tea') && lastTile >= 0 && new Set(board.filter(x => x)).size >= 8) { curBy = null; add(lastTile, 'x', 2, 'tea', []); }
+  let conduct = 0; for (let k = 1; k < path.length; k++) if (shareTag(board[path[k - 1]], board[path[k]])) conduct++;
+  return { ev, chips, mult, total: Math.floor(chips * mult), fired, heat, groupOf, groupSize, order, path, conduct };
+}
+
+// ===== 生きている庭：ラウンドの合間に盤面が変わる（純粋関数。nextRound は次のラウンド番号）
+//  ① 🌱は置いてから2ラウンドで🌿若葉に。水辺の庭では🌿がさらに3ラウンドで🌳大樹に
+//  ② 🔥が2つ以上隣り合う「大きな火」は、隣の🌱🌿を1つ燃やして🌫️灰にする
+//  ③ 🐝は、いちばん近い花（🌱🌿🌸🌻🪷）へ、空いているマスを1歩進む
+function evolve(board, ages, nextRound, theme) {
+  const b = board.slice(), a = ages.slice(), ch = [];
+  const age = i => a[i] != null ? nextRound - a[i] : 0;
+  for (let i = 0; i < N * N; i++) {
+    if (b[i] === 'sprout' && age(i) >= 2) { b[i] = 'sprig'; ch.push({ kind: 'grow', i, from: 'sprout', to: 'sprig' }); }
+    else if (theme === 'water' && b[i] === 'sprig' && age(i) >= 5) { b[i] = 'bigtree'; ch.push({ kind: 'grow', i, from: 'sprig', to: 'bigtree' }); }
+  }
+  const burnt = new Set();
+  for (let i = 0; i < N * N; i++) {
+    if (b[i] !== 'fire') continue;
+    const fn = neighbors(i).filter(j => b[j] === 'fire').length;
+    if (fn < 2) continue;
+    const tg = neighbors(i).find(j => (b[j] === 'sprout' || b[j] === 'sprig') && !burnt.has(j));
+    if (tg != null) { ch.push({ kind: 'burn', i: tg, by: i, from: b[tg], to: 'ash' }); b[tg] = 'ash'; a[tg] = nextRound; burnt.add(tg); }
+  }
+  const FLOWER = ['sprout', 'sprig', 'sakura', 'sunflwr', 'lotus'];
+  const flowers = () => b.map((t, j) => FLOWER.includes(t) ? j : -1).filter(j => j >= 0);
+  const dist = (x, y) => Math.abs(Math.floor(x / N) - Math.floor(y / N)) + Math.abs(x % N - y % N);
+  const moved = new Set();
+  for (let i = 0; i < N * N; i++) {
+    if (b[i] !== 'bee' || moved.has(i)) continue;
+    const fl = flowers(); if (!fl.length) continue;
+    const d0 = Math.min(...fl.map(f => dist(i, f)));
+    if (d0 <= 1) continue;
+    const step = neighbors(i).filter(j => !b[j]).map(j => [j, Math.min(...fl.map(f => dist(j, f)))]).filter(([, d]) => d < d0).sort((x, y) => x[1] - y[1])[0];
+    if (step) { const j = step[0]; b[j] = 'bee'; a[j] = a[i]; b[i] = null; a[i] = null; moved.add(j); ch.push({ kind: 'move', i: j, from: i, to: 'bee' }); }
+  }
+  return { board: b, ages: a, changes: ch };
+}
+
+// ラウンドが進むほど強いタイルが出る。tier の開始ラウンドで出始め、その後どんどん出やすくなる。
+function tileWeight(k, round, theme) {
+  const t = TILES[k], tier = tierOf(k);
+  if (t.only && t.only !== theme) return 0;
+  const start = startOf(k);
+  if (round < start) return 0;
+  let f = 1;
+  if (tier > 1) f = Math.min(1.8, 0.7 + 0.35 * (round - start));
+  else if (['moon', 'star', 'mirror'].includes(k)) f = 1 + 0.08 * round;
+  else f = Math.max(0.55, 1 - 0.06 * round); // 基本タイルは後半すこし減る
+  const boost = theme ? THEMES[theme].boost[k] || 1 : 1;
+  // テーマに関係があるカード（庭の属性を持つカード）は、少しだけ出やすい
+  const related = theme && tagsOf(k).some(x => THEMES[theme].elems.includes(x)) ? THEME_REL : 1;
+  return t.w * f * boost * related;
+}
+function drawTile(rng, round, theme) {
+  const keys = Object.keys(TILES), w = k => tileWeight(k, round, theme);
+  const tot = keys.reduce((s, k) => s + w(k), 0);
+  let x = rng() * tot; for (const k of keys) { x -= w(k); if (x < 0) return k; } return keys[0];
+}
+
+
+// 遺物の3択。1つは今の庭の専用遺物（残っていれば）、残りは「共通＋この庭の専用」からランダム
+function relicOptions(owned, theme, rng) {
+  const shuffle = a => { for (let j = a.length - 1; j > 0; j--) { const r = Math.floor(rng() * (j + 1)); [a[j], a[r]] = [a[r], a[j]]; } return a; };
+  // 共通の遺物と、いまの庭の専用遺物だけが出る
+  const avail = shuffle(Object.keys(RELICS).filter(k => !owned.includes(k) && (!RELICS[k].only || RELICS[k].only === theme)));
+  const fit = theme ? avail.filter(k => RELICS[k].only === theme) : [];
+  const opts = fit.length ? [fit[0]] : [];
+  for (const k of avail) { if (opts.length >= 3) break; if (!opts.includes(k)) opts.push(k); }
+  return shuffle(opts);
+}
+
+// ===== 表示まわり =====
+const $ = id => document.getElementById(id);
+// ===== 桁の節目と称号 =====
+const MILES = [[4, '万'], [8, '億'], [12, '兆'], [16, '京'], [20, '垓'], [24, '𥝱'], [28, '穣'], [32, '溝'], [36, '澗'], [40, '正'], [44, '載'], [48, '極'], [52, '恒河沙'], [56, '阿僧祇'], [60, '那由他'], [64, '不可思議'], [68, '無量大数'], [100, 'グーゴル'], [200, 'グーゴルの2乗'], [308, '∞']];
+const lg = n => !isFinite(n) ? 999 : n > 0 ? Math.log10(n) : 0;
+const mileOf = n => { let m = null; for (const x of MILES) if (lg(n) >= x[0]) m = x; return m; };
+const titleOf = n => { const m = mileOf(n); return m ? m[1] + '級' : '芽吹き'; };
+const titleHtml = n => { const m = mileOf(n); const big = m && m[0] >= 68; return `<span class="ttl${big ? ' ttl-rb' : ''}${m && m[0] >= 100 ? ' ttl-g' : ''}">${titleOf(n)}</span>`; };
+const fmt = n => {
+  if (!isFinite(n)) return '∞';
+  if (n < 1e4) return Number.isInteger(n) ? n.toLocaleString() : (Math.round(n * 10) / 10).toString();
+  if (n >= 1e72) { const e = Math.floor(Math.log10(n)); return (n / Math.pow(10, e)).toFixed(2) + '×10^' + e; }
+  const units = [[1e68, '無量大数'], [1e64, '不可思議'], [1e60, '那由他'], [1e56, '阿僧祇'], [1e52, '恒河沙'], [1e48, '極'], [1e44, '載'], [1e40, '正'], [1e36, '澗'], [1e32, '溝'], [1e28, '穣'], [1e24, '𥝱'], [1e20, '垓'], [1e16, '京'], [1e12, '兆'], [1e8, '億'], [1e4, '万']];
+  for (const [v, u] of units) if (n >= v) { const x = n / v; return (x < 100 ? x.toFixed(x < 10 ? 2 : 1) : Math.floor(x).toLocaleString()) + u; }
+};
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let best = 0; try { best = +localStorage.getItem('synergy-best') || 0; } catch (e) {}
+
+// ===== 音 =====
+let ac = null, soundOn = true;
+function tone(freq, type = 'triangle', dur = .09, vol = .12) {
+  if (!soundOn) return;
+  try {
+    if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, ac.currentTime); g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + dur);
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + dur);
+  } catch (e) {}
+}
+const note = k => 262 * Math.pow(2, Math.min(k, 30) / 12);
+
+// ===== ゲームの状態 =====
+let S;
+const ctxNow = () => ({ ages: S.ages, round: S.round, order: S.fuse ? S.fuse.path : null, phase: phaseOf(S.round), dirs: S.dirs });
+// ===== 統計：どのタイルが活躍したか =====
+// 活躍度：そのラウンドの点数（点×倍率）が増えた分を、タイルごとに割り振る。
+//   点  … log(点の合計) を、足した点の割合で分ける
+//   倍率… +倍は「足す前→足した後」の伸び、×はそのまま、を log で数える（合計すると log(倍率) になる）
+// ラウンドごとに割合（合計100%）を出し、点数の桁（log10）で重みをつけて平均する
+function newStats() { return { types: {}, rounds: [], wsum: 0 }; }
+function collectStats(res) {
+  const st = S.stats, board = S.board, round = {};
+  const T = k => (st.types[k] = st.types[k] || { fires: 0, c: 0, m: 0, x: 1, re: 0, w: 0, best: 0 });
+  // 再発動で起きた分は、動かしたタイル（⭐など）と動いたタイルで半分ずつ
+  const credit = (e, v) => {
+    const k = board[e.i], b = e.by != null ? board[e.by] : null;
+    if (b && b !== k) { round[k] = (round[k] || 0) + v / 2; round[b] = (round[b] || 0) + v / 2; }
+    else round[k] = (round[k] || 0) + v;
+  };
+  let m = 1, combo = 0, logC = Math.log(Math.max(1, res.chips));
+  for (const e of res.ev) {
+    const k = board[e.i]; if (!k) continue;
+    const t = T(k);
+    if (e.links.length || e.by != null) combo++;
+    if (e.kind === 'c') { t.c += e.v; if (res.chips > 1) credit(e, logC * e.v / res.chips); }
+    else if (e.kind === 'm') { t.m += e.v; credit(e, Math.log((m + e.v) / m)); m += e.v; }
+    else if (e.kind === 'x') { t.x *= e.v; credit(e, Math.log(e.v)); m *= e.v; }
+    else if (e.kind === 's') t.re++;
+  }
+  for (const i in res.fired) if (board[i]) T(board[i]).fires += res.fired[i];
+  const tot = Object.values(round).reduce((a, b) => a + Math.max(0, b), 0);
+  const w = Math.max(1, Math.log10(Math.max(1, res.total)));
+  if (tot > 0) for (const k in round) { const sh = Math.max(0, round[k]) / tot; T(k).w += sh * w; T(k).best = Math.max(T(k).best, sh); }
+  st.wsum += w;
+  st.rounds.push({ score: res.total, combo, mvp: tot > 0 ? Object.keys(round).sort((a, b) => round[b] - round[a])[0] : null });
+}
+function statRanking() {
+  const st = S.stats; if (!st || !st.wsum) return [];
+  return Object.entries(st.types).map(([k, t]) => ({ k, ...t, share: t.w / st.wsum })).sort((a, b) => b.share - a.share);
+}
+function statsHtml() {
+  const st = S.stats, rk = statRanking();
+  if (!rk.length) return '<p class="lead">まだ発動していない。</p>';
+  const top = rk[0], maxSh = top.share;
+  const bestRound = st.rounds.reduce((b, r, i) => r.combo > (b ? b.combo : -1) ? Object.assign({ i }, r) : b, null);
+  const rows = rk.filter(r => r.share > 0.001 || r.fires).map((r, n) => {
+    const T = TILES[r.k], parts = [];
+    if (r.c) parts.push(`+${fmt(r.c)}点`);
+    if (r.m) parts.push(`+${fmt(r.m)}倍`);
+    if (r.x > 1.0001) parts.push(`×${fmt(r.x)}`);
+    if (r.re) parts.push(`再発動 ${r.re}回`);
+    return `<div class="st-row${n === 0 ? ' mvp' : ''}"><span class="st-rank">${n + 1}</span><span class="st-e">${T.e}</span>
+      <span class="st-main"><b>${T.name}</b><small>発動 ${r.fires}回${parts.length ? '・' + parts.join('・') : ''}</small>
+      <span class="st-bar"><span style="width:${Math.max(2, r.share / maxSh * 100)}%"></span></span></span>
+      <span class="st-pct">${(r.share * 100).toFixed(r.share < .1 ? 1 : 0)}%</span></div>`;
+  }).join('');
+  const flow = st.rounds.map((r, i) => `<span title="ラウンド${i + 1}">${r.mvp ? TILES[r.mvp].e : '・'}</span>`).join('');
+  return `<div class="st-mvp"><div class="st-big">${TILES[top.k].e}</div><div><div class="st-lbl">いちばん活躍</div><div class="st-name">${TILES[top.k].name}</div><div class="st-sub">活躍度 ${(top.share * 100).toFixed(0)}%・発動 ${top.fires}回</div></div></div>
+    <div class="st-line">ラウンドごとの主役：<span class="st-flow">${flow}</span></div>
+    ${bestRound ? `<div class="st-line">いちばんの連鎖：ラウンド${bestRound.i + 1}の <b>${bestRound.combo}連鎖</b>（${fmt(bestRound.score)}点）</div>` : ''}
+    <div class="st-list">${rows}</div>
+    <p class="st-note">活躍度＝各ラウンドの点数（点×倍率）が、そのタイルのおかげでどれだけ増えたかの割合。もう一度発動させた分は、動かしたタイルと動いたタイルで半分ずつ。後半の大きいラウンドほど重く数える。</p>`;
+}
+function newGame(theme) {
+  S = { board: Array(N * N).fill(null), relics: theme ? [THEMES[theme].relic] : [], theme, round: 0, placed: 0, hand: [], sel: -1, rerolls: 0, busy: false, lives: LIVES, ages: Array(N * N).fill(null), stats: newStats(), held: null, swaps: 1, swap: null, holdUsed: false, fuse: null, dirs: Array(N * N).fill(null), turns: 3 };
+  startRound();
+}
+// ===== 解放：からくりの庭は、ほかの庭を2つ全クリアすると遊べる =====
+function clearedSet() { try { return new Set(JSON.parse(localStorage.getItem('rensa-cleared') || '[]')); } catch (e) { return new Set(); } }
+function markCleared(th) { const c = clearedSet(); const before = c.size; c.add(th); try { localStorage.setItem('rensa-cleared', JSON.stringify([...c])); } catch (e) {} return c; }
+function isUnlocked(k) { const t = THEMES[k]; if (!t.locked) return true; const c = clearedSet(); c.delete(k); return c.size >= t.locked; }
+function themeCard(k) {
+  const t = THEMES[k];
+  if (!isUnlocked(k)) return `<button class="theme lockd" disabled><span class="te">🔒</span><span class="tn">？？？の庭</span><span class="lv">ほかの庭を ${t.locked}つ 全クリアで解放（いま ${Math.min(t.locked, [...clearedSet()].filter(x => x !== k).length)}/${t.locked}）</span><span class="td">${t.factor === '道筋' ? '導火線の道筋で勝負する' : '矢印の向きで勝負する'}、上級者向けの庭。</span></button>`;
+  return `<button class="theme${t.locked ? ' adv' : ''}" data-k="${k}"><span class="te">${t.tiles}</span><span class="tn">${t.name}</span><span class="lv">立ち上がり：${t.lv}</span><span class="td">${t.desc}</span><span class="tr">${RELICS[t.relic].e} ${RELICS[t.relic].name}</span><span class="tx">要素「${t.factor}」・専用 ${Object.keys(TILES).filter(j => TILES[j].only === k).map(j => TILES[j].e).join('')}</span></button>`;
+}
+function chooseTheme() {
+  $('factor').className = '';
+  menuOpen = false;
+  S = { board: Array(N * N).fill(null), relics: [], round: 0, placed: 0, hand: [], sel: -1, rerolls: 0, busy: true, lives: LIVES, ages: Array(N * N).fill(null), stats: newStats(), held: null, swaps: 1, swap: null, holdUsed: false, fuse: null, dirs: Array(N * N).fill(null), turns: 3 };
+  render(); setNums(0, 1); $('total').textContent = '';
+  modal(`<h2>どんな庭にする？</h2><p class="lead">選んだ庭のタイルが多く出て、その庭の遺物を1つ持って始まる。</p>
+    <div class="trow-h">最初から遊べる庭</div>
+    <div class="themes">${Object.keys(THEMES).filter(k => !THEMES[k].locked).map(themeCard).join('')}</div>
+    <div class="trow-h">ほかの庭をクリアすると解放される庭</div>
+    <div class="themes">${Object.keys(THEMES).filter(k => THEMES[k].locked).sort((a, b) => THEMES[a].locked - THEMES[b].locked).map(themeCard).join('')}</div>
+    <button class="textbtn" id="howto">遊び方を見る</button>`);
+  document.querySelectorAll('.theme:not(.lockd)').forEach(b => b.onclick = () => {
+    ensureAudio(); closeModal(); newGame(b.dataset.k); tone(660, 'triangle', .15, .1);
+    info(`<b>${THEMES[b.dataset.k].name}</b>で始める。タイルを1枚選んで、空いているマスに置こう。`);
+  });
+  $('howto').onclick = () => help(true);
+}
+const handSize = () => S.relics.includes('wide') ? 4 : 3;
+function startRound() {
+  S.fuse = null; S.order = null; S.turns = S.relics.includes('fan') ? 5 : 3; if (!S.dirs) S.dirs = Array(N * N).fill(null);
+  const fl = $('fuseline'); if (fl) fl.remove();
+  S.swaps = 1; S.swap = null; S.holdUsed = false;
+  S.placed = 0; S.rerolls = 1 + (S.relics.includes('reroll') ? 2 : 0);
+  dealHand(); render(); showPreview();
+  announceTier();
+}
+function announceTier() {
+  const fresh = Object.keys(TILES).filter(k => tierOf(k) > 1 && startOf(k) === S.round && tileWeight(k, S.round, S.theme) > 0);
+  if (!fresh.length) return;
+  const lv = [...new Set(fresh.map(k => tierOf(k) === 3 ? '極' : '上'))].join('・');
+  setTimeout(() => info(`<b>新しいタイル（${lv}）が出るようになった：</b>${fresh.map(k => TILES[k].e + TILES[k].name + (TILES[k].only ? '（専用）' : '')).join('、')}。タップで効果を確認できる。`), 0);
+  tone(784, 'triangle', .12, .08); setTimeout(() => tone(1047, 'triangle', .18, .08), 110);
+}
+function dealHand() { S.hand = Array.from({ length: handSize() }, () => drawTile(Math.random, S.round, S.theme)); S.sel = -1; }
+
+function render() {
+  $('round').textContent = S.round + 1;
+  $('target').textContent = fmt(TARGETS[S.round]);
+  $('best').textContent = best ? fmt(best) : '-';
+  $('lives').textContent = '🍃'.repeat(S.lives) + '・'.repeat(LIVES - S.lives);
+  const rb = $('relics'); rb.innerHTML = '';
+  if (!S.relics.length) { const d = document.createElement('div'); d.className = 'relic empty'; d.textContent = '遺物：まだなし（ラウンドをクリアすると手に入る）'; rb.appendChild(d); }
+  for (const k of S.relics) {
+    const d = document.createElement('div'); d.className = 'relic'; d.textContent = RELICS[k].e + ' ' + RELICS[k].name;
+    d.onclick = () => { info(`<b>${RELICS[k].e} ${RELICS[k].name}</b>：${RELICS[k].desc}`); relicTip(k); }; rb.appendChild(d);
+  }
+  const ph = phaseOf(S.round);
+  $('phase').textContent = S.theme ? `${PHASE[ph].e}${PHASE[ph].name}` : '';
+  const bd = $('board'); bd.innerHTML = ''; bd.classList.toggle('fusing', !!S.fuse);
+  S.board.forEach((t, i) => {
+    const c = document.createElement('div'); c.className = 'cell'; c.dataset.i = i;
+    if (t) { c.innerHTML = `${TILES[t].e}<span class="els">${tagHtml(t)}</span>`; c.classList.add('t'); } else if (S.sel !== -1 && !S.busy) c.classList.add('can');
+    if (S.swap) { if (S.swap.from === i) c.classList.add('swapsrc'); else if (S.swap.from != null) c.classList.add('swapok'); }
+    if (t && S.theme && phaseActive(t, ph)) c.classList.add('act');
+    if (t && isArrow(t)) c.insertAdjacentHTML('beforeend', `<span class="dir">${ARROWS[S.dirs[i] == null ? 1 : S.dirs[i]]}</span>`);
+    if (S.fuse) { const o = S.fuse.path.indexOf(i); if (o >= 0) c.insertAdjacentHTML('beforeend', `<span class="ord">${o + 1}</span>`); }
+    c.onclick = () => onCell(i); bd.appendChild(c);
+  });
+
+  const hd = $('hand'); hd.innerHTML = '';
+  if (S.fuse) {
+    hd.innerHTML = `<div class="fusebar"><button class="btn" id="igniteBtn" style="background:var(--mult);color:#fff7ea">🔥 点火</button><button class="btn" id="fuseReset" style="width:auto;padding:0 12px;background:var(--kinari);color:var(--sumi)">描き直す</button></div>`;
+    $('igniteBtn').onclick = ignite; $('fuseReset').onclick = () => { S.fuse.path = []; render(); showPreview(); drawFuse(); };
+  }
+  S.hand.forEach((t, k) => {
+    const c = document.createElement('button'); c.className = 'card' + (k === S.sel ? ' sel' : '') + ' t' + tierOf(t) + (TILES[t].only ? ' only' : '');
+    const tag = TILES[t].only ? '<span class="tag">専用</span>' : tierOf(t) === 3 ? '<span class="tag">極</span>' : tierOf(t) === 2 ? '<span class="tag">上</span>' : '';
+    c.innerHTML = `${tag}<div class="e">${TILES[t].e}</div><div class="n">${TILES[t].name}</div><div class="els">${tagHtml(t)}</div>`;
+    c.onclick = () => onCard(k); hoverDesc(c, () => S.hand[k]); hd.appendChild(c);
+  });
+  $('left').textContent = S.fuse ? '導火線' : `あと ${perRound(S.round) - S.placed} 枚`;
+  $('rerollBtn').innerHTML = `引き直す<br>あと${S.rerolls}回`;
+  $('rerollBtn').disabled = S.busy || S.rerolls <= 0 || !!S.fuse;
+  $('swapBtn').innerHTML = S.swap ? 'やめる' : `植え替え<br>あと${S.swaps || 0}回`;
+  $('swapBtn').classList.toggle('on', !!S.swap);
+  $('swapBtn').disabled = S.busy || !!S.fuse || (!S.swap && (!S.swaps || !S.board.some(x => x)));
+  const hb = $('hold');
+  hb.className = (S.held ? 'has' : '') + (S.sel === 'hold' ? ' sel' : '') + (!S.held && S.sel >= 0 && !S.holdUsed ? ' can' : '');
+  hb.innerHTML = S.held ? `<div class="e">${TILES[S.held].e}</div><div class="n" style="font-size:11px;font-weight:700">${TILES[S.held].name}</div><div class="hl">とっておき</div>` : (S.sel >= 0 && !S.holdUsed ? '取って<br>おく' : 'とって<br>おき');
+  hb.disabled = S.busy || !!S.fuse;
+}
+function info(h) { $('info').innerHTML = h; }
+// ===== カーソルを合わせたときの説明（マウスのときだけ。タップでは出さない）=====
+const canHover = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
+function hoverDesc(el, getTile) {
+  if (!canHover) return;
+  el.addEventListener('pointerenter', e => {
+    if (e.pointerType !== 'mouse') return;
+    const t = getTile(); if (!t || !TILES[t]) return;
+    const T = TILES[t], tier = tierOf(t), h = $('hov');
+    const tags = (tier === 3 ? '<span class="ht">極</span>' : tier === 2 ? '<span class="ht">上</span>' : '') + (T.only ? `<span class="ht o">${THEMES[T.only].name}専用</span>` : '');
+    h.className = 't' + tier;
+    h.innerHTML = `<div class="hh"><span class="he">${T.e}</span><span class="hn">${T.name}</span>${tagHtml(t)}${tags}</div>${T.desc}`;
+    const r = el.getBoundingClientRect(), w = 220;
+    h.style.left = Math.max(6, Math.min(innerWidth - w - 6, r.left + r.width / 2 - w / 2)) + 'px';
+    h.style.top = '0px'; h.classList.add('on');
+    const hh = h.offsetHeight; h.style.top = Math.max(6, r.top - hh - 8) + 'px';
+  });
+  el.addEventListener('pointerleave', () => $('hov').classList.remove('on'));
+}
+document.addEventListener('pointerdown', () => $('hov').classList.remove('on'), true);
+// ===== 大きな説明（どこかをタップするとすぐ閉じる。タップ自体は下の物に届くので、そのまま置ける）=====
+let tipShownAt = 0;
+function showTip(html, cls) {
+  const t = $('tip'); t.className = cls || ''; t.innerHTML = html + '<div class="hint">どこかをタップで閉じる</div>';
+  requestAnimationFrame(() => t.classList.add('on')); tipShownAt = performance.now();
+}
+function hideTip() { $('tip').classList.remove('on'); }
+document.addEventListener('pointerdown', () => { if (performance.now() - tipShownAt > 50) hideTip(); }, true);
+document.addEventListener('keydown', hideTip, true);
+function tileTip(t, extra) {
+  const T = TILES[t], tier = tierOf(t);
+  const tags = [tier === 3 ? '<span class="tg">極</span>' : tier === 2 ? '<span class="tg">上</span>' : '<span class="tg">基本</span>',
+    T.only ? `<span class="tg o">${THEMES[T.only].name}専用</span>` : ''].join('');
+  showTip(`<div class="te">${T.e}</div><div class="tn">${T.name}</div><div class="tels">${tagHtml(t)}</div>${tags}<div class="td">${T.desc}</div>${extra ? `<div class="tx">${extra}</div>` : ''}`, 't' + tier);
+}
+function relicTip(k) {
+  const r = RELICS[k], th = r.only ? `<span class="tg o">${THEMES[r.only].name}専用</span>` : '<span class="tg">共通の遺物</span>';
+  showTip(`<div class="te">${r.e}</div><div class="tn">${r.name}</div>${th}<div class="td">${r.desc}</div>`);
+}
+function setNums(chips, mult) { $('chips').textContent = fmt(chips); $('mult').textContent = fmt(mult); }
+// ===== 庭の要素の表示（熱・群れ・育つ・列）=====
+function factorBar(r, liveHeat) {
+  const el = $('factor');
+  if (!S.theme) { el.className = ''; return; }
+  const th = S.theme; let h = '';
+  if (th === 'fire') {
+    const v = liveHeat != null ? liveHeat : (r ? r.heat : 0);
+    h = `<span class="fk">🔥 熱</span><span class="fv" id="heatv">${v}</span><span class="fs">${liveHeat != null ? '発動中' : 'このラウンドの見込み'}（🔥が燃えるたび+${S.relics.includes('firewood') ? 2 : 1}）</span>`;
+  } else if (th === 'bee') {
+    const g = r && r.groupSize.length ? Math.max(...r.groupSize) : 0;
+    h = `<span class="fk">🐝 群れ</span><span class="fv">${g}</span><span class="fs">いちばん大きい群れ（${r ? r.groupSize.length : 0}つの群れ）</span>`;
+  } else if (th === 'water') {
+    const ages = S.board.map((t, i) => t && S.ages[i] != null ? S.round - S.ages[i] : -1).filter(a => a >= 0);
+    const mx = ages.length ? Math.max(...ages) : 0, avg = ages.length ? ages.reduce((a, b) => a + b, 0) / ages.length : 0;
+    h = `<span class="fk">🌱 育つ</span><span class="fv">${mx}</span><span class="fs">いちばん古いタイル（ラウンド）・平均 ${avg.toFixed(1)}</span>`;
+  } else if (th === 'wind') {
+    const arr = S.board.map((t, i) => isArrow(t) ? (S.dirs[i] == null ? 1 : S.dirs[i]) : -1).filter(d => d >= 0);
+    const cnt = [0, 1, 2, 3].map(d => arr.filter(x => x === d).length);
+    h = `<span class="fk">🌬️ 風向き</span><span class="fv">${S.turns ?? 0}</span><span class="fs">向きを変えられる残り（矢印タイルをタップ）・${ARROWS.map((a, d) => a + cnt[d]).join(' ')}</span>`;
+  } else if (th === 'gear') {
+    const p = r ? r.path : [];
+    let turns = 0; for (let k = 1; k < p.length - 1; k++) if (p[k + 1] - p[k] !== p[k] - p[k - 1]) turns++;
+    let run = 0, cur = 0; p.forEach(i => { cur = S.board[i] === 'gear' ? cur + 1 : 0; run = Math.max(run, cur); });
+    h = `<span class="fk">⚙️ 道筋</span><span class="fv">${p.length}</span><span class="fs">導火線のマス・曲がり ${turns}・⚙️の連なり ${run}${p.length && S.board[p[p.length - 1]] === 'target' ? '・🎯終点' : ''}</span>`;
+  } else if (th === 'night') {
+    const sky = S.board.filter(t => tagsOf(t).includes('天')).length;
+    let line = 0; for (let k = 0; k < N; k++) { line = Math.max(line, [0,1,2,3,4].filter(c => tagsOf(S.board[k * N + c]).includes('天')).length, [0,1,2,3,4].filter(rr => tagsOf(S.board[rr * N + k]).includes('天')).length); }
+    h = `<span class="fk">⭐ 列</span><span class="fv">${line}</span><span class="fs">1本の列に並んだ「天」の最大・盤面の「天」 ${sky}枚</span>`;
+  }
+  el.innerHTML = h; el.className = 'on';
+}
+function cellBadges(r) {
+  const cells = $('board').children;
+  S.board.forEach((t, i) => {
+    const c = cells[i]; if (!c || !t) return;
+    let b = '';
+    if (S.theme === 'water' && S.ages[i] != null) { const a = S.round - S.ages[i]; if (a > 0) b = `<span class="badge">${a}R</span>`; }
+    if (S.theme === 'bee' && t === 'bee' && r && r.groupOf[i] >= 0) b = `<span class="badge g">${r.groupSize[r.groupOf[i]]}</span>`;
+    const old = c.querySelector('.badge'); if (old) old.remove();
+    if (b) c.insertAdjacentHTML('beforeend', b);
+  });
+}
+function showPreview() {
+  const r = scoreBoard(S.board, S.relics, ctxNow());
+  factorBar(r); cellBadges(r);
+  // なぞっている間は数字を隠して、目標に届くかのゲージだけ
+  if (S.fuse) {
+    const rp = scoreBoard(S.board, S.relics, Object.assign(ctxNow(), { onlyPath: true }));
+    $('chips').textContent = '？'; $('mult').textContent = '？';
+    const t = $('total'); t.className = 'small'; t.textContent = 'なぞったタイルだけで🎯まで届くか（なぞらなかった分は あとから足される）';
+    const ratio = S.fuse.path.length ? rp.total / TARGETS[S.round] : 0;
+    $('bar').className = 'gauge' + (ratio >= 1 ? ' over' : '');
+    $('barin').style.width = Math.min(100, Math.sqrt(ratio) * 100) + '%';
+    return;
+  }
+  $('bar').className = '';
+  setNums(r.chips, r.mult);
+  const t = $('total'); t.className = 'small'; t.textContent = S.board.some(x => x) ? `いまの庭なら ${fmt(r.total)} 点` : 'タイルを置くと、ここに見込みの点が出る';
+  $('barin').style.width = Math.min(100, r.total / TARGETS[S.round] * 100) + '%';
+}
+
+function onCard(k) {
+  if (S.busy) return; ensureAudio();
+  if (S.swap) { S.swap = null; }
+  S.sel = S.sel === k ? -1 : k; render();
+  if (S.sel >= 0) { const t = S.hand[k]; info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}`); tone(660, 'sine', .05, .06); }
+}
+function onCell(i) {
+  if (S.fuse) return;
+  if (S.busy) return; ensureAudio();
+  if (S.swap) return onSwapCell(i);
+  const t = S.board[i];
+  if (t && isArrow(t)) {
+    if (S.turns > 0) {
+      S.dirs[i] = ((S.dirs[i] == null ? 1 : S.dirs[i]) + 1) % 4; S.turns--; tone(700 + S.dirs[i] * 80, 'triangle', .06, .07);
+      render(); showPreview(); info(`${TILES[t].e} の向きを <b>${ARROWS[S.dirs[i]]}</b> に変えた（このラウンド あと${S.turns}回）。`); return;
+    }
+    info(`向きを変えられるのは 1ラウンド${S.relics.includes('fan') ? 5 : 3}回まで。`);
+  }
+  if (t) { info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}`); const a = S.ages[i] != null ? S.round - S.ages[i] : 0; tileTip(t, a ? `置いてから ${a} ラウンド` : 'このラウンドに置いた'); return; }
+  if (S.sel === -1) { info('先に下のタイルを1枚選んでね。'); return; }
+  if (S.sel === 'hold') { S.board[i] = S.held; S.held = null; S.holdUsed = true; S.sel = -1; }
+  else S.board[i] = S.hand[S.sel];
+  S.ages[i] = S.round; S.dirs[i] = isArrow(S.board[i]) ? 1 : null; S.placed++;
+  tone(520, 'sine', .08, .1);
+  if (S.placed >= perRound(S.round)) { S.hand = []; S.sel = -1; flashNew(i); startFuse(); return; }
+  dealHand(); render(); flashNew(i); showPreview();
+  info('次のタイルを選ぼう。');
+}
+// とっておき：手札を1枚取っておける（入れ替えは1ラウンド1回）。取っておいたカードはいつでも置ける
+hoverDesc($('hold'), () => S.held);
+$('hold').onclick = () => {
+  if (S.busy) return; ensureAudio(); S.swap = null;
+  if (S.sel === 'hold') { S.sel = -1; render(); return; }
+  if (S.sel >= 0) {
+    if (S.holdUsed) { info('とっておきの入れ替えは 1ラウンド1回まで。'); return; }
+    const k = S.sel, put = S.hand[k];
+    if (S.held) S.hand[k] = S.held; else S.hand[k] = drawTile(Math.random, S.round, S.theme);
+    S.held = put; S.holdUsed = true; S.sel = -1; render(); showPreview(); tone(600, 'triangle', .08, .08);
+    info(`<b>${TILES[put].e} ${TILES[put].name}</b> をとっておいた。好きなときに とっておき をタップして置ける。`); return;
+  }
+  if (S.held) { S.sel = 'hold'; render(); info(`<b>${TILES[S.held].e} ${TILES[S.held].name}</b>：${TILES[S.held].desc}　<span style="opacity:.8">（とっておき）</span>`); tone(660, 'sine', .05, .06); return; }
+  info('手札のカードを選んでから ここをタップすると、そのカードをとっておける（1ラウンド1回）。');
+};
+// 植え替え：1ラウンド1回、置いたタイルを空きマスに動かすか、別のタイルと入れ替える
+$('swapBtn').onclick = () => {
+  if (S.busy) return; ensureAudio();
+  if (S.swap) { S.swap = null; render(); info('植え替えをやめた。'); return; }
+  if (!S.swaps) return;
+  S.swap = { from: null }; S.sel = -1; render(); info('<b>植え替え</b>：動かしたいタイルをタップ。');
+};
+function onSwapCell(i) {
+  const sw = S.swap;
+  if (sw.from == null) { if (!S.board[i]) { info('動かしたいのは、置いてあるタイル。'); return; } sw.from = i; render(); info(`<b>${TILES[S.board[i]].e}</b> をどこへ？ 空きマスなら移動、タイルなら入れ替え。`); return; }
+  if (sw.from === i) { sw.from = null; render(); info('植え替え：動かしたいタイルをタップ。'); return; }
+  const a = sw.from;
+  [S.board[a], S.board[i]] = [S.board[i], S.board[a]]; [S.ages[a], S.ages[i]] = [S.ages[i], S.ages[a]]; [S.dirs[a], S.dirs[i]] = [S.dirs[i], S.dirs[a]];
+  S.swaps--; S.swap = null; render(); showPreview(); tone(700, 'triangle', .1, .08);
+  $('board').children[i].classList.add('new'); if (S.board[a]) $('board').children[a].classList.add('new');
+  info(S.board[a] ? '2つのタイルを入れ替えた。' : 'タイルを動かした。');
+}
+// ===== 導火線：置き終わったら、盤面をなぞって発動の順番を決める =====
+function startFuse() {
+  S.fuse = { path: [] }; S.busy = false; S.swap = null; render(); showPreview(); drawFuse();
+  info(`<b>導火線</b>：盤面を<b>なぞって</b>発動の順番を決めよう（上下左右につながったタイルを一筆書き）。なぞらなかったタイルは あとから いつもの順（左上→右下）。決まったら <b>🔥点火</b>。`);
+  tone(520, 'triangle', .1, .07);
+}
+function fuseCellAt(x, y) {
+  const el = document.elementFromPoint(x, y); const c = el && el.closest && el.closest('.cell');
+  return c ? +c.dataset.i : -1;
+}
+function fuseAdd(i) {
+  const P = S.fuse.path;
+  if (i < 0 || !S.board[i] || P.includes(i)) return false;
+  if (P.length && !neighbors(P[P.length - 1]).includes(i)) return false;
+  P.push(i); tone(note(P.length) * 2, 'sine', .05, .05); return true;
+}
+let fuseDrag = false;
+$('board').addEventListener('pointerdown', e => {
+  if (!S.fuse || S.busy) return;
+  const i = fuseCellAt(e.clientX, e.clientY); if (i < 0 || !S.board[i]) return;
+  e.preventDefault();
+  const P = S.fuse.path;
+  if (P.length && P[P.length - 1] === i) { fuseDrag = true; return; }      // 続きから描く
+  if (!P.length || !neighbors(P[P.length - 1]).includes(i) || P.includes(i)) S.fuse.path = [];  // 新しく描き始める
+  fuseAdd(i); fuseDrag = true; render(); showPreview(); drawFuse();
+  try { $('board').setPointerCapture(e.pointerId); } catch (_) {}
+});
+$('board').addEventListener('pointermove', e => {
+  if (!S.fuse || !fuseDrag) return;
+  // 盤面の外へ出たらリセット
+  const br = $('board').getBoundingClientRect();
+  if (e.clientX < br.left || e.clientX > br.right || e.clientY < br.top || e.clientY > br.bottom) {
+    fuseDrag = false;
+    if (S.fuse.path.length) { S.fuse.path = []; tone(220, 'sawtooth', .12, .06); render(); showPreview(); drawFuse(); info('盤面の外に出たので、導火線をリセットした。もう一度なぞろう。'); }
+    return;
+  }
+  const i = fuseCellAt(e.clientX, e.clientY);
+  const P = S.fuse.path;
+  // 1つ前のタイルに戻ったら、1つ短くする
+  if (P.length >= 2 && i === P[P.length - 2]) { P.pop(); tone(note(P.length) * 2, 'sine', .04, .04); render(); showPreview(); drawFuse(); return; }
+  if (fuseAdd(i)) { render(); showPreview(); drawFuse(); }
+});
+addEventListener('pointerup', () => { fuseDrag = false; });
+function fuseStatus() {
+  if (!S.fuse) return;
+  const r = scoreBoard(S.board, S.relics, ctxNow());
+  const n = S.board.filter(x => x).length, len = r.path.length;
+  const left = n - len;
+  info(`<b>🔥導火線 ${len}マス</b>・<b>⚡伝導 ${r.conduct}</b>・${n >= 5 ? (left === 0 ? '<b style="color:var(--gold)">🏁完走！</b>' : `🏁完走まであと${left}枚`) : '🏁完走は5枚から'}　<span style="opacity:.75">同じ属性をつなぐと伝導（1回多く発動）。決まったら🔥点火</span>`);
+}
+function drawFuse() {
+  fuseStatus();
+  const old = $('fuseline'); if (old) old.remove();
+  if (!S.fuse || S.fuse.path.length < 2) return;
+  measure();
+  const pts = S.fuse.path.map(i => `${centers[i].x},${centers[i].y}`).join(' ');
+  const pl = document.createElementNS('http://www.w3.org/2000/svg', 'polyline'); pl.id = 'fuseline'; pl.setAttribute('points', pts);
+  $('fx').appendChild(pl);
+}
+function ignite() {
+  if (!S.fuse) return;
+  S.order = S.fuse.path.slice();
+  S.busy = true; render(); drawFuse(); runScoring();
+}
+// ===== 生きている庭：次のラウンドへ進むとき =====
+async function nextRoundWithEvolve(after) {
+  S.round++;
+  const r = evolve(S.board, S.ages, S.round, S.theme);
+  S.board = r.board; S.ages = r.ages; S.order = null; S.fuse = null;
+  startRound();
+  if (r.changes.length) {
+    const cells = $('board').children;
+    r.changes.forEach(c => { const el = cells[c.i]; if (el) el.classList.add('evo'); });
+    const cnt = k => r.changes.filter(c => c.kind === k).length;
+    const parts = [];
+    if (cnt('grow')) parts.push(`${r.changes.filter(c => c.kind === 'grow').map(c => TILES[c.from].e + '→' + TILES[c.to].e).join(' ')} 育った`);
+    if (cnt('burn')) parts.push(`🔥が${cnt('burn')}つ燃え移って🌫️灰に`);
+    if (cnt('move')) parts.push(`🐝が${cnt('move')}匹 花へ動いた`);
+    const ev = $('evo'); ev.innerHTML = `🌱 庭が変わった：${parts.join('、')}`; ev.classList.add('on');
+    clearTimeout(nextRoundWithEvolve.t); nextRoundWithEvolve.t = setTimeout(() => ev.classList.remove('on'), 4200);
+    tone(600, 'sine', .15, .07); setTimeout(() => tone(900, 'sine', .2, .06), 120);
+  }
+  if (after) after();
+}
+function flashNew(i) { const c = $('board').children[i]; c.classList.add('new'); }
+$('rerollBtn').onclick = () => { if (S.busy || S.rerolls <= 0) return; S.rerolls--; dealHand(); render(); tone(400, 'square', .06, .05); info('手札を引き直した。'); };
+
+// ===== スコア計算の演出 =====
+let speed = 1, canFast = false;
+// 発動中：金色の輪が出たタイルをタップすると「大当たり」（倍率×HIT_X）。それ以外のタップは早送り
+const HIT_X = 1.15, MAX_RINGS = 4;
+let ring = null, bonus = 1, hits = 0, justHit = false;
+$('boardwrap').addEventListener('pointerdown', e => {
+  if (!scoring || !ring) return;
+  const c = e.target.closest && e.target.closest('.cell'); if (!c) return;
+  if (+c.dataset.i === ring.i && performance.now() <= ring.until) {
+    justHit = true; hits++; bonus *= HIT_X; const r0 = ring; ring = null; r0.el.remove();
+    pop(r0.i, `大当たり！×${HIT_X}`, 'x'); tone(1320, 'triangle', .12, .12); setTimeout(() => tone(1760, 'triangle', .15, .1), 70);
+    if (!lightFx) kick($('mult'), [{ transform: 'scale(1.5)' }, { transform: 'scale(1)' }], 200);
+  }
+}, true);
+$('boardwrap').addEventListener('click', () => { if (justHit) { justHit = false; return; } if (canFast && speed < 1) { speed = 1; return; } if (canFast && speed === 1) { speed = 3; info('早送り中 ▶▶'); } });
+function showRing(i, ms) {
+  if (ring) ring.el.remove();
+  const c = centers[i]; if (!c) return;
+  const el = document.createElement('div'); el.className = 'ring'; el.style.left = c.x + 'px'; el.style.top = c.y + 'px';
+  $('boardwrap').appendChild(el);
+  el.animate([{ transform: 'scale(1.8)', opacity: .3 }, { transform: 'scale(1)', opacity: 1, offset: .25 }, { transform: 'scale(.9)', opacity: 1 }], { duration: ms });
+  const r = { i, el, until: performance.now() + ms }; ring = r;
+  setTimeout(() => { if (ring === r) { r.el.remove(); ring = null; } }, ms);
+}
+// ===== 演出（軽くするため：位置は最初に1回だけ測る／動きは transform と opacity だけ／同時に出す数に上限）=====
+let lightFx = false; try { lightFx = localStorage.getItem('rensa-light') === '1'; } catch (e) {}
+let centers = [], tgtPos = {};
+// ===== 画面に収まるように全体を拡大縮小（スマホでもスクロールなし）=====
+let Z = 1;
+let lastWin = '';
+function fitApp(force) {
+  const win = innerWidth + 'x' + innerHeight;
+  if (!force && win === lastWin) return;          // 画面の大きさが変わっていなければ何もしない
+  lastWin = win;
+  const app = $('app'), cs = getComputedStyle(document.body);
+  const padV = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom), padH = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+  const w = app.offsetWidth, h = app.offsetHeight;  // zoom前の大きさ
+  let z = Math.max(0.45, Math.min((innerWidth - padH) / w, (innerHeight - padV) / h, 1.5));
+  z = Math.floor(z * 100) / 100;
+  if (Math.abs(z - Z) >= 0.02 || force) { Z = z; app.style.zoom = Z; }
+}
+let fitTimer = 0;
+function queueFit(force) { clearTimeout(fitTimer); fitTimer = setTimeout(() => fitApp(force), force ? 0 : 150); }
+addEventListener('resize', () => queueFit());
+addEventListener('orientationchange', () => queueFit(true));
+function measure() {
+  // 盤面の中に置く線・数字は、拡大縮小（zoom）前の座標で。画面に固定で飛ばす数字は画面の座標で
+  const wr = $('boardwrap').getBoundingClientRect();
+  centers = Array.from($('board').children, c => { const r = c.getBoundingClientRect(); return { x: (r.left - wr.left + r.width / 2) / Z, y: (r.top - wr.top + r.height / 2) / Z, ax: r.left + r.width / 2, ay: r.top + r.height / 3 }; });
+  for (const id of ['chips', 'mult']) { const r = $(id).getBoundingClientRect(); tgtPos[id] = { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
+}
+const KCOL = { c: '#4fc2a8', m: '#ef5a3c', x: '#f2b938', s: '#ece0c6', r: '#ece0c6', n: '#a9b3cc' };
+let liveBeams = 0, livePops = 0, liveFly = 0;
+function beam(from, to, col, w) {
+  if (liveBeams >= (lightFx ? 10 : 36)) return;
+  const a = centers[from], b = centers[to]; if (!a || !b) return;
+  const len = Math.hypot(b.x - a.x, b.y - a.y);
+  const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  l.setAttribute('x1', a.x); l.setAttribute('y1', a.y); l.setAttribute('x2', b.x); l.setAttribute('y2', b.y);
+  l.setAttribute('stroke', col); l.setAttribute('stroke-width', w); l.setAttribute('stroke-dasharray', len); l.setAttribute('stroke-dashoffset', len);
+  $('fx').appendChild(l); liveBeams++;
+  const an = l.animate([{ strokeDashoffset: len, opacity: 0 }, { strokeDashoffset: len * .8, opacity: 1, offset: .2 }, { strokeDashoffset: 0, opacity: 1, offset: .6 }, { strokeDashoffset: 0, opacity: 0 }], { duration: 550 / speed, easing: 'ease-out' });
+  an.onfinish = () => { l.remove(); liveBeams--; };
+}
+function pop(i, text, kind) {
+  if (livePops >= (lightFx ? 4 : 14)) return;
+  const c = centers[i]; if (!c) return;
+  const p = document.createElement('div'); p.className = 'pop ' + kind; p.textContent = text;
+  p.style.left = c.x + 'px'; p.style.top = (c.y - 8) + 'px';
+  $('boardwrap').appendChild(p); livePops++;
+  const an = p.animate([{ opacity: 0, transform: 'translate(-50%,-40%)' }, { opacity: 1, offset: .15 }, { opacity: 0, transform: 'translate(-50%,-50%) translateY(-34px)' }], { duration: 800 / speed, easing: 'ease-out' });
+  an.onfinish = () => { p.remove(); livePops--; };
+}
+function fly(i, text, kind, tid, onArrive) {
+  const c = centers[i], t = tgtPos[tid];
+  // 速い区間・軽めモード・飛んでいる数字が多いときは飛ばさずにすぐ反映
+  if (!c || !t || lightFx || delayNow < 60 || liveFly >= 8) { pop(i, text, kind); onArrive(); return; }
+  const d = document.createElement('div'); d.className = 'fly'; d.textContent = text; d.style.color = KCOL[kind];
+  if (kind === 'x') d.style.fontSize = '22px';
+  d.style.left = c.ax + 'px'; d.style.top = c.ay + 'px';
+  document.body.appendChild(d); liveFly++;
+  const an = d.animate([{ transform: 'translate(-50%,-50%)', opacity: 1 }, { transform: `translate(calc(-50% + ${t.x - c.ax}px), calc(-50% + ${t.y - c.ay}px))`, opacity: .3 }], { duration: 320 / speed, easing: 'cubic-bezier(.5,0,.8,.6)' });
+  an.onfinish = () => { d.remove(); liveFly--; onArrive(); };
+}
+function kick(el, frames, dur) { try { el.animate(frames, { duration: dur }); } catch (e) {} }
+const FIRE = [{ transform: 'scale(1)' }, { transform: 'scale(1.22) translateY(-3px)', offset: .4 }, { transform: 'scale(1)' }];
+const FIREX = [{ transform: 'scale(1) rotate(0)' }, { transform: 'scale(1.4) rotate(-8deg)', offset: .4 }, { transform: 'scale(1)' }];
+const SHAKE = [{ transform: 'translate(0,0)' }, { transform: 'translate(-4px,2px)' }, { transform: 'translate(4px,-2px)' }, { transform: 'translate(-2px,1px)' }, { transform: 'translate(0,0)' }];
+let lastShake = 0;
+function comboStyle(n) {
+  const el = $('combo'); el.textContent = `${n} 連鎖！`;
+  el.style.color = n >= 30 ? `hsl(${(n * 23) % 360},90%,68%)` : n >= 15 ? '#f2b938' : n >= 8 ? '#f6d68a' : '#ece0c6';
+  el.style.fontSize = Math.min(34, 18 + n * 0.5) + 'px';
+  if (!lightFx) kick(el, [{ transform: 'scale(1.5)' }, { transform: 'scale(1)' }], 180);
+}
+let glowLevel = -1;
+function glow(mult) {
+  // 光の強さは5段階だけ。同じ段階なら描き直さない
+  const g = Math.round(Math.min(1, Math.log10(Math.max(1, mult)) / 3) * 4) / 4;
+  if (g === glowLevel) return; glowLevel = g;
+  $('mult').style.textShadow = g > 0 && !lightFx ? `0 0 ${6 + 20 * g}px rgba(239,90,60,${.4 + .5 * g})` : 'none';
+}
+// 数字の書き換えは1フレームに1回だけ
+let pendingNums = null;
+function queueNums(ch, mu) {
+  const first = !pendingNums; pendingNums = [ch, mu];
+  if (first) requestAnimationFrame(() => {
+    const [c, m] = pendingNums; pendingNums = null;
+    setNums(c, m); glow(m);
+    $('barin').style.width = Math.min(100, Math.floor(c * m) / TARGETS[S.round] * 100) + '%';
+  });
+}
+let delayNow = 320;
+async function runScoring(opt) {
+  const replay = !!(opt && opt.replay);
+  const res = scoreBoard(S.board, S.relics, ctxNow());
+  if (!replay) collectStats(res);
+  speed = replay ? 0.45 : 1; canFast = false; scoring = true;
+  info(replay ? '🎞️ スロー再生中…（タップで少し速く）' : '導火線に沿って発動していく…　<b>金色の輪</b>が出たら そのタイルをタップで大当たり！（ほかの所をタップで早送り）');
+  bonus = 1; hits = 0; ring = null;
+  $('bar').className = ''; setNums(0, 1); glowLevel = -1; glow(1); $('total').className = ''; $('total').textContent = ''; $('barin').style.width = '0%';
+  await sleep(450); canFast = true;
+  measure();
+  let delay = 320, k = 0, combo = 0;
+  const minDelay = Math.max(res.ev.length > 1500 ? 6 : 9, 70 * Math.min(1, 120 / res.ev.length)); // 発動が多いほど速く
+  const cells = $('board').children;
+  cellBadges(res);
+  if (S.theme === 'fire') factorBar(res, 0);
+  let shownHeat = 0;
+  // 大当たりの輪を出すイベント：×と多重の再発動から、まんべんなく最大 MAX_RINGS 個
+  const cand = replay ? [] : res.ev.map((e, j) => (e.kind === 'x' || (e.kind === 's' && e.times > 1)) ? j : -1).filter(j => j >= 0);
+  if (replay) bonus = opt.bonus || 1;
+  const ringAt = new Set(); for (let q = 0; q < Math.min(MAX_RINGS, cand.length); q++) ringAt.add(cand[Math.floor((q + 0.5) * cand.length / Math.min(MAX_RINGS, cand.length))]);
+  let ei = 0;
+  for (const e of res.ev) {
+    if (ringAt.has(ei)) showRing(e.i, Math.max(450, delay * 5) / speed);
+    ei++;
+    delayNow = delay / speed;
+    if (S.theme === 'fire' && e.heat !== shownHeat && $('heatv')) { shownHeat = e.heat; $('heatv').textContent = e.heat; if (!lightFx) kick($('heatv'), [{ transform: 'scale(1.4)' }, { transform: 'scale(1)' }], 120); }
+    kick(cells[e.i], e.kind === 'x' ? FIREX : FIRE, e.kind === 'x' ? 320 / speed : 220 / speed);
+    // シナジーの線：何のおかげで点が入ったかを見せる（1回に出す本数は上限つき）
+    const maxL = lightFx ? 3 : 8;
+    if (e.by != null) beam(e.by, e.i, '#ece0c6', 4);
+    if (e.kind === 's') { e.links.slice(0, maxL).forEach(j => beam(e.i, j, '#ece0c6', 5)); (e.boosters || []).forEach(j => beam(j, e.i, '#f2b938', 4)); }
+    else e.links.slice(0, maxL).forEach(j => beam(j, e.i, KCOL[e.kind], e.links.length > 6 ? 2 : 3));
+    const synergy = e.links.length > 0 || e.by != null;
+    if (synergy) { combo++; $('combo').classList.add('on'); comboStyle(combo); }
+    const label = e.lbl ? e.lbl : e.kind === 'c' ? `+${fmt(e.v)}点` : e.kind === 'm' ? `+${fmt(e.v)}倍` : e.kind === 'x' ? `×${e.v}` : e.kind === 's' ? (e.times > 1 ? `✨再発動×${e.times}` : '✨再発動') : e.kind === 'r' ? `🪞→${TILES[e.as].e}` : '…';
+    const tid = e.kind === 'c' ? 'chips' : (e.kind === 'm' || e.kind === 'x') ? 'mult' : null;
+    if (tid && e.v !== 0) {
+      const ch = e.chips, mu = e.mult, kk = k, kind = e.kind;
+      fly(e.i, label, kind, tid, () => {
+        queueNums(ch, mu * bonus);
+        if (!lightFx) kick($(tid), [{ transform: 'scale(1.2)' }, { transform: 'scale(1)' }], 90);
+        if (kind === 'c') tone(note(kk), 'triangle', .09, .11);
+        else if (kind === 'm') tone(note(kk) * 1.5, 'square', .08, .05);
+        else {
+          tone(note(kk) * 2, 'sawtooth', .18, .06); tone(note(kk) * 2.52, 'sine', .2, .08);
+          const now = performance.now();
+          if (!lightFx && now - lastShake > 150) { lastShake = now; kick($('boardwrap'), SHAKE, 250); }
+        }
+      });
+    } else {
+      pop(e.i, label, e.kind === 'r' ? 's' : e.kind);
+      if (e.kind === 's' || e.kind === 'r') tone(note(k) * 3, 'sine', .12, .07);
+    }
+    if (synergy && delayNow >= 40) tone(note(k) * 4, 'sine', .05, .03);
+    k++;
+    await sleep(delay / speed); delay = Math.max(minDelay, delay * 0.9);
+  }
+  await sleep(450 / speed);
+  if (ring) { ring.el.remove(); ring = null; }
+  setNums(res.chips, res.mult * bonus); glow(res.mult * bonus);
+  if (hits) info(`大当たり ${hits}回！ 倍率×${bonus.toFixed(2)}`);
+  canFast = false; scoring = false;
+  $('combo').classList.remove('on');
+  // 合計をカウントアップ
+  const T = Math.floor(res.total * bonus), t0 = performance.now();
+  const L = lg(T), dur = Math.min(3200, 900 + 22 * L) / speed;
+  let passed = 0;
+  await new Promise(done => {
+    const step = now => {
+      const f = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - f, 3);
+      const v = L > 6 ? (f >= 1 ? T : Math.pow(10, L * e)) : Math.floor(T * e);
+      $('total').textContent = fmt(v);
+      while (passed < MILES.length && MILES[passed][0] <= 68 && lg(v) >= MILES[passed][0]) { if (MILES[passed][0] >= 12 && !replay) milePop(MILES[passed][1]); passed++; }
+      if (f < 1) requestAnimationFrame(step); else done();
+    };
+    requestAnimationFrame(step);
+  });
+  if (!replay) await mileBanner(T);
+  if (replay) { await sleep(900); return T; }
+  // いちばんの連鎖を覚えておく（スロー再生用）
+  if (!S.bestReplay || T > S.bestReplay.score) S.bestReplay = { score: T, round: S.round, board: S.board.slice(), ages: S.ages.slice(), dirs: (S.dirs || []).slice(), relics: S.relics.slice(), path: S.fuse ? S.fuse.path.slice() : [], bonus };
+  const ok = T >= TARGETS[S.round];
+  $('total').className = ok ? 'win' : 'lose';
+  if (T > best) { best = T; try { localStorage.setItem('synergy-best', best); } catch (e) {} }
+  if (ok) {
+    $('scorebox').classList.remove('flash'); void $('scorebox').offsetWidth; $('scorebox').classList.add('flash');
+    [0, 4, 7, 12].forEach((s, j) => setTimeout(() => tone(note(12 + s), 'triangle', .25, .1), j * 90));
+    const ratio = T / TARGETS[S.round];
+    burst(ratio >= 10 ? 28 : ratio >= 3 ? 16 : 8);
+    await sleep(900);
+    glow(1);
+    if (S.round === TARGETS.length - 1) return victory(T);
+    relicChoice(T, ratio);
+  } else {
+    tone(196, 'sawtooth', .4, .08); setTimeout(() => tone(147, 'sawtooth', .5, .08), 180);
+    await sleep(700); glow(1);
+    S.lives--;
+    if (S.round === TARGETS.length - 1) return finished(T, false);
+    if (S.lives <= 0) return gameOver(T);
+    missed(T);
+  }
+}
+function burst(n) {
+  const r = $('total').getBoundingClientRect(), em = ['✨', '🌱', '💧', '🔥', '⭐', '🌙'];
+  for (let j = 0; j < n; j++) {
+    const d = document.createElement('div'); d.className = 'burst'; d.textContent = em[j % em.length];
+    d.style.left = (r.left + r.width / 2) + 'px'; d.style.top = (r.top) + 'px';
+    const a = Math.random() * Math.PI * 2, s = 80 + Math.random() * 160;
+    d.style.setProperty('--dx', Math.cos(a) * s + 'px'); d.style.setProperty('--dy', Math.sin(a) * s + 'px'); d.style.setProperty('--r', (Math.random() * 360 - 180) + 'deg');
+    document.body.appendChild(d); setTimeout(() => d.remove(), 1100);
+  }
+}
+
+// ===== モーダル =====
+function modal(h) { $('modal').innerHTML = h; $('overlay').classList.add('show'); }
+function closeModal() { $('overlay').classList.remove('show'); }
+function relicChoice(T, ratio) {
+  const opts = relicOptions(S.relics, S.theme, Math.random);
+  const msg = ratio >= 10 ? 'とんでもないシナジー！' : ratio >= 3 ? 'いい連鎖！' : 'クリア！';
+  modal(`<h2>${msg}</h2><div style="text-align:center">${titleHtml(T)}</div><div class="big">${fmt(T)}</div><p style="text-align:center">目標 ${fmt(TARGETS[S.round])}（×${ratio >= 100 ? fmt(Math.floor(ratio)) : ratio.toFixed(1)}）</p>
+    <p>遺物を1つ選ぼう。次のラウンドから効果がある。</p><div class="choices">${opts.map(k => `<button class="choice" data-k="${k}"><b>${RELICS[k].e} ${RELICS[k].name}</b>${RELICS[k].only ? ` <small style="color:#c23b20;font-weight:700">${THEMES[RELICS[k].only].name}専用</small>` : ''}<br>${RELICS[k].desc}</button>`).join('')}</div>`);
+  document.querySelectorAll('.choice').forEach(b => b.onclick = () => {
+    const k = b.dataset.k;
+    S.relics.push(k); closeModal(); S.busy = false; tone(880, 'sine', .12, .08);
+    nextRoundWithEvolve(() => { if (!$('info').textContent.startsWith('新しい')) info(`<b>${RELICS[k].e} ${RELICS[k].name}</b> を手に入れた。ラウンド ${S.round + 1}：目標 ${fmt(TARGETS[S.round])}`); });
+    if (false) info(`<b>${RELICS[b.dataset.k].e} ${RELICS[b.dataset.k].name}</b> を手に入れた。ラウンド ${S.round + 1}：目標 ${fmt(TARGETS[S.round])}`);
+  });
+}
+function missed(T) {
+  modal(`<h2>あと少し…</h2><div class="big" style="color:#c23b20">${fmt(T)}</div><p style="text-align:center">目標 ${fmt(TARGETS[S.round])} に届かなかった。<br><b>いのちを1つ失った</b>（残り ${'🍃'.repeat(S.lives)}）。</p>
+    <p style="text-align:center">今回は遺物なし。でも庭はそのまま残る。続けて庭を育てよう。</p><div class="choices"><button class="choice" id="cont" style="text-align:center"><b>次のラウンドへ</b></button></div>`);
+  $('cont').onclick = () => { closeModal(); S.busy = false; nextRoundWithEvolve(); };
+}
+function finished(T, ok) {
+  burst(16);
+  endScreen(`<h2>庭が埋まった</h2><div class="big">${fmt(T)}</div><div style="display:flex;justify-content:center;margin:6px 0">${miniBoard(S.board, true)}</div><p style="text-align:center">25マスがすべて埋まった。最後の目標 ${fmt(TARGETS[S.round])} にはあと一歩。</p>
+    <p style="text-align:center">遺物：${S.relics.map(k => RELICS[k].e).join(' ')}</p><p style="text-align:center">最高スコア：${fmt(best)}</p>`, T, 'full');
+}
+function gameOver(T) {
+  endScreen(`<h2>ここまで</h2><div class="big" style="color:#c23b20">${fmt(T)}</div><p style="text-align:center">ラウンド ${S.round + 1} の目標 ${fmt(TARGETS[S.round])} に届かず、いのちが尽きた。</p>
+    <p style="text-align:center">最高スコア：${fmt(best)}</p>`, T, 'over');
+}
+function victory(T) {
+  burst(40);
+  const wasLocked = Object.keys(THEMES).filter(k => !isUnlocked(k));
+  markCleared(S.theme);
+  const newly = wasLocked.filter(k => isUnlocked(k));
+  const unlockMsg = newly.length ? `<div class="rk-me" style="color:#5b3a6e">🔓 新しい庭「${newly.map(k => THEMES[k].e + THEMES[k].name).join('、')}」が解放された！</div>` : '';
+  endScreen(`${unlockMsg}<h2>庭が完成した</h2><div class="big">${fmt(T)}</div><div style="display:flex;justify-content:center;margin:6px 0">${miniBoard(S.board, true)}</div><p style="text-align:center">25マスがすべて埋まり、全8ラウンドをクリア！</p>
+    <p style="text-align:center">遺物：${S.relics.map(k => RELICS[k].e).join(' ')}</p><p style="text-align:center">最高スコア：${fmt(best)}</p>`, T, 'win');
+}
+function help(first, fromMenu) {
+  modal(`<h2>連鎖の庭</h2>
+  <p>1ラウンドに3枚、タイルを5×5の庭に置く。置き終わると、<b>庭全体が左上から右下へ順番に発動</b>して、<b>点 × 倍率</b> がスコアになる。</p>
+  <p>目標スコアを超えたらクリアで、<b>遺物</b>を1つもらえる。タイルは次のラウンドも残るので、シナジーはどんどん育つ。全8ラウンド。</p>
+  <p>庭がぜんぶ埋まるまで（25マス）遊べる。目標に届かなくても<b>いのち🍃</b>が残っていれば続けられる（3回まで）。最後のラウンドだけ4枚置ける。</p>
+  <p><b>ラウンド3から「上」、ラウンド5から「極」の強いタイル</b>が出るようになる。庭ごとの<b>専用タイル</b>はもっと早く、ラウンド2と4から出る。<b>庭のテーマに合わせて組むと勝ちやすい。</b></p>
+  <p>⭐⚡🦉☀️🌠👑（もう一度発動させるタイル）どうしは、発動させ合う代わりに<b>回数を増やし合う</b>。⭐は隣の⭐1つにつき、周りを発動させる回数が+1。<b>星を固めるほど、周りが何度も発動する</b>。発動の回数に上限はない。</p>
+  <p>遺物は3つから1つ選ぶ。<b>共通の遺物</b>と、いまの庭でしか出ない<b>専用遺物</b>がある。3つのうち1つは専用遺物。</p>
+  <p>庭ごとに<b>独自の要素</b>がある。水辺＝<b>育つ</b>（置いてからのラウンド数）、火＝<b>熱</b>（そのラウンドで🔥が燃えた回数）、夜＝<b>列</b>（同じ縦横の列）、蜂＝<b>群れ</b>（つながった🐝の数）。</p>
+  <p><b>属性と共鳴</b>：どのタイルにも属性（<i class="el" style="background:#4f9d5d">草</i><i class="el" style="background:#3a86c8">水</i><i class="el" style="background:#d9532b">火</i><i class="el" style="background:#8a6a45">地</i><i class="el" style="background:#c99a00">虫</i><i class="el" style="background:#6a5acd">天</i><i class="el" style="background:#a0509a">術</i>）がある。発動したとき、<b>同じ属性を持つ隣のタイル1つにつき +1倍</b>（共鳴）。</p>
+  <p><b>植え替え</b>：1ラウンド1回、置いたタイルを空きマスへ動かすか、別のタイルと入れ替えられる。<br><b>とっておき</b>：手札のカードを選んで左の枠をタップすると、取っておける（1ラウンド1回）。取っておいたカードは、いつでもタップして置ける。</p>
+  <p>置いたタイル・遺物をタップすると、大きく説明が出る（手札のカードは下に説明が出る）。</p>
+  <p><b>🔥導火線</b>：タイルを置き終わったら、盤面を<b>なぞって</b>発動の順番を決めてから点火。上下左右につながったタイルを一筆書き。なぞらなかったタイルは、あとからいつもの順（左上→右下）。</p>
+  <p><b>⚙️からくりの庭</b>：ほかの庭を2つ全クリアすると解放される上級者向けの庭。導火線の道筋（何番目に通るか・どこで曲がるか・どこで終わるか）で強さが変わる。</p>
+  <p><b>🌬️風の庭</b>：ほかの庭を3つ全クリアすると解放。矢印のあるタイル（🪁🍃🌪️🎏）は、置いたあとタップすると向きが90°回る（1ラウンド3回）。向きで効く先が変わる。</p>
+  <p>なぞっている途中で<b>1つ前のタイルに戻ると1つ短く</b>なる。<b>盤面の外まで指を出すとリセット</b>。</p>
+  <p>導火線のごほうび：<b>🔥導火</b>＝つないだタイル1マスごとに+1倍。<b>⚡伝導</b>＝直前のタイルと同じ属性なら1回多く発動。<b>🏁完走</b>＝盤面のタイルを全部（5枚以上）つなぐと最後に×1.5。</p>
+  <p><b>☀️昼と🌙夜</b>：ラウンドごとに入れ替わる。昼は「草・火・虫」、夜は「天・水・術」のタイルが<b>1回多く発動</b>（金の枠で光る）。最後のラウンドは🌆黄昏で両方。</p>
+  <p><b>🌱生きている庭</b>：ラウンドの合間に庭が変わる。🌱は2ラウンドで🌿若葉に（水辺ではさらに3ラウンドで🌳大樹に）、🔥が3つ以上かたまると隣の🌱🌿を燃やして🌫️灰に、🐝は花へ1歩近づく。</p>
+  <p><b>✨大当たり</b>：発動中に<b>金色の輪</b>が出たら、そのタイルをすばやくタップ。1回ごとに倍率×1.15（1ラウンド最大4回）。</p>
+  <div class="tilelist">${Object.entries(TILES).filter(([k, t]) => !t.only || !S.theme || t.only === S.theme).map(([k, t]) => `<span>${t.e} ${t.name}</span><span>${tierOf(k) > 1 ? `<b>［${t.only ? THEMES[t.only].name + '専用・' : ''}R${startOf(k) + 1}〜］</b>` : ''}${t.desc}</span>`).join('')}</div>
+  <p>コツ：🌙の×は、それまでに貯めた倍率にかかる。だから<b>後ろ（右下）で発動させるほど強い</b>。</p>
+  <div class="choices"><button class="choice" id="closeHelp" style="text-align:center"><b>${first ? '庭を選ぶ' : fromMenu ? 'メニューに戻る' : 'とじる'}</b></button></div>`);
+  $('closeHelp').onclick = () => { ensureAudio(); if (first) chooseTheme(); else if (fromMenu) openMenu(); else closeModal(); };
+}
+function ensureAudio() { try { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch (e) {} }
+// ===== メニュー =====
+let scoring = false;
+function inThemePick() { return !S.theme; }
+function openMenu() {
+  if (scoring) { info('発動中はメニューを開けない。終わるまで待ってね（庭をタップで早送り）。'); return; }
+  // 遺物選びなどの画面が出ているときは、それを先に済ませてもらう
+  if ($('overlay').classList.contains('show') && !inThemePick() && !menuOpen) { info('先に表示中の画面を進めてね。'); return; }
+  menuOpen = true;
+  const playing = !inThemePick();
+  modal(`<h2>メニュー</h2>
+    ${playing ? `<p class="lead">${THEMES[S.theme].name}・ラウンド ${S.round + 1} / 8・いのち ${'🍃'.repeat(S.lives)}</p>` : ''}
+    <div class="menu">
+      <button class="choice" id="mCards"><b>📖 カード一覧</b><small>タイルと遺物の効果をぜんぶ見る</small></button>
+      <button class="choice" id="mRank"><b>🏆 ランキング</b><small>庭ごとの上位${RANK_N}件</small></button>
+      <button class="choice" id="mRec"><b>📜 庭の記録</b><small>クリアした庭の盤面と点数を見る（${SLOTS}枠）</small></button>
+      ${playing ? `<button class="choice" id="mStat"><b>📊 ここまでの活躍</b><small>どのタイルが点を伸ばしているか</small></button>` : ''}
+      <button class="choice" id="mHelp"><b>❓ 遊び方</b></button>
+      <button class="choice" id="mLight"><b>${lightFx ? '🍃 演出：軽め' : '✨ 演出：ふつう'}</b><small>動きが重いときは「軽め」に（線や飛ぶ数字を減らす）</small></button>
+      <button class="choice" id="mSound"><b>${soundOn ? '🔊 音：ON' : '🔇 音：OFF'}</b><small>タップで切り替え</small></button>
+      ${playing ? `<button class="choice danger" id="mRestart"><b>↺ やり直す</b><small>庭を選ぶところから始め直す</small></button>` : ''}
+      <button class="choice" id="mClose"><b>とじる</b></button>
+    </div>`);
+  $('mCards').onclick = () => cardList(playing && S.theme ? 'mine' : 'all');
+  $('mHelp').onclick = () => help(false, true);
+  $('mRec').onclick = () => recordList();
+  $('mRank').onclick = () => rankingView(S.theme || 'water', 'menu');
+  if (playing) $('mStat').onclick = () => { modal(`<h2>ここまでの活躍</h2>${statsHtml()}<div class="menu"><button class="choice" id="stBack"><b>メニューに戻る</b></button></div>`); $('modal').scrollTop = 0; $('stBack').onclick = openMenu; };
+  $('mSound').onclick = () => { toggleSound(); openMenu(); };
+  $('mLight').onclick = () => { lightFx = !lightFx; try { localStorage.setItem('rensa-light', lightFx ? '1' : '0'); } catch (e) {} glowLevel = -1; openMenu(); };
+  if (playing) $('mRestart').onclick = confirmRestart;
+  $('mClose').onclick = closeMenu;
+}
+let menuOpen = false;
+
+// ===== 庭の記録（ゲームが終わったあと、盤面と点数を枠に残す）=====
+const SLOTS = 5, REC_KEY = 'rensa-record-';
+function readSlot(n) { try { const v = localStorage.getItem(REC_KEY + n); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+function writeSlot(n, data) { try { if (data) localStorage.setItem(REC_KEY + n, JSON.stringify(data)); else localStorage.removeItem(REC_KEY + n); return true; } catch (e) { return false; } }
+const fmtDate = t => { const d = new Date(t); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
+const RESULT = { win: ['全クリア', ''], full: ['庭が埋まった', 'no'], over: ['ラウンド途中まで', 'no'] };
+function miniBoard(board, large) { return `<div class="mini${large ? ' l' : ''}">${board.map(t => t && TILES[t] ? `<span class="f">${TILES[t].e}</span>` : '<span></span>').join('')}</div>`; }
+function slotHtml(n, d, buttons) {
+  if (!d) return `<div class="slot empty">${miniBoard(Array(N * N).fill(null), true)}<div><div class="sn">枠 ${n + 1}</div><div class="sd">空き</div><div class="sb">${buttons}</div></div></div>`;
+  const r = RESULT[d.result] || RESULT.over;
+  return `<div class="slot">${miniBoard(d.board, true)}<div><div class="sn">枠 ${n + 1}　${THEMES[d.theme] ? THEMES[d.theme].name : ''}<span class="res ${r[1]}">${r[0]}</span></div>
+    <div class="score">${fmt(d.score)} ${titleHtml(d.score)}</div>
+    <div class="sd">ラウンド ${d.round + 1} / 8・遺物 ${d.relics.map(k => RELICS[k] ? RELICS[k].e : '').join('')}${d.mvp && d.mvp.length ? `<br>活躍 ${d.mvp.map(k => TILES[k] ? TILES[k].e : '').join(' ')}` : ''}<br>${fmtDate(d.at)}</div><div class="sb">${buttons}</div></div></div>`;
+}
+// メニューから見る記録の一覧
+function recordList(msg) {
+  const rows = Array.from({ length: SLOTS }, (_, n) => { const d = readSlot(n); return slotHtml(n, d, d ? `<button class="d" data-n="${n}">消す</button>` : ''); }).join('');
+  modal(`<h2>庭の記録</h2><p class="lead">${msg || 'ゲームが終わったときの画面から、盤面と点数をここに残せる。'}</p>
+    <div class="menu">${rows}<button class="choice" id="rcBack"><b>メニューに戻る</b></button></div>`);
+  document.querySelectorAll('.slot .sb button.d').forEach(b => b.onclick = () => {
+    const n = +b.dataset.n;
+    modal(`<h2>消す？</h2><p class="lead">枠 ${n + 1} の記録を消す。元には戻せない。</p>
+      <div class="menu"><button class="choice danger" id="ok"><b>消す</b></button><button class="choice" id="ng"><b>やめておく</b></button></div>`);
+    $('ok').onclick = () => { writeSlot(n, null); recordList(`枠 ${n + 1} を消した。`); }; $('ng').onclick = () => recordList();
+  });
+  $('rcBack').onclick = openMenu;
+}
+// 終わった直後：どの枠に残すか選ぶ
+let lastEnd = null;
+function recordPick(msg) {
+  const e = lastEnd;
+  const rows = Array.from({ length: SLOTS }, (_, n) => {
+    const d = readSlot(n);
+    return slotHtml(n, d, `<button class="p" data-n="${n}">${d ? '上書きする' : 'ここに残す'}</button>`);
+  }).join('');
+  modal(`<h2>どの枠に残す？</h2><div style="display:flex;gap:12px;align-items:center;justify-content:center;margin:6px 0">${miniBoard(e.board, true)}<div><div class="big" style="font-size:28px;margin:0">${fmt(e.score)}</div><div class="sd" style="font-size:12px">${THEMES[e.theme].name}・${RESULT[e.result][0]}</div></div></div>
+    <p class="lead">${msg || ''}</p><div class="menu">${rows}<button class="choice" id="rpBack"><b>もどる</b></button></div>`);
+  document.querySelectorAll('.slot .sb button.p').forEach(b => b.onclick = () => {
+    const n = +b.dataset.n, d = readSlot(n);
+    const save = () => { const ok = writeSlot(n, Object.assign({}, e, { at: Date.now() })); if (ok) { e.saved = n; tone(660, 'triangle', .12, .08); } e.reopen(ok ? `枠 ${n + 1} に記録した。` : 'この環境では保存できなかった。'); };
+    if (!d) return save();
+    modal(`<h2>上書きする？</h2><p class="lead">枠 ${n + 1}（${fmt(d.score)}・${THEMES[d.theme] ? THEMES[d.theme].name : ''}）を消して、この庭を残す。</p>
+      <div class="menu"><button class="choice danger" id="ok"><b>上書きする</b></button><button class="choice" id="ng"><b>やめておく</b></button></div>`);
+    $('ok').onclick = save; $('ng').onclick = () => recordPick();
+  });
+  $('rpBack').onclick = () => e.reopen();
+}
+// 終了画面の下に「記録する」「もう一度」を並べる
+// ===== ランキング（庭ごと・このブラウザに保存）=====
+const RANK_KEY = 'rensa-rank-', RANK_N = 10;
+function readRank(th) { try { return JSON.parse(localStorage.getItem(RANK_KEY + th)) || []; } catch (e) { return []; } }
+function addRank(entry) {
+  const list = readRank(entry.theme); list.push(entry);
+  list.sort((a, b) => b.score - a.score || a.at - b.at);
+  const pos = list.indexOf(entry);
+  try { localStorage.setItem(RANK_KEY + entry.theme, JSON.stringify(list.slice(0, RANK_N))); } catch (e) {}
+  return pos < RANK_N ? pos : -1;
+}
+function rankHtml(th, meAt) {
+  const list = readRank(th);
+  if (!list.length) return '<p class="lead">まだ記録がない。遊び終わると自動で載る。</p>';
+  return `<div class="menu">${list.map((d, n) => {
+    const r = RESULT[d.result] || RESULT.over;
+    return `<div class="rk-row${meAt && d.id === meAt ? ' me' : ''}"><span class="rk-n${n < 3 ? ' g' + (n + 1) : ''}">${n + 1}</span>${miniBoard(d.board, false).replace('class="mini"', 'class="mini s"')}
+      <span><span class="rk-s">${fmt(d.score)}</span> ${titleHtml(d.score)} <span class="res ${r[1]}" style="font-size:10px;font-weight:700;padding:1px 4px;border-radius:2px;background:${r[1] ? 'rgba(27,23,18,.12)' : 'var(--gold)'}">${r[0]}</span>
+      <div class="rk-d">${d.mvp && d.mvp.length ? '活躍 ' + d.mvp.map(k => TILES[k] ? TILES[k].e : '').join('') + '・' : ''}遺物 ${d.relics.map(k => RELICS[k] ? RELICS[k].e : '').join('')}<br>${fmtDate(d.at)}</div></span></div>`;
+  }).join('')}</div>`;
+}
+function rankingView(th, back, meAt) {
+  const tabs = Object.keys(THEMES).map(k => `<button data-t="${k}" class="${k === th ? 'on' : ''}">${THEMES[k].e}${THEMES[k].name.replace('の庭', '')}</button>`).join('');
+  modal(`<h2>🏆 ランキング</h2><div class="tabs">${tabs}</div><p class="lead" style="font-size:12px">${THEMES[th].name}・上位${RANK_N}件（このブラウザに保存）</p>${rankHtml(th, meAt)}
+    <div class="menu" style="margin-top:10px"><button class="choice" id="rkBack"><b>${back === 'end' ? 'もどる' : 'メニューに戻る'}</b></button></div>`);
+  $('modal').scrollTop = 0;
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => rankingView(b.dataset.t, back, meAt));
+  $('rkBack').onclick = () => back === 'end' ? lastEnd.reopen() : openMenu();
+}
+// ===== 桁の節目の演出 =====
+function milePop(name) {
+  const r = $('total').getBoundingClientRect(), d = document.createElement('div');
+  d.className = 'mpop'; d.textContent = name + '！'; d.style.left = (r.left + r.width / 2 + (Math.random() * 120 - 60)) + 'px'; d.style.top = (r.top - 4) + 'px';
+  document.body.appendChild(d);
+  d.animate([{ transform: 'translate(-50%,0) scale(.6)', opacity: 0 }, { transform: 'translate(-50%,-16px) scale(1.2)', opacity: 1, offset: .3 }, { transform: 'translate(-50%,-44px) scale(1)', opacity: 0 }], { duration: 700 }).onfinish = () => d.remove();
+  tone(880 + Math.random() * 300, 'triangle', .06, .05);
+}
+async function mileBanner(T) {
+  const m = mileOf(T); if (!m || m[0] < 12) return;
+  let first = false;
+  try { const prev = +(localStorage.getItem('rensa-mile') || 0); if (m[0] > prev) { first = true; localStorage.setItem('rensa-mile', m[0]); } } catch (e) {}
+  const big = m[0] >= 68, g = m[0] >= 100, el = $('mile');
+  el.className = big ? 'big' : '';
+  el.innerHTML = `<div class="mk">${m[1]}${g ? '到達！' : ' 突破！'}</div><div class="ms">${g ? '10の' + m[0] + '乗' : titleOf(T)}</div>${first ? '<div class="mf">初到達！</div>' : ''}`;
+  const dur = big ? 2200 : 1300;
+  el.animate([{ opacity: 0, transform: 'scale(.5)' }, { opacity: 1, transform: 'scale(1.1)', offset: .15 }, { opacity: 1, transform: 'scale(1)', offset: .8 }, { opacity: 0, transform: 'scale(1.05)' }], { duration: dur });
+  if (big) {
+    $('flashall').animate([{ opacity: 0 }, { opacity: 1, offset: .1 }, { opacity: 0 }], { duration: 1400 });
+    burst(g ? 60 : 40);
+    [0, 4, 7, 12, 16, 19, 24].forEach((st, j) => setTimeout(() => tone(note(12 + st), 'triangle', .3, .1), j * 80));
+    if (!lightFx) kick($('app'), SHAKE, 400);
+  } else {
+    [0, 7, 12].forEach((st, j) => setTimeout(() => tone(note(10 + st), 'triangle', .2, .08), j * 90));
+  }
+  await sleep(big ? 1600 : 800);
+}
+// ===== いちばんの連鎖をスロー再生 =====
+async function replayBest() {
+  const b = S.bestReplay; if (!b) return;
+  const keep = { board: S.board, ages: S.ages, dirs: S.dirs, relics: S.relics, round: S.round, fuse: S.fuse, busy: S.busy, hand: S.hand };
+  Object.assign(S, { board: b.board.slice(), ages: b.ages.slice(), dirs: b.dirs.slice(), relics: b.relics.slice(), round: b.round, fuse: { path: b.path.slice() }, busy: true, hand: [] });
+  closeModal(); render(); drawFuse();
+  info(`🎞️ ラウンド ${b.round + 1} の連鎖（${fmt(b.score)} 点）をスロー再生`);
+  await sleep(700);
+  await runScoring({ replay: true, bonus: b.bonus });
+  const fl = $('fuseline'); if (fl) fl.remove();
+  Object.assign(S, keep); render();
+}
+function endScreen(head, T, result) {
+  const rk = statRanking();
+  lastEnd = { board: S.board.slice(), score: T, theme: S.theme, relics: S.relics.slice(), round: S.round, result, saved: null, mvp: rk.slice(0, 3).map(r => r.k) };
+  const entry = { board: lastEnd.board, score: T, theme: S.theme, relics: lastEnd.relics, round: S.round, result, mvp: lastEnd.mvp, at: Date.now(), id: Date.now() + '-' + Math.random().toString(36).slice(2, 8) };
+  const pos = addRank(entry); lastEnd.rankAt = entry.id;
+  const rankLine = pos >= 0 ? `<div class="rk-me">🏆 ${THEMES[S.theme].name}ランキング ${pos + 1}位！</div>` : `<p style="text-align:center;font-size:12px;color:#5b5243">${THEMES[S.theme].name}ランキングの${RANK_N}位までには入らなかった</p>`;
+  head = head.replace('<div class="big">', `<div style="text-align:center;margin-top:4px">${titleHtml(T)}</div><div class="big">`) + rankLine;
+  lastEnd.reopen = msg => {
+    modal(head + `${msg ? `<p style="text-align:center;font-weight:700;color:#c23b20">${msg}</p>` : ''}
+      <div class="choices">
+        <button class="choice" id="rec" style="text-align:center"${lastEnd.saved != null ? ' disabled' : ''}><b>${lastEnd.saved != null ? `📜 枠 ${lastEnd.saved + 1} に記録ずみ` : '📜 この庭を記録する'}</b></button>
+        ${S.bestReplay ? `<button class="choice" id="replay" style="text-align:center"><b>🎞️ いちばんの連鎖をスロー再生</b><small style="display:block;font-size:11px;color:#5b5243">ラウンド ${S.bestReplay.round + 1}・${fmt(S.bestReplay.score)} 点</small></button>` : ''}
+        <button class="choice" id="stat" style="text-align:center"><b>📊 活躍したタイルを見る</b></button>
+        <button class="choice" id="rank" style="text-align:center"><b>🏆 ランキングを見る</b></button>
+        <button class="choice" id="again" style="text-align:center"><b>もう一度あそぶ</b></button></div>`);
+    $('rec').onclick = () => recordPick();
+    if ($('replay')) $('replay').onclick = async () => { await replayBest(); lastEnd.reopen(); };
+    $('rank').onclick = () => rankingView(lastEnd.theme, 'end', lastEnd.rankAt);
+    $('stat').onclick = () => { modal(`<h2>活躍したタイル</h2>${statsHtml()}<div class="menu"><button class="choice" id="stBack"><b>もどる</b></button></div>`); $('modal').scrollTop = 0; $('stBack').onclick = () => lastEnd.reopen(); };
+    $('again').onclick = () => { closeModal(); chooseTheme(); };
+  };
+  lastEnd.reopen();
+}
+function closeMenu() { menuOpen = false; if (inThemePick()) chooseTheme(); else closeModal(); }
+function confirmRestart() {
+  modal(`<h2>やり直す？</h2><p class="lead">いまの庭（ラウンド ${S.round + 1}）は消えて、庭を選ぶところに戻る。<br>最高スコアは残る。</p>
+    <div class="menu"><button class="choice danger" id="rYes"><b>↺ やり直す</b></button><button class="choice" id="rNo"><b>やめておく</b></button></div>`);
+  $('rYes').onclick = () => { menuOpen = false; tone(330, 'triangle', .12, .08); closeModal(); chooseTheme(); };
+  $('rNo').onclick = openMenu;
+}
+function cardList(tab) {
+  const mine = S.theme;
+  const item = (k, t, extra = '') => {
+    const off = t.only && mine && t.only !== mine;
+    const cls = 'cl-i t' + (t.tier || 1) + (t.only && t.only === mine ? ' mine' : '') + (off ? ' off' : '');
+    return `<div class="${cls}"><span class="ce">${t.e}</span><span><b>${t.name}</b> ${tagHtml(k)}${extra}<br>${t.desc}</span></div>`;
+  };
+  const when = k => tierOf(k) > 1 ? `<small style="margin-left:6px;color:#7a6f5c">ラウンド${startOf(k) + 1}から</small>` : '';
+  const keys = Object.keys(TILES);
+  const sec = (title, sub, list) => list.length ? `<div class="cl-h">${title}<small>${sub}</small></div><div class="cl">${list.join('')}</div>` : '';
+  let body = '';
+  if (tab === 'relic') {
+    const ritem = ([k, r]) => {
+      const has = S.relics.includes(k), start = Object.values(THEMES).find(t => t.relic === k), off = r.only && mine && r.only !== mine;
+      return `<div class="cl-i${has ? ' mine' : ''}${off ? ' off' : ''}"><span class="ce">${r.e}</span><span><b>${r.name}</b>${has ? '<small style="margin-left:6px;color:#c23b20;font-weight:700">持っている</small>' : ''}${start ? `<small style="margin-left:6px;color:#7a6f5c">最初に持っている</small>` : ''}<br>${r.desc}</span></div>`;
+    };
+    const all = Object.entries(RELICS);
+    const order = mine ? [mine, ...Object.keys(THEMES).filter(t => t !== mine)] : Object.keys(THEMES);
+    body = sec('共通の遺物', 'どの庭でも出る', all.filter(([, r]) => !r.only).map(ritem))
+      + order.map(th => sec(`${THEMES[th].name}の専用遺物`, th === mine ? 'いまの庭' : 'この庭でしか出ない', all.filter(([, r]) => r.only === th).map(ritem))).join('');
+  } else {
+    const showThemes = tab === 'mine' && mine ? [mine] : Object.keys(THEMES);
+    body = sec('基本', '最初から出る', keys.filter(k => tierOf(k) === 1 && !TILES[k].born).map(k => item(k, TILES[k])))
+      + sec('庭で生まれる', '手札には出ない。ラウンドの合間に庭が変わって生まれる', keys.filter(k => TILES[k].born).map(k => item(k, TILES[k])))
+      + sec('上', 'ラウンド3から出る', keys.filter(k => tierOf(k) === 2 && !TILES[k].only).map(k => item(k, TILES[k])))
+      + sec('極', 'ラウンド5から出る', keys.filter(k => tierOf(k) === 3 && !TILES[k].only).map(k => item(k, TILES[k])))
+      + showThemes.map(th => sec(`${THEMES[th].name}の専用`, th === mine ? 'いまの庭' : 'この庭でしか出ない',
+          keys.filter(k => TILES[k].only === th).map(k => item(k, TILES[k], `<small style="margin-left:6px;color:#7a6f5c">${tierOf(k) === 3 ? '極' : '上'}・ラウンド${startOf(k) + 1}から</small>`)))).join('');
+  }
+  const tabs = [mine ? ['mine', 'いまの庭'] : null, ['all', 'ぜんぶ'], ['relic', '遺物']].filter(Boolean);
+  modal(`<h2>カード一覧</h2><div class="tabs">${tabs.map(([k, n]) => `<button data-t="${k}" class="${k === tab ? 'on' : ''}">${n}</button>`).join('')}</div>
+    ${body}<div class="menu"><button class="choice" id="clBack"><b>メニューに戻る</b></button></div>`);
+  $('modal').scrollTop = 0;
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => cardList(b.dataset.t));
+  $('clBack').onclick = openMenu;
+}
+$('menuBtn').onclick = () => { ensureAudio(); openMenu(); };
+function toggleSound() { soundOn = !soundOn; $('soundBtn').textContent = soundOn ? '音 ON' : '音 OFF'; }
+$('soundBtn').onclick = toggleSound;
+
+chooseTheme();
+queueFit(true);
+</script>
+</body>
+</html>
