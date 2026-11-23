@@ -167,7 +167,31 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 #board.fusing{touch-action:none}
 #board.fusing .cell.t{cursor:crosshair}
 .fusebar{display:flex;gap:8px;flex:1;justify-content:center;align-items:center}
-.fusebar .btn{height:58px;padding:0 16px;font-size:15px}
+.fusebar .btn{height:58px;padding:0 16px;font-size:15px;white-space:nowrap;writing-mode:horizontal-tb}
+.fusebar #igniteBtn{flex:1;max-width:180px;font-size:17px}
+#coach{position:fixed;z-index:60;width:min(92vw,360px);background:#fffaf0;color:var(--sumi);border:3px solid var(--gold);border-radius:6px;padding:12px 14px 10px;box-shadow:0 8px 24px rgba(0,0,0,.45);font-size:14px;line-height:1.65;display:none}
+#coach.on{display:block;animation:coachIn .2s ease-out}
+@keyframes coachIn{from{transform:translateY(6px)}to{transform:none}}
+#coach .cn{font-size:11px;font-weight:900;color:#a0509a;letter-spacing:.05em}
+#coach .cbtn{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+#coach .cbtn button{font-family:inherit;font-weight:700;font-size:13px;border-radius:3px;padding:6px 12px;cursor:pointer;border:2px solid var(--sumi)}
+#coach #coachOk{background:var(--sumi);color:var(--kinari)}
+#coach #coachSkip{background:transparent;color:#7a6f5c;border-color:transparent}
+.coachhl{animation:coachHl 1.1s ease-in-out infinite;outline:3px solid var(--gold);outline-offset:3px;border-radius:4px}
+@keyframes coachHl{50%{outline-color:rgba(255,215,90,.2)}}
+#status>span{cursor:help}
+#status>span:active{opacity:.7}
+#factor{cursor:help}
+.steps{margin:6px 0 10px;padding-left:0;list-style:none;counter-reset:st}
+.steps li{position:relative;padding:6px 0 6px 34px;border-bottom:1px dashed rgba(27,23,18,.2);line-height:1.6}
+.steps li::before{counter-increment:st;content:counter(st);position:absolute;left:2px;top:7px;width:22px;height:22px;border-radius:50%;background:var(--sumi);color:var(--kinari);font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center}
+.glossary{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:13px;line-height:1.55;margin:6px 0}
+.glossary dt{font-weight:900;white-space:nowrap}
+.glossary dd{margin:0;color:#3d362b}
+.tabs.helptabs{flex-wrap:wrap}
+.tabs.helptabs button{flex:1 1 30%;white-space:nowrap}
+.hsec h3{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:16px;margin:12px 0 4px}
+.hsec p{margin:6px 0}
 .cell.evo{animation:evo .7s ease-out}
 @keyframes evo{0%{transform:scale(.6) rotate(-10deg);filter:brightness(2)}100%{transform:none;filter:none}}
 #evo{position:fixed;left:50%;top:14px;transform:translate(-50%,-20px);z-index:42;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;
@@ -305,6 +329,7 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
   </div>
 </div>
 <div id="tip" aria-live="polite"></div>
+<div id="coach" role="dialog"></div>
 <div id="hov"></div>
 <div id="evo"></div>
 <div id="mile"></div>
@@ -1091,6 +1116,8 @@ function startRound() {
   S.placed = 0; S.rerolls = 1 + (S.relics.includes('reroll') ? 2 : 0);
   dealHand(); render(); showPreview();
   announceTier();
+  if (S.round === 0 && S.placed === 0) setTimeout(() => coach('pick', $('hand'), '<b>① 手札からタイルを1枚タップ</b>して選ぼう。<br>タイルを<b>長押し</b>すると、大きな説明が見られる。<br><span style="opacity:.75">（このラウンドは3枚置く）</span>', { n: '1/7' }), 300);
+  if (S.round === 1) setTimeout(() => coach('next', $('side'), '<b>⑦ タイルは次のラウンドにも残る。</b>3枚ずつ足して庭を育て、全8ラウンドの目標を目指そう。<br>困ったら：<b>引き直す</b>（手札を入れ替え）・<b>とっておき</b>（左の枠に1枚取っておく）・<b>植え替え</b>（置いたタイルを動かす）。<br>画面上部の数字や表示はタップで説明が出る。', { n: '7/7', last: true }), 500);
 }
 function announceTier() {
   const fresh = Object.keys(TILES).filter(k => tierOf(k) > 1 && startOf(k) === S.round && tileWeight(k, S.round, S.theme) > 0);
@@ -1150,6 +1177,56 @@ function render() {
   hb.disabled = S.busy || !!S.fuse;
 }
 function info(h) { $('info').innerHTML = h; }
+// ===== はじめての案内：場面ごとに1回ずつ、吹き出しで何をすればいいか教える（操作はふさがない）=====
+const TUT = { on: false, seen: new Set() };
+try { TUT.on = localStorage.getItem('rensa-tut') === 'on'; } catch (e) {}
+function tutSet(v) { TUT.on = v === 'on'; if (TUT.on) TUT.seen.clear(); try { localStorage.setItem('rensa-tut', v); } catch (e) {} if (!TUT.on) coachHide(); }
+let coachEl = null;
+function coachHide() { const c = $('coach'); if (c) c.classList.remove('on'); if (coachEl) coachEl.classList.remove('coachhl'); coachEl = null; }
+function coach(step, target, html, opt) {
+  if (!TUT.on || TUT.seen.has(step)) return;
+  TUT.seen.add(step); coachHide();
+  const c = $('coach'), o = opt || {};
+  c.innerHTML = `<div class="cn">はじめての案内${o.n ? `　${o.n}` : ''}</div><div>${html}</div><div class="cbtn"><button id="coachSkip">案内をやめる</button><button id="coachOk">${o.last ? 'はじめる！' : 'わかった'}</button></div>`;
+  c.classList.add('on');
+  if (target && !o.noHl) { coachEl = target; target.classList.add('coachhl'); }
+  const place = () => {
+    const w = c.offsetWidth, h = c.offsetHeight; let x = (innerWidth - w) / 2, y = 12;
+    if (target && !o.top) {
+      const r = target.getBoundingClientRect(), cy = (r.top + r.bottom) / 2;
+      y = cy > innerHeight / 2 ? r.top - h - 14 : r.bottom + 14;
+      y = Math.max(8, Math.min(innerHeight - h - 8, y));
+    }
+    c.style.left = x + 'px'; c.style.top = y + 'px';
+  };
+  place(); requestAnimationFrame(place);
+  $('coachOk').onclick = () => { coachHide(); if (o.last) tutSet('done'); if (o.then) o.then(); };
+  $('coachSkip').onclick = () => { tutSet('done'); info('案内をやめた。メニューの「🔰 はじめての案内」でいつでも戻せる。'); };
+}
+// 画面上部の数字や表示をタップすると、意味を説明する
+const PHASE_TIP = { day: '☀️ <b>昼</b>：草・火・虫の属性を持つタイルが <b>1回多く発動</b>する（金の枠で光る）。', night: '🌙 <b>夜</b>：天・水・術の属性を持つタイルが <b>1回多く発動</b>する（金の枠で光る）。', dusk: '🌆 <b>黄昏</b>（最後のラウンド）：昼と夜の両方。草・火・虫・天・水・術が <b>1回多く発動</b>する。' };
+const FACTOR_TIP = {
+  water: '🌱 <b>育つ</b>：置いてから経ったラウンドの数。🎋竹や🌳大樹など、長く置いたタイルほど強くなる。早めに置いたタイルは大事に。',
+  fire: '🔥 <b>熱</b>：そのラウンドで🔥が発動した回数。🔥のあとに発動するタイルほど熱が高い。🍠焼き芋や🌋火山は熱で強くなるので、<b>🔥より後（右下側・導火線の後ろ）</b>に置こう。',
+  night: '🌙 <b>列</b>：同じ縦の列・横の列。⭐や🔭望遠鏡などは、同じ列のタイルを数えて強くなる。',
+  bee: '🐝 <b>群れ</b>：上下左右につながった🐝のかたまり。大きい群れほど👑女王蜂や🪺巣が強くなる。',
+  gear: '⚙️ <b>道筋</b>：導火線のなぞり方。何番目に通るか・どこで曲がるか・どこで終わるかで、⚙️歯車・🧭羅針盤・🎯的の強さが変わる。',
+  wind: '🌬️ <b>風向き</b>：矢印タイル（🪁🍃🌪️🎏）の向き。置いたあと<b>タップで90°回せる</b>（1ラウンド3回）。向きの先のタイルに効く。',
+  pair: '🎎 <b>対</b>：真ん中の縦の列が軸。軸をはさんで左右の同じ位置に同じタイルを置くと「対」になり、1回多く発動する。',
+  stack: '🏯 <b>段</b>：同じタイルの上に同じタイルを重ねた高さ。段の数だけ発動する（手札のタイルを盤面の同じタイルにタップで重ねる）。',
+};
+function statusTips() {
+  const sp = $('status').children;
+  const tips = [
+    () => `<div class="tn">ラウンド ${S.round + 1} / 8</div><div class="td">全部で8ラウンド。1ラウンドに3枚（最後のラウンドだけ4枚）置いて点火する。タイルは次のラウンドにも残る。</div>`,
+    () => `<div class="tn">いのち ${'🍃'.repeat(S.lives || 0)}</div><div class="td">目標に届かなかったラウンドは、いのちが1つ減る（遺物ももらえない）。全部なくなると終わり。庭はそのまま残るので、届かなくても続けて育てられる。</div>`,
+    () => `<div class="tn">昼と夜</div><div class="td">${PHASE_TIP[phaseOf(S.round)] || ''}<br>ラウンドごとに昼と夜が入れ替わる。</div>`,
+    () => `<div class="tn">最高スコア</div><div class="td">この端末で出した、これまでの最高点。</div>`,
+    () => `<div class="tn">目標 ${fmt(TARGETS[S.round] || 0)}</div><div class="td">このラウンドで超えたい点。超えるとクリアで、<b>遺物</b>（ずっと効くボーナス）を1つ選べる。ラウンドが進むほど大きくなる。</div>`,
+  ];
+  [...sp].forEach((el, k) => { if (tips[k]) el.onclick = () => { if (!S.theme) return; showTip(tips[k]()); }; });
+  $('factor').onclick = () => { if (S.theme && FACTOR_TIP[S.theme]) showTip(`<div class="tn">${THEMES[S.theme].name}の要素</div><div class="td">${FACTOR_TIP[S.theme]}</div>`); };
+}
 // ===== カーソルを合わせたときの説明（マウスのときだけ。タップでは出さない）=====
 const canHover = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
 function hoverDesc(el, getTile) {
@@ -1279,7 +1356,7 @@ function onCard(k) {
   if (S.busy) return; ensureAudio();
   if (S.swap) { S.swap = null; }
   S.sel = S.sel === k ? -1 : k; render();
-  if (S.sel >= 0) { const t = S.hand[k]; info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}${S.theme === 'stack' && S.board.includes(t) ? '　<b>（盤面の同じタイルの上に重ねられる）</b>' : ''}`); tone(660, 'sine', .05, .06); }
+  if (S.sel >= 0) { coach('place', $('board'), '<b>② 盤面の空いているマスをタップ</b>して置こう。<br>同じカードをもう一度タップすると選ぶのをやめる。', { n: '2/7' }); const t = S.hand[k]; info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}${S.theme === 'stack' && S.board.includes(t) ? '　<b>（盤面の同じタイルの上に重ねられる）</b>' : ''}`); tone(660, 'sine', .05, .06); }
 }
 // 重ねの庭：選んでいる手札（またはとっておき）と同じタイルの上に重ねられる
 const selTile = () => S.sel === 'hold' ? S.held : S.sel >= 0 ? S.hand[S.sel] : null;
@@ -1314,6 +1391,8 @@ function onCell(i) {
   if (S.placed >= perRound(S.round)) { S.hand = []; S.sel = -1; flashNew(i); startFuse(); return; }
   dealHand(); render(); flashNew(i); showPreview();
   info('次のタイルを選ぼう。');
+  if (S.round === 0 && S.placed === 1) coach('preview', $('scorebox'), '<b>③ ここが「今の庭なら何点になるか」の見込み。</b><br>スコア＝<b>点 × 倍率</b>。右上の<b>目標</b>を超えればクリア。', { n: '3/7' });
+  if (S.round === 0 && S.placed === 2) coach('synergy', $('board'), '<b>④ 隣り合うと強くなるタイルが多い。</b>（例：🌱芽の隣に💧水）<br>タイルの下の<b>色札（属性）</b>が同じタイルを隣に置くと、<b>共鳴</b>で倍率+1。', { n: '4/7' });
 }
 // とっておき：手札を1枚取っておける（入れ替えは1ラウンド1回）。取っておいたカードはいつでも置ける
 hoverDesc($('hold'), () => S.held); longPress($('hold'), () => S.held);
@@ -1353,6 +1432,7 @@ function onSwapCell(i) {
 // ===== 導火線：置き終わったら、盤面をなぞって発動の順番を決める =====
 function startFuse() {
   S.fuse = { path: [] }; S.busy = false; S.swap = null; render(); showPreview(); drawFuse();
+  setTimeout(() => coach('fuse', $('igniteBtn'), '<b>⑤ 置き終わったら🔥点火！</b><br>点火の前に、盤面を<b>指でなぞる</b>と発動の順番（導火線）を決められる。同じ属性が続くと⚡伝導で1回多く発動する。<br><b>なぞらずに点火してもOK</b>（左上から右下へ順に発動）。', { n: '5/7' }), 200);
   info(`<b>導火線</b>：盤面を<b>なぞって</b>発動の順番を決めよう（上下左右につながったタイルを一筆書き）。なぞらなかったタイルは あとから いつもの順（左上→右下）。決まったら <b>🔥点火</b>。タイルを<b>長押し</b>で説明、<b>植え替え</b>もできる。`);
   tone(520, 'triangle', .1, .07);
 }
@@ -1653,6 +1733,7 @@ function burst(n) {
 function modal(h) { $('modal').innerHTML = h; $('overlay').classList.add('show'); }
 function closeModal() { $('overlay').classList.remove('show'); }
 function relicChoice(T, ratio) {
+  setTimeout(() => coach('relic', null, '<b>⑥ クリア！ 遺物を1つ選ぼう。</b><br>遺物は、このゲームのあいだ<b>ずっと効く</b>ボーナス。今の庭に置いてあるタイルに関係するものを選ぶと強い。', { n: '6/7', top: true }), 200);
   const opts = relicOptions(S.relics, S.theme, Math.random);
   const msg = ratio >= 10 ? 'とんでもないシナジー！' : ratio >= 3 ? 'いい連鎖！' : 'クリア！';
   modal(`<h2>${msg}</h2><div style="text-align:center">${titleHtml(T)}</div><div class="big">${fmt(T)}</div><p style="text-align:center">目標 ${fmt(TARGETS[S.round])}（×${ratio >= 100 ? fmt(Math.floor(ratio)) : ratio.toFixed(1)}）</p>
@@ -1665,6 +1746,7 @@ function relicChoice(T, ratio) {
   });
 }
 function missed(T) {
+  setTimeout(() => coach('missed', null, '目標に届かなかったときは、<b>いのち🍃が1つ減る</b>だけ。庭はそのまま残るので、次のラウンドで取り返そう。', { top: true }), 200);
   modal(`<h2>あと少し…</h2><div class="big" style="color:#c23b20">${fmt(T)}</div><p style="text-align:center">目標 ${fmt(TARGETS[S.round])} に届かなかった。<br><b>いのちを1つ失った</b>（残り ${'🍃'.repeat(S.lives)}）。</p>
     <p style="text-align:center">今回は遺物なし。でも庭はそのまま残る。続けて庭を育てよう。</p><div class="choices"><button class="choice" id="cont" style="text-align:center"><b>次のラウンドへ</b></button></div>`);
   $('cont').onclick = () => { closeModal(); S.busy = false; nextRoundWithEvolve(); };
@@ -1687,31 +1769,83 @@ function victory(T) {
   endScreen(`${unlockMsg}<h2>庭が完成した</h2><div class="big">${fmt(T)}</div><div style="display:flex;justify-content:center;margin:6px 0">${miniBoard(S.board, true)}</div><p style="text-align:center">25マスがすべて埋まり、全8ラウンドをクリア！</p>
     <p style="text-align:center">遺物：${S.relics.map(k => RELICS[k].e).join(' ')}</p><p style="text-align:center">最高スコア：${fmt(best)}</p>`, T, 'win');
 }
-function help(first, fromMenu) {
-  modal(`<h2>連鎖の庭</h2>
-  <p>1ラウンドに3枚、タイルを5×5の庭に置く。置き終わると、<b>庭全体が左上から右下へ順番に発動</b>して、<b>点 × 倍率</b> がスコアになる。</p>
-  <p>目標スコアを超えたらクリアで、<b>遺物</b>を1つもらえる。タイルは次のラウンドも残るので、シナジーはどんどん育つ。全8ラウンド。</p>
-  <p>庭がぜんぶ埋まるまで（25マス）遊べる。目標に届かなくても<b>いのち🍃</b>が残っていれば続けられる（3回まで）。最後のラウンドだけ4枚置ける。</p>
-  <p><b>ラウンド3から「上」、ラウンド5から「極」の強いタイル</b>が出るようになる。庭ごとの<b>専用タイル</b>はもっと早く、ラウンド2と4から出る。<b>庭のテーマに合わせて組むと勝ちやすい。</b></p>
-  <p>⭐⚡🦉☀️🌠👑（もう一度発動させるタイル）どうしは、発動させ合う代わりに<b>回数を増やし合う</b>。⭐は隣の⭐1つにつき、周りを発動させる回数が+1。<b>星を固めるほど、周りが何度も発動する</b>。発動の回数に上限はない。</p>
-  <p>遺物は3つから1つ選ぶ。<b>共通の遺物</b>と、いまの庭でしか出ない<b>専用遺物</b>がある。3つのうち1つは専用遺物。</p>
-  <p>庭ごとに<b>独自の要素</b>がある。水辺＝<b>育つ</b>（置いてからのラウンド数）、火＝<b>熱</b>（そのラウンドで🔥が燃えた回数）、夜＝<b>列</b>（同じ縦横の列）、蜂＝<b>群れ</b>（つながった🐝の数）。</p>
-  <p><b>属性と共鳴</b>：どのタイルにも属性（<i class="el" style="background:#4f9d5d">草</i><i class="el" style="background:#3a86c8">水</i><i class="el" style="background:#d9532b">火</i><i class="el" style="background:#8a6a45">地</i><i class="el" style="background:#c99a00">虫</i><i class="el" style="background:#6a5acd">天</i><i class="el" style="background:#a0509a">術</i>）がある。発動したとき、<b>同じ属性を持つ隣のタイル1つにつき +1倍</b>（共鳴）。</p>
-  <p><b>植え替え</b>：1ラウンド1回、置いたタイルを空きマスへ動かすか、別のタイルと入れ替えられる。<br><b>とっておき</b>：手札のカードを選んで左の枠をタップすると、取っておける（1ラウンド1回）。取っておいたカードは、いつでもタップして置ける。</p>
-  <p>置いたタイル・遺物をタップすると、大きく説明が出る（手札のカードは下に説明が出る）。</p>
-  <p><b>🔥導火線</b>：タイルを置き終わったら、盤面を<b>なぞって</b>発動の順番を決めてから点火。上下左右につながったタイルを一筆書き。なぞらなかったタイルは、あとからいつもの順（左上→右下）。</p>
-  <p><b>⚙️からくりの庭</b>：ほかの庭を2つ全クリアすると解放される上級者向けの庭。導火線の道筋（何番目に通るか・どこで曲がるか・どこで終わるか）で強さが変わる。</p>
-  <p><b>🌬️風の庭</b>：ほかの庭を3つ全クリアすると解放。矢印のあるタイル（🪁🍃🌪️🎏）は、置いたあとタップすると向きが90°回る（1ラウンド3回）。向きで効く先が変わる。</p>
-  <p><b>🎎対の庭</b>：ほかの庭を4つ全クリアすると解放。真ん中の縦の列が軸で、左右の同じ位置に同じタイルを置くと「対」になり 1回多く発動する（軸のタイルも1回多く。🦋蝶はどのタイルとも対になる）。</p>
-  <p><b>🏯重ねの庭</b>：ほかの庭を5つ全クリアすると解放。手札のタイルを、盤面の同じタイルの上にタップすると重なって段が上がり、段の数だけ発動する（そのぶん庭に空きが残る）。</p>
-  <p><b>長押し</b>：手札・とっておきのタイルや、導火線を引いている間の盤面のタイルを長押しすると、大きな説明が出る。導火線を引いている間も<b>植え替え</b>ができる。</p>
-  <p>なぞっている途中で<b>1つ前のタイルに戻ると1つ短く</b>なる。<b>盤面の外まで指を出すとリセット</b>。</p>
-  <p>導火線のごほうび：<b>🔥導火</b>＝つないだタイル1マスごとに+1倍。<b>⚡伝導</b>＝直前のタイルと同じ属性なら1回多く発動。<b>🏁完走</b>＝盤面のタイルを全部（5枚以上）つなぐと最後に×1.5。</p>
-  <p><b>☀️昼と🌙夜</b>：ラウンドごとに入れ替わる。昼は「草・火・虫」、夜は「天・水・術」のタイルが<b>1回多く発動</b>（金の枠で光る）。最後のラウンドは🌆黄昏で両方。</p>
-  <p><b>🌱生きている庭</b>：ラウンドの合間に庭が変わる。🌱は2ラウンドで🌿若葉に（水辺ではさらに3ラウンドで🌳大樹に）、🔥が3つ以上かたまると隣の🌱🌿を燃やして🌫️灰に、🐝は花へ1歩近づく。</p>
-  <div class="tilelist">${Object.entries(TILES).filter(([k, t]) => !t.only || !S.theme || t.only === S.theme).map(([k, t]) => `<span>${t.e} ${t.name}</span><span>${tierOf(k) > 1 ? `<b>［${t.only ? THEMES[t.only].name + '専用・' : ''}R${startOf(k) + 1}〜］</b>` : ''}${t.desc}</span>`).join('')}</div>
-  <p>コツ：🌙の×は、それまでに貯めた倍率にかかる。だから<b>後ろ（右下）で発動させるほど強い</b>。</p>
-  <div class="choices"><button class="choice" id="closeHelp" style="text-align:center"><b>${first ? '庭を選ぶ' : fromMenu ? 'メニューに戻る' : 'とじる'}</b></button></div>`);
+const HELP = [
+  ['basic', 'はじめに', () => `<div class="hsec">
+    <ol class="steps">
+      <li>手札から<b>3枚</b>（最後のラウンドだけ4枚）、5×5の庭に置く。カードを<b>タップで選んで</b>、空きマスを<b>タップで置く</b>。</li>
+      <li>置き終わったら<b>🔥点火</b>。タイルが順番に発動して、<b>点 × 倍率</b> がそのラウンドのスコアになる。</li>
+      <li><b>目標</b>を超えたらクリア。<b>遺物</b>（ずっと効くボーナス）を3つから1つ選ぶ。</li>
+      <li>タイルは次のラウンドにも残る。庭を育てて<b>全8ラウンド</b>をクリアしよう。</li>
+    </ol>
+    <h3>画面の見方</h3>
+    <p><b>上</b>：ラウンド・いのち🍃・☀️昼/🌙夜・最高点・目標。<b>タップすると意味が出る。</b>その下に、持っている遺物と、庭の要素（熱・群れなど）。</p>
+    <p><b>まんなか</b>：点 × 倍率 と「いまの庭なら何点か」の見込み、目標までのゲージ、5×5の庭。</p>
+    <p><b>下</b>：手札、とっておき（左の枠）、引き直す・植え替え（右のボタン）。</p>
+    <h3>説明の見方</h3>
+    <p>手札・とっておきのタイルは<b>長押し</b>、置いたタイルと遺物は<b>タップ</b>で大きな説明が出る。メニューの「📖 カード一覧」で全部見られる。</p>
+    <h3>困ったら</h3>
+    <p>目標に届かなくても<b>いのち🍃</b>が1つ減るだけで、3回まで続けられる。迷ったら <b>🔥火の庭</b>（いちばんやさしい）から。</p></div>`],
+  ['score', '点の決まり方', () => `<div class="hsec">
+    <p>スコア ＝ <b>点 × 倍率</b>。タイルが発動するたびに、点や倍率が増えていく。</p>
+    <p><b>+○点</b>・<b>+○倍</b> は足し算、<b>×○</b> は今の倍率への掛け算。<b>掛け算は、それまでに貯めた倍率にかかるので、後ろで発動させるほど強い。</b></p>
+    <h3>発動の順番</h3>
+    <p>ふつうは<b>左上から右下へ</b>（横に読む順）。点火の前に盤面をなぞれば、順番を自分で決められる（→「導火線」）。</p>
+    <h3>もう一度発動させるタイル</h3>
+    <p>⭐⚡🦉☀️🌠👑🪁⛩️🪜 などは、ほかのタイルを<b>もう一度発動</b>させる。これらどうしは発動させ合わず、<b>回数を増やし合う</b>（⭐は隣の⭐1つにつき回数+1）。回数に上限はない。</p>
+    <h3>属性と共鳴</h3>
+    <p>タイルの下の色札が<b>属性</b>（<i class="el" style="background:#4f9d5d">草</i><i class="el" style="background:#3a86c8">水</i><i class="el" style="background:#d9532b">火</i><i class="el" style="background:#8a6a45">地</i><i class="el" style="background:#c99a00">虫</i><i class="el" style="background:#6a5acd">天</i><i class="el" style="background:#a0509a">術</i>）。発動したとき、<b>同じ属性の隣のタイル1つにつき +1倍</b>（共鳴）。</p>
+    <h3>☀️昼と🌙夜</h3>
+    <p>ラウンドごとに入れ替わる。昼は 草・火・虫、夜は 天・水・術 のタイルが<b>1回多く発動</b>（金の枠で光る）。最後のラウンドは🌆黄昏で両方。</p>
+    <h3>強いタイル</h3>
+    <p>ラウンド3から<b>「上」</b>、ラウンド5から<b>「極」</b>のタイルが出る。庭ごとの<b>専用タイル</b>はもっと早く出る。<b>庭のテーマに合わせて組むと勝ちやすい。</b></p></div>`],
+  ['fuse', '導火線', () => `<div class="hsec">
+    <p>タイルを置き終わると、<b>導火線</b>を引ける。盤面を<b>指でなぞる</b>と、なぞった順に発動する（上下左右につながったタイルを一筆書き）。なぞらなかったタイルは、そのあと いつもの順（左上→右下）。</p>
+    <p><b>なぞらずに🔥点火してもいい。</b></p>
+    <h3>ごほうび</h3>
+    <p><b>🔥導火</b>：つないだタイル1マスごとに +1倍。<br><b>⚡伝導</b>：直前のタイルと同じ属性なら、1回多く発動。<br><b>🏁完走</b>：盤面のタイルを全部（5枚以上）つなぐと、最後に ×1.5。</p>
+    <h3>操作</h3>
+    <p>1つ前のタイルに戻ると<b>1つ短く</b>なる。<b>盤面の外まで指を出すとリセット</b>。「描き直す」でも消せる。なぞっている間の上のゲージは「なぞった分だけで目標に届くか」。</p>
+    <p>導火線を引いている間も、タイルの<b>長押しで説明</b>、<b>植え替え</b>ができる。</p></div>`],
+  ['tools', '便利な操作', () => `<div class="hsec">
+    <p><b>引き直す</b>：手札を全部入れ替える（1ラウンド1回）。</p>
+    <p><b>とっておき</b>：手札のカードを選んでから左の枠をタップすると、1枚取っておける（入れ替えは1ラウンド1回）。取っておいたカードは、いつでもタップして置ける。</p>
+    <p><b>植え替え</b>：置いたタイルを空きマスへ動かすか、別のタイルと入れ替える（1ラウンド1回）。押してから、動かすタイル→行き先 の順にタップ。</p>
+    <p><b>長押し</b>：手札・とっておきのタイルを長押しで説明。<b>タップ</b>：置いたタイル・遺物・画面上部の表示の説明。</p>
+    <p><b>発動中</b>：盤面をタップで早送り。</p>
+    <p><b>メニュー</b>：カード一覧・この庭のこと・用語集・ランキング・庭の記録・ここまでの活躍・演出の軽さ・音・やり直し。</p></div>`],
+  ['garden', '庭', () => `<div class="hsec">
+    <p>庭を選ぶと、その庭のタイルが多く出て、その庭の遺物を1つ持って始まる。庭ごとに<b>独自の要素</b>がある。</p>
+    ${Object.keys(THEMES).map(k => `<p><b>${THEMES[k].e} ${THEMES[k].name}</b>${THEMES[k].locked ? `（ほかの庭を${THEMES[k].locked}つ全クリアで解放）` : ''}<br>${FACTOR_TIP[k] || ''}</p>`).join('')}
+    <h3>🌱 生きている庭</h3>
+    <p>ラウンドの合間に庭が変わる。🌱は2ラウンドで🌿若葉に（水辺ではさらに3ラウンドで🌳大樹に）、🔥が3つ以上かたまると隣の🌱🌿を燃やして🌫️灰に、🐝は花へ1歩近づく。</p></div>`],
+  ['words', '用語集', () => `<dl class="glossary">${GLOSSARY.map(([w, d]) => `<dt>${w}</dt><dd>${d}</dd>`).join('')}</dl>`],
+];
+const GLOSSARY = [
+  ['点', 'タイルが足していく数（左の数字）。'], ['倍率', '点に掛ける数（右の数字）。スコア＝点×倍率。'],
+  ['+○倍 / ×○', '+は倍率への足し算、×は倍率への掛け算。掛け算は後ろで発動するほど得。'],
+  ['発動', 'タイルが効果を出すこと。1回多く発動＝効果が2回出る。'], ['再発動', 'ほかのタイルをもう一度発動させること（⭐⚡など）。'],
+  ['属性', 'タイルの下の色札。<i class="el" style="background:#4f9d5d">草</i><i class="el" style="background:#3a86c8">水</i><i class="el" style="background:#d9532b">火</i><i class="el" style="background:#8a6a45">地</i><i class="el" style="background:#c99a00">虫</i><i class="el" style="background:#6a5acd">天</i><i class="el" style="background:#a0509a">術</i>'], ['共鳴', '同じ属性のタイルが上下左右に隣り合うと、1つにつき +1倍。'],
+  ['目標', 'そのラウンドで超えたい点。超えるとクリア。'], ['いのち🍃', '目標に届かないと1つ減る。3つなくなると終わり。'],
+  ['遺物', 'クリアでもらえる、ずっと効くボーナス。どの庭でも出る共通の遺物と、その庭だけの専用遺物がある。'],
+  ['上・極', '強いタイル。上はラウンド3、極はラウンド5から出る。'], ['専用', 'その庭でしか出ないタイル・遺物。'],
+  ['導火線', '点火の前になぞって決める、発動の順番。'], ['🔥導火', '導火線でつないだタイル1マスにつき +1倍。'],
+  ['⚡伝導', '導火線で、直前と同じ属性のタイルは1回多く発動。'], ['🏁完走', '盤面のタイルを全部（5枚以上）つなぐと最後に ×1.5。'],
+  ['とっておき', '手札を1枚取っておける左の枠。'], ['引き直す', '手札を全部入れ替える。'], ['植え替え', '置いたタイルを動かす・入れ替える。'],
+  ['☀️昼 / 🌙夜', '昼は草・火・虫、夜は天・水・術のタイルが1回多く発動。最後は🌆黄昏で両方。'],
+  ['育つ', '水辺の庭の要素。置いてから経ったラウンドの数。'], ['熱', '火の庭の要素。そのラウンドで🔥が発動した回数。'],
+  ['列', '夜の庭の要素。同じ縦・横の列。'], ['群れ', '蜂の庭の要素。つながった🐝のかたまり。'],
+  ['道筋', 'からくりの庭の要素。導火線のなぞり方。'], ['風向き', '風の庭の要素。矢印タイルの向き（タップで回す）。'],
+  ['対', '対の庭の要素。軸をはさんで左右の同じ位置に同じタイル。'], ['段', '重ねの庭の要素。同じタイルを重ねた高さ。'],
+  ['生きている庭', 'ラウンドの合間に庭が変わること（芽が育つ・火が燃え移る・蜂が動く）。'],
+];
+function help(first, fromMenu, tab) {
+  tab = tab || 'basic';
+  const cur = HELP.find(h => h[0] === tab) || HELP[0];
+  modal(`<h2>遊び方</h2><div class="tabs helptabs">${HELP.map(([k, n]) => `<button data-h="${k}" class="${k === cur[0] ? 'on' : ''}">${n}</button>`).join('')}</div>
+    ${cur[2]()}
+    <div class="choices"><button class="choice" id="closeHelp" style="text-align:center"><b>${first ? '庭を選ぶ' : fromMenu ? 'メニューに戻る' : 'とじる'}</b></button></div>`);
+  $('modal').scrollTop = 0;
+  document.querySelectorAll('.helptabs button').forEach(b => b.onclick = () => help(first, fromMenu, b.dataset.h));
   $('closeHelp').onclick = () => { ensureAudio(); if (first) chooseTheme(); else if (fromMenu) openMenu(); else closeModal(); };
 }
 function ensureAudio() { try { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch (e) {} }
@@ -1731,7 +1865,10 @@ function openMenu() {
       <button class="choice" id="mRank"><b>🏆 ランキング</b><small>庭ごとの上位${RANK_N}件</small></button>
       <button class="choice" id="mRec"><b>📜 庭の記録</b><small>クリアした庭の盤面と点数を見る（${SLOTS}枠）</small></button>
       ${playing ? `<button class="choice" id="mStat"><b>📊 ここまでの活躍</b><small>どのタイルが点を伸ばしているか</small></button>` : ''}
-      <button class="choice" id="mHelp"><b>❓ 遊び方</b></button>
+      ${playing ? `<button class="choice" id="mGarden"><b>${THEMES[S.theme].e} この庭のこと</b><small>${THEMES[S.theme].name}の要素・専用タイル・専用遺物</small></button>` : ''}
+      <button class="choice" id="mHelp"><b>❓ 遊び方</b><small>はじめに・点の決まり方・導火線・操作・庭</small></button>
+      <button class="choice" id="mWords"><b>📘 用語集</b><small>「共鳴」「伝導」「遺物」など、言葉の意味</small></button>
+      <button class="choice" id="mTut"><b>🔰 はじめての案内：${TUT.on ? 'ON' : 'OFF'}</b><small>${TUT.on ? 'タップでやめる' : 'タップで、場面ごとの案内をもう一度出す'}</small></button>
       <button class="choice" id="mLight"><b>${lightFx ? '🍃 演出：軽め' : '✨ 演出：ふつう'}</b><small>動きが重いときは「軽め」に（線や飛ぶ数字を減らす）</small></button>
       <button class="choice" id="mSound"><b>${soundOn ? '🔊 音：ON' : '🔇 音：OFF'}</b><small>タップで切り替え</small></button>
       ${playing ? `<button class="choice danger" id="mRestart"><b>↺ やり直す</b><small>庭を選ぶところから始め直す</small></button>` : ''}
@@ -1739,6 +1876,9 @@ function openMenu() {
     </div>`);
   $('mCards').onclick = () => cardList(playing && S.theme ? 'mine' : 'all');
   $('mHelp').onclick = () => help(false, true);
+  $('mWords').onclick = () => help(false, true, 'words');
+  $('mTut').onclick = () => { tutSet(TUT.on ? 'done' : 'on'); openMenu(); };
+  if (playing) $('mGarden').onclick = () => gardenInfo();
   $('mRec').onclick = () => recordList();
   $('mRank').onclick = () => rankingView(S.theme || 'water', 'menu');
   if (playing) $('mStat').onclick = () => { modal(`<h2>ここまでの活躍</h2>${statsHtml()}<div class="menu"><button class="choice" id="stBack"><b>メニューに戻る</b></button></div>`); $('modal').scrollTop = 0; $('stBack').onclick = openMenu; };
@@ -1748,6 +1888,16 @@ function openMenu() {
   $('mClose').onclick = closeMenu;
 }
 let menuOpen = false;
+// メニュー：いま遊んでいる庭の説明
+function gardenInfo() {
+  const k = S.theme, t = THEMES[k];
+  const tiles = Object.keys(TILES).filter(j => TILES[j].only === k), rel = Object.keys(RELICS).filter(j => RELICS[j].only === k);
+  modal(`<h2>${t.e} ${t.name}</h2><p>${t.desc}</p><p class="lead" style="text-align:left">${FACTOR_TIP[k] || ''}</p>
+    <h3 style="font-size:15px;margin:10px 0 4px">専用タイル</h3><div class="tilelist">${tiles.map(j => `<span>${TILES[j].e} ${TILES[j].name}</span><span><small style="color:#7a6f5c">ラウンド${startOf(j) + 1}から</small> ${TILES[j].desc}</span>`).join('')}</div>
+    <h3 style="font-size:15px;margin:10px 0 4px">専用遺物</h3><div class="tilelist">${rel.map(j => `<span>${RELICS[j].e} ${RELICS[j].name}${S.relics.includes(j) ? ' ✓' : ''}</span><span>${RELICS[j].desc}</span>`).join('')}</div>
+    <div class="menu"><button class="choice" id="giBack"><b>メニューに戻る</b></button></div>`);
+  $('modal').scrollTop = 0; $('giBack').onclick = openMenu;
+}
 
 // ===== 庭の記録（ゲームが終わったあと、盤面と点数を枠に残す）=====
 const SLOTS = 5, REC_KEY = 'rensa-record-';
@@ -1934,7 +2084,27 @@ $('menuBtn').onclick = () => { ensureAudio(); openMenu(); };
 function toggleSound() { soundOn = !soundOn; $('soundBtn').textContent = soundOn ? '音 ON' : '音 OFF'; }
 $('soundBtn').onclick = toggleSound;
 
-chooseTheme();
+// はじめて開いたとき：ようこそ画面（案内つきで始めるか選べる）
+function welcome() {
+  modal(`<h2>連鎖の庭へようこそ</h2><p class="lead">タイルを庭に置いて、<b>連鎖</b>で大きな点を出すゲーム。</p>
+    <ol class="steps">
+      <li>手札から<b>3枚</b>、5×5の庭に置く</li>
+      <li><b>🔥点火</b>すると、タイルが順番に発動して <b>点 × 倍率</b> がスコアになる</li>
+      <li><b>目標</b>を超えたらクリア。<b>遺物</b>（ずっと効くボーナス）を1つもらって次のラウンドへ</li>
+      <li>タイルは残るので、ラウンドごとに庭が育って点がどんどん大きくなる。<b>全8ラウンド</b></li>
+    </ol>
+    <div class="choices">
+      <button class="choice" id="wTut" style="text-align:center;border-color:var(--mult)"><b>🔰 案内つきで始める（おすすめ）</b><br><small>最初のゲームで、場面ごとに何をすればいいか教える</small></button>
+      <button class="choice" id="wHelp" style="text-align:center"><b>📖 遊び方をくわしく読む</b></button>
+      <button class="choice" id="wGo" style="text-align:center"><b>案内なしで始める</b></button>
+    </div>`);
+  $('wTut').onclick = () => { ensureAudio(); tutSet('on'); chooseTheme(); };
+  $('wHelp').onclick = () => { ensureAudio(); help(true); };
+  $('wGo').onclick = () => { ensureAudio(); tutSet('done'); chooseTheme(); };
+}
+statusTips();
+let tutState = null; try { tutState = localStorage.getItem('rensa-tut'); } catch (e) {}
+chooseTheme(); if (tutState == null && !clearedSet().size) welcome();
 queueFit(true);
 </script>
 </body>
