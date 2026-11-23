@@ -84,6 +84,7 @@ header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24p
 .card{width:60px;height:86px;background:var(--kinari);color:var(--sumi);border:none;border-radius:4px;box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 3px 0 rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s;font-family:inherit}
 .card:nth-child(1){transform:rotate(-4deg)}.card:nth-child(3){transform:rotate(4deg)}.card:nth-child(4){transform:rotate(7deg)}
 .card{position:relative}
+.card,.cell,#hold{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .card .tag{position:absolute;top:5px;right:5px;font-size:9px;font-weight:700;line-height:1;padding:2px 3px;border-radius:2px;background:var(--ai);color:var(--kinari)}
 .card.t2{background:#e3e7f1}
 .card.t3{background:#f6e2a6;box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px #f6e2a6,inset 0 0 0 5px rgba(27,23,18,.35),0 3px 0 rgba(0,0,0,.4),0 0 12px rgba(242,185,56,.55)}
@@ -1135,14 +1136,14 @@ function render() {
     const c = document.createElement('button'); c.className = 'card' + (k === S.sel ? ' sel' : '') + ' t' + tierOf(t) + (TILES[t].only ? ' only' : '');
     const tag = TILES[t].only ? '<span class="tag">専用</span>' : tierOf(t) === 3 ? '<span class="tag">極</span>' : tierOf(t) === 2 ? '<span class="tag">上</span>' : '';
     c.innerHTML = `${tag}<div class="e">${TILES[t].e}</div><div class="n">${TILES[t].name}</div><div class="els">${tagHtml(t)}</div>`;
-    c.onclick = () => onCard(k); hoverDesc(c, () => S.hand[k]); hd.appendChild(c);
+    c.onclick = () => onCard(k); hoverDesc(c, () => S.hand[k]); longPress(c, () => S.hand[k]); hd.appendChild(c);
   });
   $('left').textContent = S.fuse ? '導火線' : `あと ${perRound(S.round) - S.placed} 枚`;
   $('rerollBtn').innerHTML = `引き直す<br>あと${S.rerolls}回`;
   $('rerollBtn').disabled = S.busy || S.rerolls <= 0 || !!S.fuse;
   $('swapBtn').innerHTML = S.swap ? 'やめる' : `植え替え<br>あと${S.swaps || 0}回`;
   $('swapBtn').classList.toggle('on', !!S.swap);
-  $('swapBtn').disabled = S.busy || !!S.fuse || (!S.swap && (!S.swaps || !S.board.some(x => x)));
+  $('swapBtn').disabled = S.busy || (!S.swap && (!S.swaps || !S.board.some(x => x)));
   const hb = $('hold');
   hb.className = (S.held ? 'has' : '') + (S.sel === 'hold' ? ' sel' : '') + (!S.held && S.sel >= 0 && !S.holdUsed ? ' can' : '');
   hb.innerHTML = S.held ? `<div class="e">${TILES[S.held].e}</div><div class="n" style="font-size:11px;font-weight:700">${TILES[S.held].name}</div><div class="hl">とっておき</div>` : (S.sel >= 0 && !S.holdUsed ? '取って<br>おく' : 'とって<br>おき');
@@ -1172,7 +1173,7 @@ document.addEventListener('pointerdown', () => $('hov').classList.remove('on'), 
 let tipShownAt = 0;
 function showTip(html, cls) {
   const t = $('tip'); t.className = cls || ''; t.innerHTML = html + '<div class="hint">どこかをタップで閉じる</div>';
-  requestAnimationFrame(() => t.classList.add('on')); tipShownAt = performance.now();
+  t.classList.remove('on'); void t.offsetWidth; t.classList.add('on'); tipShownAt = performance.now();
 }
 function hideTip() { $('tip').classList.remove('on'); }
 document.addEventListener('pointerdown', () => { if (performance.now() - tipShownAt > 50) hideTip(); }, true);
@@ -1183,6 +1184,23 @@ function tileTip(t, extra) {
     T.only ? `<span class="tg o">${THEMES[T.only].name}専用</span>` : ''].join('');
   showTip(`<div class="te">${T.e}</div><div class="tn">${T.name}</div><div class="tels">${tagHtml(t)}</div>${tags}<div class="td">${T.desc}</div>${extra ? `<div class="tx">${extra}</div>` : ''}`, 't' + tier);
 }
+// ===== 長押しで大きな説明（手札・とっておき。導火線を引いている間の盤面は下の導火線の所で）=====
+const LP_MS = 450;
+let lpTimer = null, lpSuppressClick = false;
+function lpCancel() { clearTimeout(lpTimer); lpTimer = null; }
+function longPress(el, getTile) {
+  let sx = 0, sy = 0;
+  el.addEventListener('pointerdown', e => {
+    lpCancel(); sx = e.clientX; sy = e.clientY;
+    lpTimer = setTimeout(() => { lpTimer = null; const t = getTile(); if (!t || !TILES[t]) return; lpSuppressClick = true; tileTip(t); tone(880, 'sine', .04, .05); }, LP_MS);
+  });
+  el.addEventListener('pointermove', e => { if (lpTimer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) lpCancel(); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => el.addEventListener(n, lpCancel));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+}
+// 長押しのあとに来るクリックは無視する（カードを選んだり置いたりしない）
+document.addEventListener('pointerdown', () => { lpSuppressClick = false; }, true);
+document.addEventListener('click', e => { if (lpSuppressClick) { lpSuppressClick = false; e.stopPropagation(); e.preventDefault(); } }, true);
 function relicTip(k) {
   const r = RELICS[k], th = r.only ? `<span class="tg o">${THEMES[r.only].name}専用</span>` : '<span class="tg">共通の遺物</span>';
   showTip(`<div class="te">${r.e}</div><div class="tn">${r.name}</div>${th}<div class="td">${r.desc}</div>`);
@@ -1267,9 +1285,10 @@ function onCard(k) {
 const selTile = () => S.sel === 'hold' ? S.held : S.sel >= 0 ? S.hand[S.sel] : null;
 const canStack = i => S.theme === 'stack' && !S.busy && !S.fuse && !S.swap && !!S.board[i] && selTile() === S.board[i];
 function onCell(i) {
+  if (S.busy) return;
+  if (S.swap) { ensureAudio(); return onSwapCell(i); }
   if (S.fuse) return;
-  if (S.busy) return; ensureAudio();
-  if (S.swap) return onSwapCell(i);
+  ensureAudio();
   const t = S.board[i];
   if (t && isArrow(t)) {
     if (S.turns > 0) {
@@ -1297,7 +1316,7 @@ function onCell(i) {
   info('次のタイルを選ぼう。');
 }
 // とっておき：手札を1枚取っておける（入れ替えは1ラウンド1回）。取っておいたカードはいつでも置ける
-hoverDesc($('hold'), () => S.held);
+hoverDesc($('hold'), () => S.held); longPress($('hold'), () => S.held);
 $('hold').onclick = () => {
   if (S.busy) return; ensureAudio(); S.swap = null;
   if (S.sel === 'hold') { S.sel = -1; render(); return; }
@@ -1314,9 +1333,9 @@ $('hold').onclick = () => {
 // 植え替え：1ラウンド1回、置いたタイルを空きマスに動かすか、別のタイルと入れ替える
 $('swapBtn').onclick = () => {
   if (S.busy) return; ensureAudio();
-  if (S.swap) { S.swap = null; render(); info('植え替えをやめた。'); return; }
+  if (S.swap) { S.swap = null; render(); if (S.fuse) drawFuse(); info('植え替えをやめた。'); return; }
   if (!S.swaps) return;
-  S.swap = { from: null }; S.sel = -1; render(); info('<b>植え替え</b>：動かしたいタイルをタップ。');
+  S.swap = { from: null }; S.sel = -1; fuseDrag = false; render(); if (S.fuse) drawFuse(); info('<b>植え替え</b>：動かしたいタイルをタップ。' + (S.fuse ? '（導火線は そのまま。動かした所から先は切れる）' : ''));
 };
 function onSwapCell(i) {
   const sw = S.swap;
@@ -1324,14 +1343,17 @@ function onSwapCell(i) {
   if (sw.from === i) { sw.from = null; render(); info('植え替え：動かしたいタイルをタップ。'); return; }
   const a = sw.from;
   [S.board[a], S.board[i]] = [S.board[i], S.board[a]]; [S.ages[a], S.ages[i]] = [S.ages[i], S.ages[a]]; [S.dirs[a], S.dirs[i]] = [S.dirs[i], S.dirs[a]]; if (S.levels) [S.levels[a], S.levels[i]] = [S.levels[i], S.levels[a]];
-  S.swaps--; S.swap = null; render(); showPreview(); tone(700, 'triangle', .1, .08);
+  S.swaps--; S.swap = null;
+  // 導火線を引いている途中なら、空きマスになった所・つながらなくなった所から先を切る
+  if (S.fuse) { const P = S.fuse.path; let k = 0; while (k < P.length && S.board[P[k]] && (k === 0 || neighbors(P[k - 1]).includes(P[k]))) k++; P.length = k; }
+  render(); showPreview(); if (S.fuse) drawFuse(); tone(700, 'triangle', .1, .08);
   $('board').children[i].classList.add('new'); if (S.board[a]) $('board').children[a].classList.add('new');
-  info(S.board[a] ? '2つのタイルを入れ替えた。' : 'タイルを動かした。');
+  info((S.board[a] ? '2つのタイルを入れ替えた。' : 'タイルを動かした。') + (S.fuse ? '　続けて導火線をなぞろう。' : ''));
 }
 // ===== 導火線：置き終わったら、盤面をなぞって発動の順番を決める =====
 function startFuse() {
   S.fuse = { path: [] }; S.busy = false; S.swap = null; render(); showPreview(); drawFuse();
-  info(`<b>導火線</b>：盤面を<b>なぞって</b>発動の順番を決めよう（上下左右につながったタイルを一筆書き）。なぞらなかったタイルは あとから いつもの順（左上→右下）。決まったら <b>🔥点火</b>。`);
+  info(`<b>導火線</b>：盤面を<b>なぞって</b>発動の順番を決めよう（上下左右につながったタイルを一筆書き）。なぞらなかったタイルは あとから いつもの順（左上→右下）。決まったら <b>🔥点火</b>。タイルを<b>長押し</b>で説明、<b>植え替え</b>もできる。`);
   tone(520, 'triangle', .1, .07);
 }
 function fuseCellAt(x, y) {
@@ -1345,11 +1367,21 @@ function fuseAdd(i) {
   P.push(i); tone(note(P.length) * 2, 'sine', .05, .05); return true;
 }
 let fuseDrag = false;
+// 導火線を引いている間の長押し：同じタイルの上で止まっていたら説明を出し、なぞりはその前の状態に戻す
+const fuseLP = { t: null, i: -1, prev: null };
+$('board').addEventListener('contextmenu', e => e.preventDefault());
 $('board').addEventListener('pointerdown', e => {
-  if (!S.fuse || S.busy) return;
+  if (!S.fuse || S.busy || S.swap) return;
   const i = fuseCellAt(e.clientX, e.clientY); if (i < 0 || !S.board[i]) return;
   e.preventDefault();
   const P = S.fuse.path;
+  clearTimeout(fuseLP.t); fuseLP.i = i; fuseLP.prev = P.slice();
+  fuseLP.t = setTimeout(() => {
+    if (!S.fuse || fuseLP.i < 0) return;
+    S.fuse.path = fuseLP.prev; fuseDrag = false; fuseLP.i = -1; lpSuppressClick = true;
+    render(); showPreview(); drawFuse();
+    const t = S.board[i]; if (t) { const a = S.ages[i] != null ? S.round - S.ages[i] : 0; tileTip(t, [a ? `置いてから ${a} ラウンド` : '', S.levels && S.levels[i] > 1 ? `${S.levels[i]}段` : ''].filter(Boolean).join('・')); tone(880, 'sine', .04, .05); }
+  }, LP_MS);
   if (P.length && P[P.length - 1] === i) { fuseDrag = true; return; }      // 続きから描く
   if (!P.length || !neighbors(P[P.length - 1]).includes(i) || P.includes(i)) S.fuse.path = [];  // 新しく描き始める
   fuseAdd(i); fuseDrag = true; render(); showPreview(); drawFuse();
@@ -1360,17 +1392,18 @@ $('board').addEventListener('pointermove', e => {
   // 盤面の外へ出たらリセット
   const br = $('board').getBoundingClientRect();
   if (e.clientX < br.left || e.clientX > br.right || e.clientY < br.top || e.clientY > br.bottom) {
-    fuseDrag = false;
+    fuseDrag = false; clearTimeout(fuseLP.t); fuseLP.i = -1;
     if (S.fuse.path.length) { S.fuse.path = []; tone(220, 'sawtooth', .12, .06); render(); showPreview(); drawFuse(); info('盤面の外に出たので、導火線をリセットした。もう一度なぞろう。'); }
     return;
   }
   const i = fuseCellAt(e.clientX, e.clientY);
+  if (fuseLP.i >= 0 && i !== fuseLP.i) { clearTimeout(fuseLP.t); fuseLP.i = -1; }   // 別のマスへ動いたら長押しではない
   const P = S.fuse.path;
   // 1つ前のタイルに戻ったら、1つ短くする
   if (P.length >= 2 && i === P[P.length - 2]) { P.pop(); tone(note(P.length) * 2, 'sine', .04, .04); render(); showPreview(); drawFuse(); return; }
   if (fuseAdd(i)) { render(); showPreview(); drawFuse(); }
 });
-addEventListener('pointerup', () => { fuseDrag = false; });
+addEventListener('pointerup', () => { fuseDrag = false; clearTimeout(fuseLP.t); fuseLP.i = -1; });
 function fuseStatus() {
   if (!S.fuse) return;
   const r = scoreBoard(S.board, S.relics, ctxNow());
@@ -1389,6 +1422,7 @@ function drawFuse() {
 }
 function ignite() {
   if (!S.fuse) return;
+  S.swap = null; lpCancel(); clearTimeout(fuseLP.t);
   S.order = S.fuse.path.slice();
   S.busy = true; render(); drawFuse(); runScoring();
 }
@@ -1670,6 +1704,7 @@ function help(first, fromMenu) {
   <p><b>🌬️風の庭</b>：ほかの庭を3つ全クリアすると解放。矢印のあるタイル（🪁🍃🌪️🎏）は、置いたあとタップすると向きが90°回る（1ラウンド3回）。向きで効く先が変わる。</p>
   <p><b>🎎対の庭</b>：ほかの庭を4つ全クリアすると解放。真ん中の縦の列が軸で、左右の同じ位置に同じタイルを置くと「対」になり 1回多く発動する（軸のタイルも1回多く。🦋蝶はどのタイルとも対になる）。</p>
   <p><b>🏯重ねの庭</b>：ほかの庭を5つ全クリアすると解放。手札のタイルを、盤面の同じタイルの上にタップすると重なって段が上がり、段の数だけ発動する（そのぶん庭に空きが残る）。</p>
+  <p><b>長押し</b>：手札・とっておきのタイルや、導火線を引いている間の盤面のタイルを長押しすると、大きな説明が出る。導火線を引いている間も<b>植え替え</b>ができる。</p>
   <p>なぞっている途中で<b>1つ前のタイルに戻ると1つ短く</b>なる。<b>盤面の外まで指を出すとリセット</b>。</p>
   <p>導火線のごほうび：<b>🔥導火</b>＝つないだタイル1マスごとに+1倍。<b>⚡伝導</b>＝直前のタイルと同じ属性なら1回多く発動。<b>🏁完走</b>＝盤面のタイルを全部（5枚以上）つなぐと最後に×1.5。</p>
   <p><b>☀️昼と🌙夜</b>：ラウンドごとに入れ替わる。昼は「草・火・虫」、夜は「天・水・術」のタイルが<b>1回多く発動</b>（金の枠で光る）。最後のラウンドは🌆黄昏で両方。</p>
