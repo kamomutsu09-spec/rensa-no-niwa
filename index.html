@@ -125,6 +125,9 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 #hold.can{border-color:var(--gold);color:var(--gold)}
 #hold .e{font-size:26px;line-height:1.2}
 #hold .hl{font-size:9px;margin-top:2px}
+.btn.sub.mini.undo{background:#5d5444;color:#fff7ea}
+.card.shuf{opacity:.55}
+.card.shuf::after{content:'配り直し';position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);font-size:9px;font-weight:900;background:var(--sumi);color:var(--kinari);padding:1px 4px;border-radius:2px;white-space:nowrap}
 .btn.sub.mini{width:66px;height:48px;font-size:11px;line-height:1.4;padding:4px 0 0;white-space:nowrap;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .btn.sub.alt{background:var(--chips)}
 .btn.sub.on{background:var(--gold);color:var(--sumi)}
@@ -324,6 +327,7 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
     <div id="side">
       <div id="left"></div>
       <button class="btn sub mini" id="rerollBtn">引き直す</button>
+      <button class="btn sub mini undo" id="undoBtn">取り消す</button>
       <button class="btn sub mini alt" id="swapBtn">植え替え</button>
     </div>
   </div>
@@ -1041,7 +1045,7 @@ function statsHtml() {
 }
 function newGame(theme) {
   S = { board: Array(N * N).fill(null), relics: theme ? [THEMES[theme].relic] : [], theme, round: 0, placed: 0, hand: [], sel: -1, rerolls: 0, busy: false, lives: LIVES, ages: Array(N * N).fill(null), stats: newStats(), held: null, swaps: 1, swap: null, holdUsed: false, fuse: null, dirs: Array(N * N).fill(null), levels: Array(N * N).fill(1), turns: 3 };
-  startRound();
+  clearSave(); startRound();
 }
 // ===== 解放：上級の庭（からくり・風・対・重ね）は、ほかの庭を locked の数だけ全クリアすると遊べる =====
 function clearedSet() { try { return new Set(JSON.parse(localStorage.getItem('rensa-cleared') || '[]')); } catch (e) { return new Set(); } }
@@ -1083,7 +1087,8 @@ function chooseTheme() {
   const open = Object.keys(THEMES).filter(k => !THEMES[k].locked), adv = Object.keys(THEMES).filter(k => THEMES[k].locked).sort((a, b) => THEMES[a].locked - THEMES[b].locked);
   let cur; try { cur = localStorage.getItem(LAST_KEY); } catch (e) {}
   if (!THEMES[cur] || !isUnlocked(cur)) cur = clearedSet().size ? open[0] : 'fire';
-  modal(`<h2>どんな庭にする？</h2><p class="lead">選んだ庭のタイルが多く出て、その庭の遺物を1つ持って始まる。</p>
+  const sv = loadSave();
+  modal(`${sv ? `<button class="choice" id="resume" style="text-align:center;border-color:var(--mult);margin-bottom:10px"><b>▶ 続きから</b><br><small>${THEMES[sv.theme].e} ${THEMES[sv.theme].name}・ラウンド${sv.round + 1}/8・いのち${'🍃'.repeat(sv.lives)}</small></button>` : ''}<h2>どんな庭にする？</h2><p class="lead">${sv ? '新しく始めると、続きのデータは消える。' : '選んだ庭のタイルが多く出て、その庭の遺物を1つ持って始まる。'}</p>
     <div class="tgrid">${open.map(themeCard).join('')}</div>
     <div class="trow-h">上級の庭（ほかの庭のクリアで解放）</div>
     <div class="tgrid adv">${adv.map(themeCard).join('')}</div>
@@ -1106,13 +1111,32 @@ function chooseTheme() {
     tone(isUnlocked(k) ? 520 : 220, 'triangle', .06, .05); pick(k);
   });
   pick(cur);
+  if (sv) $('resume').onclick = () => { ensureAudio(); resumeGame(sv); };
   $('howto').onclick = () => help(true);
+}
+// ===== 途中から再開：遊んでいる間はいつも自動で保存。ゲームが終わったら消す =====
+const SAVE_KEY = 'rensa-save';
+function saveGame() {
+  if (!S || !S.theme || S.busy || S.over) return;
+  const d = {}; for (const k in S) if (!['busy', 'swap', 'sel', 'order', 'fuse'].includes(k)) d[k] = S[k];
+  d.fusePath = S.fuse ? S.fuse.path.slice() : null; d.v = 1; d.at = Date.now();
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(d)); } catch (e) {}
+}
+function loadSave() { try { const d = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); return d && d.v === 1 && THEMES[d.theme] ? d : null; } catch (e) { return null; } }
+function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
+function resumeGame(d) {
+  const fp = d.fusePath; delete d.fusePath; delete d.v; delete d.at;
+  S = Object.assign({ levels: Array(N * N).fill(1), dirs: Array(N * N).fill(null), stats: newStats() }, d, { busy: false, sel: -1, swap: null, fuse: null, order: null });
+  $('factor').className = ''; closeModal();
+  if (fp) { startFuse(); S.fuse.path = fp.filter(i => S.board[i]); render(); showPreview(); drawFuse(); }
+  else { render(); showPreview(); }
+  info(`<b>${THEMES[S.theme].name}</b>・ラウンド${S.round + 1} の続きから。`);
 }
 const handSize = () => S.relics.includes('wide') ? 4 : 3;
 function startRound() {
   S.fuse = null; S.order = null; S.turns = S.relics.includes('fan') ? 5 : 3; if (!S.dirs) S.dirs = Array(N * N).fill(null);
   const fl = $('fuseline'); if (fl) fl.remove();
-  S.swaps = 1; S.swap = null; S.holdUsed = false;
+  S.swaps = 1; S.swap = null; S.holdUsed = false; S.undos = 1; S.undoSnap = null;
   S.placed = 0; S.rerolls = 1 + (S.relics.includes('reroll') ? 2 : 0);
   dealHand(); render(); showPreview();
   announceTier();
@@ -1167,6 +1191,10 @@ function render() {
   });
   $('left').textContent = S.fuse ? '導火線' : `あと ${perRound(S.round) - S.placed} 枚`;
   $('rerollBtn').innerHTML = `引き直す<br>あと${S.rerolls}回`;
+  $('undoBtn').innerHTML = `取り消す<br>あと${S.undos || 0}回`;
+  $('undoBtn').disabled = S.busy || !S.undoSnap || !S.undos;
+  if (S.sel === 'hold') document.querySelectorAll('#hand .card').forEach(c => c.classList.add('shuf'));
+  saveGame();
   $('rerollBtn').disabled = S.busy || S.rerolls <= 0 || !!S.fuse;
   $('swapBtn').innerHTML = S.swap ? 'やめる' : `植え替え<br>あと${S.swaps || 0}回`;
   $('swapBtn').classList.toggle('on', !!S.swap);
@@ -1358,6 +1386,18 @@ function onCard(k) {
   S.sel = S.sel === k ? -1 : k; render();
   if (S.sel >= 0) { coach('place', $('board'), '<b>② 盤面の空いているマスをタップ</b>して置こう。<br>同じカードをもう一度タップすると選ぶのをやめる。', { n: '2/7' }); const t = S.hand[k]; info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}${S.theme === 'stack' && S.board.includes(t) ? '　<b>（盤面の同じタイルの上に重ねられる）</b>' : ''}`); tone(660, 'sine', .05, .06); }
 }
+// ===== 取り消し（1ラウンド1回）：直前に置いた1枚を戻す。置く直前の状態をまるごと覚えておく =====
+function snapUndo() { S.undoSnap = JSON.parse(JSON.stringify({ board: S.board, ages: S.ages, dirs: S.dirs, levels: S.levels, hand: S.hand, held: S.held, holdUsed: S.holdUsed, placed: S.placed })); }
+function doUndo() {
+  if (S.busy || !S.undoSnap || !S.undos) return; ensureAudio();
+  const u = S.undoSnap; S.undoSnap = null; S.undos--;
+  Object.assign(S, u); S.sel = -1; S.swap = null;
+  if (S.fuse) { S.fuse = null; const fl = $('fuseline'); if (fl) fl.remove(); fuseDrag = false; }
+  coachHide(); render(); showPreview(); tone(330, 'triangle', .08, .08);
+  info('置いたタイルを1枚取り消した（取り消しは1ラウンド1回）。');
+}
+// 置く以外のこと（引き直し・とっておき・植え替え・向き）をしたら、取り消しはできなくなる
+const dropUndo = () => { S.undoSnap = null; };
 // 重ねの庭：選んでいる手札（またはとっておき）と同じタイルの上に重ねられる
 const selTile = () => S.sel === 'hold' ? S.held : S.sel >= 0 ? S.hand[S.sel] : null;
 const canStack = i => S.theme === 'stack' && !S.busy && !S.fuse && !S.swap && !!S.board[i] && selTile() === S.board[i];
@@ -1369,12 +1409,13 @@ function onCell(i) {
   const t = S.board[i];
   if (t && isArrow(t)) {
     if (S.turns > 0) {
-      S.dirs[i] = ((S.dirs[i] == null ? 1 : S.dirs[i]) + 1) % 4; S.turns--; tone(700 + S.dirs[i] * 80, 'triangle', .06, .07);
+      S.dirs[i] = ((S.dirs[i] == null ? 1 : S.dirs[i]) + 1) % 4; S.turns--; dropUndo(); tone(700 + S.dirs[i] * 80, 'triangle', .06, .07);
       render(); showPreview(); info(`${TILES[t].e} の向きを <b>${ARROWS[S.dirs[i]]}</b> に変えた（このラウンド あと${S.turns}回）。`); return;
     }
     info(`向きを変えられるのは 1ラウンド${S.relics.includes('fan') ? 5 : 3}回まで。`);
   }
   if (t && canStack(i)) {
+    snapUndo();
     if (S.sel === 'hold') { S.held = null; S.holdUsed = true; }
     S.levels[i] = (S.levels[i] || 1) + 1; S.sel = -1; S.placed++;
     tone(440 + 60 * S.levels[i], 'triangle', .1, .1);
@@ -1384,6 +1425,7 @@ function onCell(i) {
   }
   if (t) { info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}${S.levels && S.levels[i] > 1 ? `　<b>（${S.levels[i]}段）</b>` : ''}`); const a = S.ages[i] != null ? S.round - S.ages[i] : 0; tileTip(t, a ? `置いてから ${a} ラウンド` : 'このラウンドに置いた'); return; }
   if (S.sel === -1) { info('先に下のタイルを1枚選んでね。'); return; }
+  snapUndo();
   if (S.sel === 'hold') { S.board[i] = S.held; S.held = null; S.holdUsed = true; S.sel = -1; }
   else S.board[i] = S.hand[S.sel];
   S.ages[i] = S.round; S.dirs[i] = isArrow(S.board[i]) ? 1 : null; if (S.levels) S.levels[i] = 1; S.placed++;
@@ -1403,10 +1445,10 @@ $('hold').onclick = () => {
     if (S.holdUsed) { info('とっておきの入れ替えは 1ラウンド1回まで。'); return; }
     const k = S.sel, put = S.hand[k];
     if (S.held) S.hand[k] = S.held; else S.hand[k] = drawTile(Math.random, S.round, S.theme);
-    S.held = put; S.holdUsed = true; S.sel = -1; render(); showPreview(); tone(600, 'triangle', .08, .08);
-    info(`<b>${TILES[put].e} ${TILES[put].name}</b> をとっておいた。好きなときに とっておき をタップして置ける。`); return;
+    S.held = put; S.holdUsed = true; S.sel = -1; dropUndo(); render(); showPreview(); tone(600, 'triangle', .08, .08);
+    info(`<b>${TILES[put].e} ${TILES[put].name}</b> をとっておいた。好きなときに とっておき をタップして置ける（置くと、そのときの手札は配り直しになる）。`); return;
   }
-  if (S.held) { S.sel = 'hold'; render(); info(`<b>${TILES[S.held].e} ${TILES[S.held].name}</b>：${TILES[S.held].desc}　<span style="opacity:.8">（とっておき）</span>`); tone(660, 'sine', .05, .06); return; }
+  if (S.held) { S.sel = 'hold'; render(); info(`<b>${TILES[S.held].e} ${TILES[S.held].name}</b>：${TILES[S.held].desc}　<span style="opacity:.8">（とっておき）</span><br><b>⚠ とっておきを置くと、今の手札は配り直しになる。</b>`); tone(660, 'sine', .05, .06); return; }
   info('手札のカードを選んでから ここをタップすると、そのカードをとっておける（1ラウンド1回）。');
 };
 // 植え替え：1ラウンド1回、置いたタイルを空きマスに動かすか、別のタイルと入れ替える
@@ -1422,7 +1464,7 @@ function onSwapCell(i) {
   if (sw.from === i) { sw.from = null; render(); info('植え替え：動かしたいタイルをタップ。'); return; }
   const a = sw.from;
   [S.board[a], S.board[i]] = [S.board[i], S.board[a]]; [S.ages[a], S.ages[i]] = [S.ages[i], S.ages[a]]; [S.dirs[a], S.dirs[i]] = [S.dirs[i], S.dirs[a]]; if (S.levels) [S.levels[a], S.levels[i]] = [S.levels[i], S.levels[a]];
-  S.swaps--; S.swap = null;
+  S.swaps--; S.swap = null; dropUndo();
   // 導火線を引いている途中なら、空きマスになった所・つながらなくなった所から先を切る
   if (S.fuse) { const P = S.fuse.path; let k = 0; while (k < P.length && S.board[P[k]] && (k === 0 || neighbors(P[k - 1]).includes(P[k]))) k++; P.length = k; }
   render(); showPreview(); if (S.fuse) drawFuse(); tone(700, 'triangle', .1, .08);
@@ -1527,14 +1569,18 @@ async function nextRoundWithEvolve(after) {
   if (after) after();
 }
 function flashNew(i) { const c = $('board').children[i]; c.classList.add('new'); }
-$('rerollBtn').onclick = () => { if (S.busy || S.rerolls <= 0) return; S.rerolls--; dealHand(); render(); tone(400, 'square', .06, .05); info('手札を引き直した。'); };
+$('undoBtn').onclick = doUndo;
+$('rerollBtn').onclick = () => { if (S.busy || S.rerolls <= 0) return; S.rerolls--; dropUndo(); dealHand(); render(); tone(400, 'square', .06, .05); info('手札を引き直した。'); };
 
 // ===== スコア計算の演出 =====
 let speed = 1, canFast = false;
+// 発動の速さ（メニューで選ぶ）：ふつう／速い／すぐ結果
+const SPEEDS = [['ふつう', 1], ['速い', 2.5], ['すぐ結果', 40]];
+let speedMode = 0; try { speedMode = Math.max(0, Math.min(2, +(localStorage.getItem('rensa-speed') || 0))); } catch (e) {}
 // 発動中のタップは早送り（大当たりの金色の輪はなくした）
 const bonus = 1;
 let justHit = false;
-$('boardwrap').addEventListener('click', () => { if (justHit) { justHit = false; return; } if (canFast && speed < 1) { speed = 1; return; } if (canFast && speed === 1) { speed = 3; info('早送り中 ▶▶'); } });
+$('boardwrap').addEventListener('click', () => { if (justHit) { justHit = false; return; } if (canFast && speed < 1) { speed = 1; return; } if (canFast && speed < 3) { speed = 3; info('早送り中 ▶▶'); } else if (canFast && speed < 40) { speed = 40; info('結果まで飛ばす ▶▶▶'); } });
 // ===== 演出（軽くするため：位置は最初に1回だけ測る／動きは transform と opacity だけ／同時に出す数に上限）=====
 let lightFx = false; try { lightFx = localStorage.getItem('rensa-light') === '1'; } catch (e) {}
 let centers = [], tgtPos = {};
@@ -1628,7 +1674,7 @@ async function runScoring(opt) {
   const replay = !!(opt && opt.replay);
   const res = scoreBoard(S.board, S.relics, ctxNow());
   if (!replay) collectStats(res);
-  speed = replay ? 0.45 : 1; canFast = false; scoring = true;
+  speed = replay ? 0.45 : SPEEDS[speedMode][1]; canFast = false; scoring = true;
   info(replay ? '🎞️ スロー再生中…（タップで少し速く）' : '導火線に沿って発動していく…（タップで早送り）');
   $('bar').className = ''; setNums(0, 1); glowLevel = -1; glow(1); $('total').className = ''; $('total').textContent = ''; $('barin').style.width = '0%';
   await sleep(450); canFast = true;
@@ -1808,10 +1854,12 @@ const HELP = [
     <p>導火線を引いている間も、タイルの<b>長押しで説明</b>、<b>植え替え</b>ができる。</p></div>`],
   ['tools', '便利な操作', () => `<div class="hsec">
     <p><b>引き直す</b>：手札を全部入れ替える（1ラウンド1回）。</p>
-    <p><b>とっておき</b>：手札のカードを選んでから左の枠をタップすると、1枚取っておける（入れ替えは1ラウンド1回）。取っておいたカードは、いつでもタップして置ける。</p>
+    <p><b>とっておき</b>：手札のカードを選んでから左の枠をタップすると、1枚取っておける（入れ替えは1ラウンド1回）。取っておいたカードは、いつでもタップして置ける。<b>ただし、とっておきを置くと そのときの手札は配り直し</b>になる。</p>
     <p><b>植え替え</b>：置いたタイルを空きマスへ動かすか、別のタイルと入れ替える（1ラウンド1回）。押してから、動かすタイル→行き先 の順にタップ。</p>
     <p><b>長押し</b>：手札・とっておきのタイルを長押しで説明。<b>タップ</b>：置いたタイル・遺物・画面上部の表示の説明。</p>
-    <p><b>発動中</b>：盤面をタップで早送り。</p>
+    <p><b>取り消す</b>：直前に置いたタイルを1枚戻す（1ラウンド1回。引き直し・とっておき・植え替え・向き変えをしたあとはできない）。</p>
+    <p><b>発動中</b>：盤面をタップで早送り（もう一度で結果まで）。メニューの「発動の速さ」で最初から速くできる。</p>
+    <p><b>続きから</b>：遊んでいる間は自動で保存される。閉じても、庭選びの画面の「▶ 続きから」で戻れる。</p>
     <p><b>メニュー</b>：カード一覧・この庭のこと・用語集・ランキング・庭の記録・ここまでの活躍・演出の軽さ・音・やり直し。</p></div>`],
   ['garden', '庭', () => `<div class="hsec">
     <p>庭を選ぶと、その庭のタイルが多く出て、その庭の遺物を1つ持って始まる。庭ごとに<b>独自の要素</b>がある。</p>
@@ -1830,7 +1878,7 @@ const GLOSSARY = [
   ['上・極', '強いタイル。上はラウンド3、極はラウンド5から出る。'], ['専用', 'その庭でしか出ないタイル・遺物。'],
   ['導火線', '点火の前になぞって決める、発動の順番。'], ['🔥導火', '導火線でつないだタイル1マスにつき +1倍。'],
   ['⚡伝導', '導火線で、直前と同じ属性のタイルは1回多く発動。'], ['🏁完走', '盤面のタイルを全部（5枚以上）つなぐと最後に ×1.5。'],
-  ['とっておき', '手札を1枚取っておける左の枠。'], ['引き直す', '手札を全部入れ替える。'], ['植え替え', '置いたタイルを動かす・入れ替える。'],
+  ['とっておき', '手札を1枚取っておける左の枠。置くと手札は配り直し。'], ['取り消す', '直前に置いた1枚を戻す（1ラウンド1回）。'], ['引き直す', '手札を全部入れ替える。'], ['植え替え', '置いたタイルを動かす・入れ替える。'],
   ['☀️昼 / 🌙夜', '昼は草・火・虫、夜は天・水・術のタイルが1回多く発動。最後は🌆黄昏で両方。'],
   ['育つ', '水辺の庭の要素。置いてから経ったラウンドの数。'], ['熱', '火の庭の要素。そのラウンドで🔥が発動した回数。'],
   ['列', '夜の庭の要素。同じ縦・横の列。'], ['群れ', '蜂の庭の要素。つながった🐝のかたまり。'],
@@ -1866,6 +1914,7 @@ function openMenu() {
       <button class="choice" id="mRec"><b>📜 庭の記録</b><small>クリアした庭の盤面と点数を見る（${SLOTS}枠）</small></button>
       ${playing ? `<button class="choice" id="mStat"><b>📊 ここまでの活躍</b><small>どのタイルが点を伸ばしているか</small></button>` : ''}
       ${playing ? `<button class="choice" id="mGarden"><b>${THEMES[S.theme].e} この庭のこと</b><small>${THEMES[S.theme].name}の要素・専用タイル・専用遺物</small></button>` : ''}
+      <button class="choice" id="mSpeed"><b>⏩ 発動の速さ：${SPEEDS[speedMode][0]}</b><small>タップで切り替え（ふつう → 速い → すぐ結果）。発動中のタップでも早送り</small></button>
       <button class="choice" id="mHelp"><b>❓ 遊び方</b><small>はじめに・点の決まり方・導火線・操作・庭</small></button>
       <button class="choice" id="mWords"><b>📘 用語集</b><small>「共鳴」「伝導」「遺物」など、言葉の意味</small></button>
       <button class="choice" id="mTut"><b>🔰 はじめての案内：${TUT.on ? 'ON' : 'OFF'}</b><small>${TUT.on ? 'タップでやめる' : 'タップで、場面ごとの案内をもう一度出す'}</small></button>
@@ -1877,6 +1926,7 @@ function openMenu() {
   $('mCards').onclick = () => cardList(playing && S.theme ? 'mine' : 'all');
   $('mHelp').onclick = () => help(false, true);
   $('mWords').onclick = () => help(false, true, 'words');
+  $('mSpeed').onclick = () => { speedMode = (speedMode + 1) % 3; try { localStorage.setItem('rensa-speed', speedMode); } catch (e) {} openMenu(); };
   $('mTut').onclick = () => { tutSet(TUT.on ? 'done' : 'on'); openMenu(); };
   if (playing) $('mGarden').onclick = () => gardenInfo();
   $('mRec').onclick = () => recordList();
@@ -2015,6 +2065,7 @@ async function replayBest() {
   Object.assign(S, keep); render();
 }
 function endScreen(head, T, result) {
+  S.over = true; clearSave();
   const rk = statRanking();
   lastEnd = { board: S.board.slice(), score: T, theme: S.theme, relics: S.relics.slice(), round: S.round, result, saved: null, mvp: rk.slice(0, 3).map(r => r.k) };
   const entry = { board: lastEnd.board, score: T, theme: S.theme, relics: lastEnd.relics, round: S.round, result, mvp: lastEnd.mvp, at: Date.now(), id: Date.now() + '-' + Math.random().toString(36).slice(2, 8) };
@@ -2104,7 +2155,7 @@ function welcome() {
 }
 statusTips();
 let tutState = null; try { tutState = localStorage.getItem('rensa-tut'); } catch (e) {}
-chooseTheme(); if (tutState == null && !clearedSet().size) welcome();
+chooseTheme(); if (tutState == null && !clearedSet().size && !loadSave()) welcome();
 queueFit(true);
 </script>
 </body>
