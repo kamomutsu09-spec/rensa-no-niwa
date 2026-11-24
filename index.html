@@ -226,6 +226,9 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 #tip .tg.o{background:var(--mult);color:#fff7ea}
 #tip .td{font-size:17px;line-height:1.7;margin-top:8px;font-weight:700}
 #tip .tx{font-size:13px;color:#5b5243;margin-top:8px;line-height:1.6}
+u.gl{text-decoration:underline dotted 2px;text-underline-offset:4px;text-decoration-color:var(--mult)}
+#tip .gls{text-align:left;font-size:12.5px;line-height:1.6;margin-top:10px;padding-top:8px;border-top:1px dashed rgba(27,23,18,.35);color:#3d362b;font-weight:400}
+#tip .gls div+div{margin-top:4px}
 #tip .hint{font-size:11px;color:#7a6f5c;margin-top:10px}
 .menu{display:flex;flex-direction:column;gap:8px;margin:12px 0 4px}
 .menu .choice{text-align:center}
@@ -1253,11 +1256,40 @@ function showTip(html, cls) {
 function hideTip() { $('tip').classList.remove('on'); }
 document.addEventListener('pointerdown', () => { if (performance.now() - tipShownAt > 50) hideTip(); }, true);
 document.addEventListener('keydown', hideTip, true);
+// ===== カードの説明の用語：説明文の中の言葉に下線を引き、意味を説明の下に出す =====
+const CARD_GLOSS = [
+  [['もう一度発動', '再発動'], 'もう一度発動', 'ほかのタイルの効果を、もう1回出させること。もう一度発動させるタイル（⭐⚡🦉など）どうしは発動させ合わず、<b>回数を増やし合う</b>。'],
+  [['回多く発動'], '◯回多く発動', 'そのタイルの効果が、その回数ぶん多く出る。'],
+  [['上乗せ'], '×◯ずつ上乗せ', '倍率に掛ける数が、条件1つにつき増える。例：「×0.2ずつ上乗せ」で条件が3つなら、倍率に×1.6を掛ける。'],
+  [['倍率'], '倍率', '点に掛ける数（右の数字）。スコア＝点×倍率。<b>+◯倍</b>は足し算、<b>×◯</b>は掛け算で、掛け算は後ろで発動するほど得。'],
+  [['熱'], '熱', 'そのラウンドで🔥が発動した回数。🔥より後に発動するタイルほど高い。'],
+  [['群れ'], '群れ', '上下左右につながった🐝のかたまり。'],
+  [['段'], '段', '同じタイルの上に同じタイルを重ねた高さ（重ねの庭）。段の数だけ発動する。'],
+  [['軸'], '軸', '盤面の真ん中の縦の列（対の庭）。'],
+  [['対'], '対', '軸をはさんで、左右の同じ位置に同じタイルがあること（🦋蝶はどのタイルとも対になる）。'],
+  [['導火線'], '導火線', '点火の前に盤面をなぞって決める、発動の順番。なぞらなかったタイルは、そのあと左上から右下へ。'],
+  [['導火'], '導火', '導火線でつないだタイル1マスにつき +1倍。'],
+  [['完走'], '完走', '盤面のタイルを全部（5枚以上）導火線でつなぐと、最後に×1.5。'],
+  [['終点'], '終点', '導火線の最後のマス。'],
+  [['一筆書き'], '一筆書き', '同じマスを2回通らずに、上下左右につないでなぞること。'],
+  [['属性'], '属性', 'タイルの下の色札（草・水・火・地・虫・天・術）。導火線で同じ属性が続くと⚡伝導で1回多く発動。'],
+  [['向き', '矢印'], '向き', '矢印タイル（🪁🍃🌪️🎏）が向いている方向。置いたあと、タップで90°回せる（1ラウンド3回）。'],
+  [['列'], '列', '盤面の同じ縦の列、または横の列。'],
+  [['育つ', '育って'], '育つ', '🌱芽は置いてから2ラウンドで🌿若葉に育つ（水辺の庭では さらに3ラウンドで🌳大樹に）。'],
+];
+function glossify(desc) {
+  const words = []; CARD_GLOSS.forEach((g, gi) => g[0].forEach(w => words.push([w, gi])));
+  words.sort((a, b) => b[0].length - a[0].length);
+  const re = new RegExp(words.map(w => w[0]).join('|'), 'g'), used = [];
+  const html = String(desc).replace(re, (m, off, str) => { if (m === '対' && str[off - 1] === '反') return m; const gi = words.find(w => w[0] === m)[1]; if (used.includes(gi)) return m; used.push(gi); return `<u class="gl">${m}</u>`; });
+  return { html, defs: used.map(gi => `<div><b>${CARD_GLOSS[gi][1]}</b>：${CARD_GLOSS[gi][2]}</div>`).join('') };
+}
 function tileTip(t, extra) {
   const T = TILES[t], tier = tierOf(t);
   const tags = [tier === 3 ? '<span class="tg">極</span>' : tier === 2 ? '<span class="tg">上</span>' : '<span class="tg">基本</span>',
     T.only ? `<span class="tg o">${THEMES[T.only].name}専用</span>` : ''].join('');
-  showTip(`<div class="te">${T.e}</div><div class="tn">${T.name}</div><div class="tels">${tagHtml(t)}</div>${tags}<div class="td">${T.desc}</div>${extra ? `<div class="tx">${extra}</div>` : ''}`, 't' + tier);
+  const g = glossify(T.desc);
+  showTip(`<div class="te">${T.e}</div><div class="tn">${T.name}</div><div class="tels">${tagHtml(t)}</div>${tags}<div class="td">${g.html}</div>${extra ? `<div class="tx">${extra}</div>` : ''}${g.defs ? `<div class="gls">${g.defs}</div>` : ''}`, 't' + tier);
 }
 // ===== 長押しで大きな説明（手札・とっておき。導火線を引いている間の盤面は下の導火線の所で）=====
 const LP_MS = 450;
@@ -1278,7 +1310,8 @@ document.addEventListener('pointerdown', () => { lpSuppressClick = false; }, tru
 document.addEventListener('click', e => { if (lpSuppressClick) { lpSuppressClick = false; e.stopPropagation(); e.preventDefault(); } }, true);
 function relicTip(k) {
   const r = RELICS[k], th = r.only ? `<span class="tg o">${THEMES[r.only].name}専用</span>` : '<span class="tg">共通の遺物</span>';
-  showTip(`<div class="te">${r.e}</div><div class="tn">${r.name}</div>${th}<div class="td">${r.desc}</div>`);
+  const g = glossify(r.desc);
+  showTip(`<div class="te">${r.e}</div><div class="tn">${r.name}</div>${th}<div class="td">${g.html}</div>${g.defs ? `<div class="gls">${g.defs}</div>` : ''}`);
 }
 function setNums(chips, mult) { $('chips').textContent = fmt(chips); $('mult').textContent = fmt(mult); }
 // ===== 庭の要素の表示（熱・群れ・育つ・列）=====
@@ -1814,6 +1847,7 @@ const HELP = [
     <h3>発動回数の予定</h3>
     <p>盤面のタイルの右下の <b>×数字</b> は、今のまま点火したら そのタイルが<b>何回発動するか</b>。もう一度発動させるタイルや遺物の分も入っている。導火線をなぞっている間は、その順番での回数になる。</p>
     <h3>説明の見方</h3>
+    <p>タイルや遺物の説明で<u class="gl">下線</u>の付いた言葉は、説明の下に意味が出る。</p>
     <p>手札・とっておきのタイルは<b>長押し</b>、置いたタイルと遺物は<b>タップ</b>で大きな説明が出る。メニューの「📖 カード一覧」で全部見られる。</p>
     <h3>困ったら</h3>
     <p>目標に届かなくても<b>いのち🍃</b>が1つ減るだけで、3回まで続けられる。迷ったら <b>🔥火の庭</b>（いちばんやさしい）から。</p></div>`],
@@ -1844,31 +1878,12 @@ const HELP = [
     <p><b>取り消す</b>：直前に置いたタイルを1枚戻す（1ラウンド1回。引き直し・とっておき・植え替え・向き変えをしたあとはできない）。</p>
     <p><b>発動中</b>：盤面をタップで早送り（もう一度で結果まで）。メニューの「発動の速さ」で最初から速くできる。</p>
     <p><b>続きから</b>：遊んでいる間は自動で保存される。閉じても、庭選びの画面の「▶ 続きから」で戻れる。</p>
-    <p><b>メニュー</b>：カード一覧・この庭のこと・用語集・ランキング・庭の記録・ここまでの活躍・演出の軽さ・音・やり直し。</p></div>`],
+    <p><b>メニュー</b>：カード一覧・この庭のこと・ランキング・庭の記録・ここまでの活躍・演出の軽さ・音・やり直し。</p></div>`],
   ['garden', '庭', () => `<div class="hsec">
     <p>庭を選ぶと、その庭のタイルが多く出て、その庭の遺物を1つ持って始まる。庭ごとに<b>独自の要素</b>がある。</p>
     ${Object.keys(THEMES).map(k => `<p><b>${THEMES[k].e} ${THEMES[k].name}</b>${THEMES[k].locked ? `（ほかの庭を${THEMES[k].locked}つ全クリアで解放）` : ''}<br>${FACTOR_TIP[k] || ''}</p>`).join('')}
     <h3>🌱 生きている庭</h3>
     <p>ラウンドの合間に庭が変わる。🌱は2ラウンドで🌿若葉に（水辺ではさらに3ラウンドで🌳大樹に）。</p></div>`],
-  ['words', '用語集', () => `<dl class="glossary">${GLOSSARY.map(([w, d]) => `<dt>${w}</dt><dd>${d}</dd>`).join('')}</dl>`],
-];
-const GLOSSARY = [
-  ['点', 'タイルが足していく数（左の数字）。'], ['倍率', '点に掛ける数（右の数字）。スコア＝点×倍率。'],
-  ['+○倍 / ×○', '+は倍率への足し算、×は倍率への掛け算。掛け算は後ろで発動するほど得。'],
-  ['発動', 'タイルが効果を出すこと。1回多く発動＝効果が2回出る。'], ['再発動', 'ほかのタイルをもう一度発動させること（⭐⚡など）。'],
-  ['属性', 'タイルの下の色札。<i class="el" style="background:#4f9d5d">草</i><i class="el" style="background:#3a86c8">水</i><i class="el" style="background:#d9532b">火</i><i class="el" style="background:#8a6a45">地</i><i class="el" style="background:#c99a00">虫</i><i class="el" style="background:#6a5acd">天</i><i class="el" style="background:#a0509a">術</i>。導火線の⚡伝導に関わる。'], ['共鳴', '同じ属性のタイルが上下左右に隣り合うと、1つにつき +1倍。'],
-  ['目標', 'そのラウンドで超えたい点。超えるとクリア。'], ['いのち🍃', '目標に届かないと1つ減る。3つなくなると終わり。'],
-  ['遺物', 'クリアでもらえる、ずっと効くボーナス。どの庭でも出る共通の遺物と、その庭だけの専用遺物がある。'],
-  ['上・極', '強いタイル。上はラウンド3、極はラウンド5から出る。'], ['専用', 'その庭でしか出ないタイル・遺物。'],
-  ['導火線', '点火の前になぞって決める、発動の順番。'], ['🔥導火', '導火線でつないだタイル1マスにつき +1倍。'],
-  ['⚡伝導', '導火線で、直前と同じ属性のタイルは1回多く発動。'], ['🏁完走', '盤面のタイルを全部（5枚以上）つなぐと最後に ×1.5。'],
-  ['とっておき', '手札を1枚取っておける左の枠。置くと手札は配り直し。'], ['取り消す', '直前に置いた1枚を戻す（1ラウンド1回）。'], ['引き直す', '手札を全部入れ替える。'], ['植え替え', '置いたタイルを動かす・入れ替える。'],
-  ['育つ', '水辺の庭の要素。置いてから経ったラウンドの数。'], ['熱', '火の庭の要素。そのラウンドで🔥が発動した回数。'],
-  ['列', '夜の庭の要素。同じ縦・横の列。'], ['群れ', '蜂の庭の要素。つながった🐝のかたまり。'],
-  ['道筋', 'からくりの庭の要素。導火線のなぞり方。'], ['風向き', '風の庭の要素。矢印タイルの向き（タップで回す）。'],
-  ['対', '対の庭の要素。軸をはさんで左右の同じ位置に同じタイル。'], ['段', '重ねの庭の要素。同じタイルを重ねた高さ。'],
-  ['生きている庭', 'ラウンドの合間に🌱芽が🌿若葉に育つこと（水辺の庭では🌳大樹にも）。'],
-  ['×数字', '盤面のタイルの右下。今のまま点火したら そのタイルが何回発動するか。'],
 ];
 function help(first, fromMenu, tab) {
   tab = tab || 'basic';
@@ -1901,7 +1916,6 @@ function openMenu() {
       <button class="choice" id="mVib"><b>📳 振動：${!canVib ? 'この端末では使えない' : vibOn ? 'ON' : 'OFF'}</b><small>置いたとき・大きな掛け算・クリアで軽く振動（Android のみ。iPhone のブラウザは非対応）</small></button>
       <button class="choice" id="mSpeed"><b>⏩ 発動の速さ：${SPEEDS[speedMode][0]}</b><small>タップで切り替え（ふつう → 速い → すぐ結果）。発動中のタップでも早送り</small></button>
       <button class="choice" id="mHelp"><b>❓ 遊び方</b><small>はじめに・点の決まり方・導火線・操作・庭</small></button>
-      <button class="choice" id="mWords"><b>📘 用語集</b><small>「伝導」「導火」「遺物」など、言葉の意味</small></button>
       <button class="choice" id="mTut"><b>🔰 はじめての案内：${TUT.on ? 'ON' : 'OFF'}</b><small>${TUT.on ? 'タップでやめる' : 'タップで、場面ごとの案内をもう一度出す'}</small></button>
       <button class="choice" id="mLight"><b>${lightFx ? '🍃 演出：軽め' : '✨ 演出：ふつう'}</b><small>動きが重いときは「軽め」に（線や飛ぶ数字を減らす）</small></button>
       <button class="choice" id="mSound"><b>${soundOn ? '🔊 音：ON' : '🔇 音：OFF'}</b><small>タップで切り替え</small></button>
@@ -1910,7 +1924,6 @@ function openMenu() {
     </div>`);
   $('mCards').onclick = () => cardList(playing && S.theme ? 'mine' : 'all');
   $('mHelp').onclick = () => help(false, true);
-  $('mWords').onclick = () => help(false, true, 'words');
   $('mVib').onclick = () => { if (!canVib) return; vibOn = !vibOn; try { localStorage.setItem('rensa-vib', vibOn ? '1' : '0'); } catch (e) {} if (vibOn) vib(30, true); openMenu(); };
   $('mSpeed').onclick = () => { speedMode = (speedMode + 1) % 3; try { localStorage.setItem('rensa-speed', speedMode); } catch (e) {} openMenu(); };
   $('mTut').onclick = () => { tutSet(TUT.on ? 'done' : 'on'); openMenu(); };
