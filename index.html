@@ -226,7 +226,15 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 #tip .tg.o{background:var(--mult);color:#fff7ea}
 #tip .td{font-size:17px;line-height:1.7;margin-top:8px;font-weight:700}
 #tip .tx{font-size:13px;color:#5b5243;margin-top:8px;line-height:1.6}
-u.gl{text-decoration:underline dotted 2px;text-underline-offset:4px;text-decoration-color:var(--mult)}
+u.gl,#tip .gls b{text-decoration:none;background:linear-gradient(transparent 58%,rgba(239,90,60,.32) 58%,rgba(239,90,60,.32) 94%,transparent 94%);padding:0 2px;border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.setrow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.setrow .sbtn{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 2px 6px;background:#fffaf0;border:2px solid var(--sumi);border-radius:3px;box-shadow:0 3px 0 var(--sumi);color:var(--sumi);font-family:inherit;cursor:pointer;min-height:64px}
+.setrow .sbtn i{font-style:normal;font-size:20px;line-height:1.2}
+.setrow .sbtn span{font-size:11px;color:#5b5243;font-weight:500}
+.setrow .sbtn b{font-size:13px}
+.setrow .sbtn.off{background:#e6dcc7}
+.setrow .sbtn.na{opacity:.45;cursor:default}
+.setnote{font-size:11px;color:#5b5243;text-align:center;margin:-2px 0 2px}
 #tip .gls{text-align:left;font-size:12.5px;line-height:1.6;margin-top:10px;padding-top:8px;border-top:1px dashed rgba(27,23,18,.35);color:#3d362b;font-weight:400}
 #tip .gls div+div{margin-top:4px}
 #tip .hint{font-size:11px;color:#7a6f5c;margin-top:10px}
@@ -1282,7 +1290,8 @@ function glossify(desc) {
   words.sort((a, b) => b[0].length - a[0].length);
   const re = new RegExp(words.map(w => w[0]).join('|'), 'g'), used = [];
   const html = String(desc).replace(re, (m, off, str) => { if (m === '対' && str[off - 1] === '反') return m; const gi = words.find(w => w[0] === m)[1]; if (used.includes(gi)) return m; used.push(gi); return `<u class="gl">${m}</u>`; });
-  return { html, defs: used.map(gi => `<div><b>${CARD_GLOSS[gi][1]}</b>：${CARD_GLOSS[gi][2]}</div>`).join('') };
+  const br = t => t.replace(/。(?=[^）)」]|$)(?!$)/g, '。<br>');
+  return { html: br(html), defs: used.map(gi => `<div><b>${CARD_GLOSS[gi][1]}</b>：${br(CARD_GLOSS[gi][2])}</div>`).join('') };
 }
 function tileTip(t, extra) {
   const T = TILES[t], tier = tierOf(t);
@@ -1913,12 +1922,15 @@ function openMenu() {
       <button class="choice" id="mRec"><b>📜 庭の記録</b><small>クリアした庭の盤面と点数を見る（${SLOTS}枠）</small></button>
       ${playing ? `<button class="choice" id="mStat"><b>📊 ここまでの活躍</b><small>どのタイルが点を伸ばしているか</small></button>` : ''}
       ${playing ? `<button class="choice" id="mGarden"><b>${THEMES[S.theme].e} この庭のこと</b><small>${THEMES[S.theme].name}の要素・専用タイル・専用遺物</small></button>` : ''}
-      <button class="choice" id="mVib"><b>📳 振動：${!canVib ? 'この端末では使えない' : vibOn ? 'ON' : 'OFF'}</b><small>置いたとき・大きな掛け算・クリアで軽く振動（Android のみ。iPhone のブラウザは非対応）</small></button>
-      <button class="choice" id="mSpeed"><b>⏩ 発動の速さ：${SPEEDS[speedMode][0]}</b><small>タップで切り替え（ふつう → 速い → すぐ結果）。発動中のタップでも早送り</small></button>
       <button class="choice" id="mHelp"><b>❓ 遊び方</b><small>はじめに・点の決まり方・導火線・操作・庭</small></button>
       <button class="choice" id="mTut"><b>🔰 はじめての案内：${TUT.on ? 'ON' : 'OFF'}</b><small>${TUT.on ? 'タップでやめる' : 'タップで、場面ごとの案内をもう一度出す'}</small></button>
-      <button class="choice" id="mLight"><b>${lightFx ? '🍃 演出：軽め' : '✨ 演出：ふつう'}</b><small>動きが重いときは「軽め」に（線や飛ぶ数字を減らす）</small></button>
-      <button class="choice" id="mSound"><b>${soundOn ? '🔊 音：ON' : '🔇 音：OFF'}</b><small>タップで切り替え</small></button>
+      <div class="setrow">
+        <button class="sbtn${soundOn ? '' : ' off'}" id="mSound"><i>${soundOn ? '🔊' : '🔇'}</i><span>音</span><b>${soundOn ? 'ON' : 'OFF'}</b></button>
+        <button class="sbtn${!canVib ? ' na' : vibOn ? '' : ' off'}" id="mVib"><i>📳</i><span>振動</span><b>${!canVib ? '非対応' : vibOn ? 'ON' : 'OFF'}</b></button>
+        <button class="sbtn" id="mSpeed"><i>⏩</i><span>発動の速さ</span><b>${SPEEDS[speedMode][0]}</b></button>
+        <button class="sbtn" id="mLight"><i>${lightFx ? '🍃' : '✨'}</i><span>演出</span><b>${lightFx ? '軽め' : 'ふつう'}</b></button>
+      </div>
+      <p class="setnote">タップで切り替え。重いときは演出を「軽め」に。発動中は庭をタップで早送り</p>
       ${playing ? `<button class="choice danger" id="mRestart"><b>↺ やり直す</b><small>庭を選ぶところから始め直す</small></button>` : ''}
       <button class="choice" id="mClose"><b>とじる</b></button>
     </div>`);
