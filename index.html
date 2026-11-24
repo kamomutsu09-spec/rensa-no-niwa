@@ -200,6 +200,10 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 #evo{position:fixed;left:50%;top:14px;transform:translate(-50%,-20px);z-index:42;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;
   background:#1f3a2a;color:#e8f5e4;border:2px solid #7fc48a;border-radius:6px;padding:8px 14px;font-size:13px;font-weight:700;max-width:92vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.5)}
 #evo.on{opacity:1;transform:translate(-50%,0)}
+.cell .fc{position:absolute;right:3px;bottom:3px;font-size:10px;font-weight:900;line-height:1;padding:2px 4px;border-radius:3px;background:rgba(27,23,18,.55);color:#fff7ea;pointer-events:none}
+.cell .fc.many{background:var(--gold);color:var(--sumi)}
+.cell .fc.huge{background:var(--mult);color:#fff7ea}
+.cell .fc.arw{right:20px}
 .cell .dir{position:absolute;right:2px;bottom:1px;font-size:15px;font-weight:900;line-height:1;color:#2b6cb0;text-shadow:0 0 2px #fff,0 0 2px #fff}
 #mile{position:fixed;inset:0;z-index:44;pointer-events:none;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:0}
 #mile .mk{font-family:"Dela Gothic One",sans-serif;font-size:min(13vw,64px);color:var(--gold);text-shadow:0 0 18px rgba(242,185,56,.9),0 4px 0 #1b1712;-webkit-text-stroke:2px #1b1712;paint-order:stroke fill;white-space:nowrap}
@@ -311,7 +315,7 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
     <button class="iconbtn" id="soundBtn" aria-label="音の切り替え">音 ON</button>
     <button class="iconbtn" id="menuBtn" aria-label="メニュー">☰ メニュー</button>
   </header>
-  <div id="status"><span>ラウンド<b id="round">1</b> / 8</span><span>いのち<b id="lives">🍃🍃🍃</b></span><span id="phase"></span><span>最高<b id="best">-</b></span><span class="tg">目標<b id="target">0</b></span></div>
+  <div id="status"><span>ラウンド<b id="round">1</b> / 8</span><span>いのち<b id="lives">🍃🍃🍃</b></span><span>最高<b id="best">-</b></span><span class="tg">目標<b id="target">0</b></span></div>
   <div id="relics"></div>
   <div id="factor"></div>
   <div id="scorebox">
@@ -358,10 +362,9 @@ const TILES = {
   rainbow:{ e: '🌈', name: '虹', w: 3, tier: 3, desc: '盤面のタイルの種類1つにつき 倍率を×0.2ずつ上乗せ（8種類なら×2.6）。ただし効くのは盤面で最初の🌈だけ' },
   // ── 庭ごとの専用タイル（only の庭でしか出ない）──
   lotus:  { e: '🪷', name: '蓮',   w: 5, tier: 2, from: 1, only: 'water', desc: '倍率を×1.5。隣の💧1つにつき さらに×0.25' },
-  bamboo: { e: '🎋', name: '竹',   w: 5, tier: 2, from: 1, only: 'water', desc: '+6点と+3倍。さらに 倍率×1.12、置いてから経ったラウンド1つにつき ×0.12ずつ上乗せ（長く残すほど育つ）' },
+  bamboo: { e: '🎋', name: '竹',   w: 5, tier: 2, from: 1, only: 'water', desc: '+6点と+3倍。さらに 倍率×1.16、置いてから経ったラウンド1つにつき ×0.16ずつ上乗せ（長く残すほど育つ）' },
   bigtree:{ e: '🌳', name: '大樹', w: 3, tier: 3, from: 3, only: 'water', desc: '盤面の「草」「水」のタイル（🌳以外）1つにつき 倍率×0.09ずつ上乗せ。さらに置いてから経ったラウンド1つにつき ×0.14（育てるほど掛け算が膨らむ）' },
   sprig:  { e: '🌿', name: '若葉', w: 0, born: true, desc: '+6点。隣の💧1つにつき +4点（🌱が2ラウンド残ると育つ。水辺の庭では さらに3ラウンドで🌳大樹に）' },
-  ash:    { e: '🌫️', name: '灰',   w: 0, born: true, desc: '+4点。隣の🌱🌿1つにつき +2倍（大きな火が芽を燃やした焼け跡。肥えている）' },
   sun:    { e: '☀️', name: '日',   w: 3, tier: 3, from: 3, only: 'water', desc: '盤面の🌱・💧・🪷を全部 もう一度発動させる' },
   lantern:{ e: '🏮', name: '提灯', w: 5, tier: 2, from: 1, only: 'fire',  desc: '盤面の🔥1つにつき +8点と+1倍、さらに 倍率×0.02ずつ上乗せ' },
   yam:    { e: '🍠', name: '焼き芋', w: 5, tier: 2, from: 1, only: 'fire', desc: 'いまの「熱」1つにつき +6点と+1倍。熱が8以上なら さらに倍率×1.3。熱は このラウンドで それまでに🔥が発動した回数（右下に置くほど熱い）' },
@@ -386,7 +389,7 @@ const TILES = {
   chou:   { e: '🦋', name: '蝶',     w: 6, tier: 2, from: 0, only: 'pair', desc: '軸をはさんだ反対側のタイルと同じ効果で発動し、どんなタイルとも「対」になる（反対側が空・🦋・真ん中の列なら +5点）' },
   torii:  { e: '⛩️', name: '鳥居',   w: 3, tier: 3, from: 2, only: 'pair', desc: '+4点。同じ横の列の「対」のタイルを全部 もう一度発動させる。真ん中の縦の列（軸）に置けば 2回ずつ' },
   fuda:   { e: '🏵️', name: '家紋',   w: 3, tier: 3, from: 2, only: 'pair', desc: '盤面の「対」1組につき 倍率×0.2ずつ上乗せ' },
-  castle: { e: '🏯', name: '城',     w: 6, tier: 2, from: 0, only: 'stack', desc: '+5点。自分の段1つにつき 倍率×0.2ずつ上乗せ（重ねるほど掛け算が太り、発動の回数も増える）' },
+  castle: { e: '🏯', name: '城',     w: 6, tier: 2, from: 0, only: 'stack', desc: '+5点。自分の段1つにつき 倍率×0.15ずつ上乗せ（重ねるほど掛け算が太り、発動の回数も増える）' },
   kokeshi:{ e: '🪆', name: 'こけし', w: 5, tier: 2, from: 0, only: 'stack', desc: '+4点。上下左右のタイルの段の合計1つにつき +3倍、さらに 倍率×0.05ずつ上乗せ' },
   ladder: { e: '🪜', name: '梯子',   w: 3, tier: 3, from: 2, only: 'stack', desc: '上下のタイルを もう一度発動させる。上下のタイルの段が高いほど、そのタイルは多く発動する' },
   tower:  { e: '🛕', name: '五重塔',     w: 3, tier: 3, from: 2, only: 'stack', desc: '盤面でいちばん高い段1つにつき 倍率×0.25ずつ上乗せ' },
@@ -399,7 +402,7 @@ const TAGS = {
   sprout: ['草'], water: ['水'], fire: ['火'], rock: ['地'], bee: ['虫'], moon: ['天'], star: ['天'], mirror: ['術'],
   sakura: ['草'], mush: ['草', '地'], thunder: ['天', '術'], rainbow: ['天', '水'],
   lotus: ['草', '水'], bamboo: ['草'], sun: ['天', '火'], lantern: ['火', '術'], yam: ['火', '地'], dragon: ['火', '天'],
-  owl: ['天', '虫'], kite: ['天'], leaf: ['草'], tornado: ['天', '地'], koi: ['水', '天'], gear: ['術', '地'], switch: ['術'], compass: ['術', '天'], target: ['術'], sprig: ['草'], ash: ['地', '火'], bigtree: ['草'], volcano: ['火', '地'], venus: ['天'], ladybug: ['虫'], scope: ['術', '天'], comet: ['天'], sunflwr: ['草', '虫'], nest: ['虫', '草'], queen: ['虫'],
+  owl: ['天', '虫'], kite: ['天'], leaf: ['草'], tornado: ['天', '地'], koi: ['水', '天'], gear: ['術', '地'], switch: ['術'], compass: ['術', '天'], target: ['術'], sprig: ['草'], bigtree: ['草'], volcano: ['火', '地'], venus: ['天'], ladybug: ['虫'], scope: ['術', '天'], comet: ['天'], sunflwr: ['草', '虫'], nest: ['虫', '草'], queen: ['虫'],
 };
 const tagsOf = k => TAGS[k] || [];
 const shareTag = (a, b) => a && b && tagsOf(a).some(t => tagsOf(b).includes(t));
@@ -451,10 +454,8 @@ const RELICS = {
   moonlight:    { e: '🌝', name: '月光',     only: 'night', desc: '⭐は、隣の🌙1つにつき +2倍' },
   pollen:       { e: '🌺', name: '花粉',     only: 'bee',   desc: '🌱は、隣の🐝1つにつき +4点' },
   buzz:         { e: '🎶', name: '羽音',     only: 'bee',   desc: '🪺巣が、群れの🐝1匹につき +3倍 → +4倍' },
-  harmony:      { e: '☯️', name: '調和',     desc: '共鳴が、同じ属性の隣1つにつき +1倍 → +2倍' },
   hyakka:       { e: '💮', name: '百花',     desc: '「草」のタイルは、盤面の「草」1つにつき +2点' },
   gogyo:        { e: '🧭', name: '五行',     desc: '盤面の属性の種類1つにつき、最後に倍率×0.15ずつ上乗せ（7種類なら×2.05）' },
-  kinship:      { e: '🪢', name: '縁',       desc: '共鳴は、斜めの隣も数える' },
   lamp:         { e: '🪔', name: '灯明',     desc: '導火（導火線でつないだタイル1マスごとの倍率）が +1倍 → +2倍' },
   firecracker:  { e: '🧨', name: '爆竹',     desc: '完走（全部のタイルを一筆書き）の倍率が ×1.5 → ×2.5' },
   thread:       { e: '🧵', name: '糸',       desc: '導火線が曲がるたび +3倍' },
@@ -475,7 +476,7 @@ const RELICS = {
   momo:         { e: '🍑', name: '桃の節句', only: 'pair',  desc: '🎎雛の掛け算が ×1.5 → ×2.0' },
   toumyou:      { e: '🎀', name: '水引',     only: 'pair',  desc: '⛩️鳥居が 対のタイルを発動させる回数 +1' },
   ishizue:      { e: '🏛️', name: '礎',       only: 'stack', desc: '3段以上に重ねたタイルは さらに1回多く発動' },
-  kourou:       { e: '🏙️', name: '高楼',     only: 'stack', desc: '🏯城の掛け算が 段1つにつき ×0.2 → ×0.3' },
+  kourou:       { e: '🏙️', name: '高楼',     only: 'stack', desc: '🏯城の掛け算が 段1つにつき ×0.15 → ×0.22' },
   ashiba:       { e: '🏗️', name: '足場',     only: 'stack', desc: '重ねた段の合計1つにつき、最後に倍率×0.1ずつ上乗せ' },
   juubako:      { e: '🍱', name: '重箱',     only: 'stack', desc: '3段以上に重ねたタイルは さらに2回多く発動' },
   nabe:         { e: '🍲', name: '鍋',       only: 'fire',  desc: '🍠焼き芋と🏮提灯は 1回多く発動' },
@@ -504,7 +505,7 @@ const THEMES = {
   bee:   { e: '🐝', name: '蜂の庭',   lv: 'ふつう', tiles: '🐝🌱', boost: { bee: 3.0, sprout: 1.6 }, relic: 'swarm', elems: ['虫'], factor: '群れ', desc: '蜂を寄せ集める庭。<b>つながった蜂の群れ</b>が大きいほど🪺巣が稼ぎ、👑女王蜂が群れごと掛け算にする。' },
 };
 const THEME_REL = 1.25;
-const TARGETS = [100, 1500, 10000, 100000, 10000000, 3000000000, 100000000000000, 1e23];
+const TARGETS = [50, 500, 3000, 3e4, 1e6, 1e8, 1e11, 1e16];
 // 最後のラウンドだけ4枚置けるので、全8ラウンドでちょうど25マス（庭がぴったり埋まる）
 const perRound = r => r === TARGETS.length - 1 ? 4 : 3;
 const LIVES = 3;
@@ -523,10 +524,8 @@ function diagonals(i) {
   return res;
 }
 
-// ===== 昼と夜：ラウンドごとに入れ替わる。昼は 草・火・虫、夜は 天・水・術 のタイルが1回多く発動。最後のラウンドは黄昏（両方）
-const PHASE = { day: { e: '☀️', name: '昼', tags: ['草', '火', '虫'] }, night: { e: '🌙', name: '夜', tags: ['天', '水', '術'] }, dusk: { e: '🌆', name: '黄昏', tags: ['草', '火', '虫', '天', '水', '術'] } };
-const phaseOf = round => round >= 7 ? 'dusk' : round % 2 === 0 ? 'day' : 'night';
-const phaseActive = (t, ph) => !!t && tagsOf(t).some(x => PHASE[ph].tags.includes(x));
+// 昼と夜は 2026-11-24 に削除（phaseOf だけ互換のために残す）
+const phaseOf = () => null;
 const RETRIG = new Set(['star', 'thunder', 'owl', 'sun', 'comet', 'queen', 'kite', 'torii', 'ladder']);
 // ===== 対：軸（真ん中の縦の列）をはさんだ反対側のマス／段：重ねた高さ =====
 const mirrorOf = i => Math.floor(i / N) * N + (N - 1 - i % N);
@@ -645,12 +644,6 @@ function scoreBoard(board, relics, ctx) {
         break;
       }
       case 'sprig': add(i, 'c', 6 + 4 * adj(i, 'water'), type, adjList(i, 'water')); break;
-      case 'ash': {
-        add(i, 'c', 4, type);
-        const g = neighbors(i).filter(j => board[j] === 'sprout' || board[j] === 'sprig');
-        if (g.length) add(i, 'm', 2 * g.length, type, g);
-        break;
-      }
       case 'gear': {
         add(i, 'c', 4, type);
         const pk2 = pathPos[i];
@@ -683,7 +676,7 @@ function scoreBoard(board, relics, ctx) {
       }
       case 'bamboo': {
         add(i, 'c', 6, type); add(i, 'm', 3, type);
-        add(i, 'x', Math.round((1 + 0.12 * (ageOf(i) + 1)) * 100) / 100, type);
+        add(i, 'x', Math.round((1 + 0.16 * (ageOf(i) + 1)) * 100) / 100, type);
         break;
       }
       case 'yam': {
@@ -778,7 +771,7 @@ function scoreBoard(board, relics, ctx) {
       }
       case 'castle': {
         add(i, 'c', 5, type);
-        add(i, 'x', Math.round((1 + (R.has('kourou') ? 0.3 : 0.2) * lvOf(i)) * 100) / 100, type);
+        add(i, 'x', Math.round((1 + (R.has('kourou') ? 0.22 : 0.15) * lvOf(i)) * 100) / 100, type);
         break;
       }
       case 'kokeshi': {
@@ -830,7 +823,6 @@ function scoreBoard(board, relics, ctx) {
   let maxLv = 1; board.forEach((t, j) => { if (t) maxLv = Math.max(maxLv, lvOf(j)); });
   for (const i of order) {
     let reps = 1;
-    if (ph && phaseActive(board[i], ph)) reps++;
     const pk = pathPos[i];
     // 🍃追い風：矢印がこのマスを向いている木の葉の数だけ多く発動
     { const lv = neighbors(i).filter(j => board[j] === 'leaf' && stepDir(j, dirOf(j)) === i); if (lv.length) { reps += lv.length * (R.has('windmill') ? 2 : 1); pushEv({ i, kind: 'n', lbl: `🍃追い風×${lv.length}`, chips, mult, src: 'leaf', links: lv, by: null }); } }
@@ -859,7 +851,7 @@ function scoreBoard(board, relics, ctx) {
     { const L = lvOf(i); if (L > 1) { reps += L - 1; if (R.has('ishizue') && L >= 3) reps++; if (R.has('juubako') && L >= 3) reps += 2; } }
     for (let k = 0; k < reps; k++) {
       trig(i, board[i], 0);
-      // 共鳴：同じ属性を持つ隣のタイル1つにつき +1倍（最初の発動のときだけ）
+      // 導火線のごほうび（最初の発動のときだけ）
       if (k === 0 && pk != null) {
         const saved = curBy; curBy = null;
         add(i, 'm', R.has('lamp') ? 2 : 1, 'fuse', pk > 0 ? [path[pk - 1]] : []);
@@ -867,8 +859,6 @@ function scoreBoard(board, relics, ctx) {
         curBy = saved;
       }
       if (k === 0) {
-        const nb = neighbors(i, R.has('kinship')).filter(j => shareTag(board[i], board[j]));
-        if (nb.length) { curBy = null; add(i, 'm', nb.length * (R.has('harmony') ? 2 : 1), 'resonance', nb); }
         if (R.has('hyakka') && tagsOf(board[i]).includes('草')) { const g = board.filter(t => tagsOf(t).includes('草')).length; if (g) add(i, 'c', 2 * g, 'hyakka', []); }
       }
     }
@@ -884,34 +874,13 @@ function scoreBoard(board, relics, ctx) {
 
 // ===== 生きている庭：ラウンドの合間に盤面が変わる（純粋関数。nextRound は次のラウンド番号）
 //  ① 🌱は置いてから2ラウンドで🌿若葉に。水辺の庭では🌿がさらに3ラウンドで🌳大樹に
-//  ② 🔥が2つ以上隣り合う「大きな火」は、隣の🌱🌿を1つ燃やして🌫️灰にする
-//  ③ 🐝は、いちばん近い花（🌱🌿🌸🌻🪷）へ、空いているマスを1歩進む
+//  （🔥の燃え広がり・🐝の移動は 2026-11-24 に削除）
 function evolve(board, ages, nextRound, theme, levels) {
   const b = board.slice(), a = ages.slice(), ch = [], l = levels ? levels.slice() : null;
   const age = i => a[i] != null ? nextRound - a[i] : 0;
   for (let i = 0; i < N * N; i++) {
     if (b[i] === 'sprout' && age(i) >= 2) { b[i] = 'sprig'; ch.push({ kind: 'grow', i, from: 'sprout', to: 'sprig' }); }
     else if (theme === 'water' && b[i] === 'sprig' && age(i) >= 5) { b[i] = 'bigtree'; ch.push({ kind: 'grow', i, from: 'sprig', to: 'bigtree' }); }
-  }
-  const burnt = new Set();
-  for (let i = 0; i < N * N; i++) {
-    if (b[i] !== 'fire') continue;
-    const fn = neighbors(i).filter(j => b[j] === 'fire').length;
-    if (fn < 2) continue;
-    const tg = neighbors(i).find(j => (b[j] === 'sprout' || b[j] === 'sprig') && !burnt.has(j));
-    if (tg != null) { ch.push({ kind: 'burn', i: tg, by: i, from: b[tg], to: 'ash' }); b[tg] = 'ash'; a[tg] = nextRound; if (l) l[tg] = 1; burnt.add(tg); }
-  }
-  const FLOWER = ['sprout', 'sprig', 'sakura', 'sunflwr', 'lotus'];
-  const flowers = () => b.map((t, j) => FLOWER.includes(t) ? j : -1).filter(j => j >= 0);
-  const dist = (x, y) => Math.abs(Math.floor(x / N) - Math.floor(y / N)) + Math.abs(x % N - y % N);
-  const moved = new Set();
-  for (let i = 0; i < N * N; i++) {
-    if (b[i] !== 'bee' || moved.has(i)) continue;
-    const fl = flowers(); if (!fl.length) continue;
-    const d0 = Math.min(...fl.map(f => dist(i, f)));
-    if (d0 <= 1) continue;
-    const step = neighbors(i).filter(j => !b[j]).map(j => [j, Math.min(...fl.map(f => dist(j, f)))]).filter(([, d]) => d < d0).sort((x, y) => x[1] - y[1])[0];
-    if (step) { const j = step[0]; b[j] = 'bee'; a[j] = a[i]; b[i] = null; a[i] = null; if (l) { l[j] = l[i]; l[i] = 1; } moved.add(j); ch.push({ kind: 'move', i: j, from: i, to: 'bee' }); }
   }
   return { board: b, ages: a, levels: l, changes: ch };
 }
@@ -1168,8 +1137,6 @@ function render() {
     const d = document.createElement('div'); d.className = 'relic'; d.textContent = RELICS[k].e + ' ' + RELICS[k].name;
     d.onclick = () => { info(`<b>${RELICS[k].e} ${RELICS[k].name}</b>：${RELICS[k].desc}`); relicTip(k); }; rb.appendChild(d);
   }
-  const ph = phaseOf(S.round);
-  $('phase').textContent = S.theme ? `${PHASE[ph].e}${PHASE[ph].name}` : '';
   const bd = $('board'); bd.innerHTML = ''; bd.classList.toggle('fusing', !!S.fuse);
   S.board.forEach((t, i) => {
     const c = document.createElement('div'); c.className = 'cell'; c.dataset.i = i;
@@ -1177,7 +1144,6 @@ function render() {
     if (S.theme === 'pair' && onAxis(i)) c.classList.add('axis');
     if (t && S.levels && S.levels[i] > 1) { c.classList.add('lv'); c.insertAdjacentHTML('beforeend', `<span class="lvb">${S.levels[i]}段</span>`); }
     if (S.swap) { if (S.swap.from === i) c.classList.add('swapsrc'); else if (S.swap.from != null) c.classList.add('swapok'); }
-    if (t && S.theme && phaseActive(t, ph)) c.classList.add('act');
     if (t && isArrow(t)) c.insertAdjacentHTML('beforeend', `<span class="dir">${ARROWS[S.dirs[i] == null ? 1 : S.dirs[i]]}</span>`);
     if (S.fuse) { const o = S.fuse.path.indexOf(i); if (o >= 0) c.insertAdjacentHTML('beforeend', `<span class="ord">${o + 1}</span>`); }
     c.onclick = () => onCell(i); bd.appendChild(c);
@@ -1199,6 +1165,7 @@ function render() {
   $('undoBtn').innerHTML = `取り消す<br>あと${S.undos || 0}回`;
   $('undoBtn').disabled = S.busy || !S.undoSnap || !S.undos;
   if (S.sel === 'hold') document.querySelectorAll('#hand .card').forEach(c => c.classList.add('shuf'));
+  if (lastPrev && S.theme && !S.busy) { cellBadges(lastPrev); fireBadges(lastPrev); }
   saveGame();
   $('rerollBtn').disabled = S.busy || S.rerolls <= 0 || !!S.fuse;
   $('swapBtn').innerHTML = S.swap ? 'やめる' : `植え替え<br>あと${S.swaps || 0}回`;
@@ -1237,7 +1204,6 @@ function coach(step, target, html, opt) {
   $('coachSkip').onclick = () => { tutSet('done'); info('案内をやめた。メニューの「🔰 はじめての案内」でいつでも戻せる。'); };
 }
 // 画面上部の数字や表示をタップすると、意味を説明する
-const PHASE_TIP = { day: '☀️ <b>昼</b>：草・火・虫の属性を持つタイルが <b>1回多く発動</b>する（金の枠で光る）。', night: '🌙 <b>夜</b>：天・水・術の属性を持つタイルが <b>1回多く発動</b>する（金の枠で光る）。', dusk: '🌆 <b>黄昏</b>（最後のラウンド）：昼と夜の両方。草・火・虫・天・水・術が <b>1回多く発動</b>する。' };
 const FACTOR_TIP = {
   water: '🌱 <b>育つ</b>：置いてから経ったラウンドの数。🎋竹や🌳大樹など、長く置いたタイルほど強くなる。早めに置いたタイルは大事に。',
   fire: '🔥 <b>熱</b>：そのラウンドで🔥が発動した回数。🔥のあとに発動するタイルほど熱が高い。🍠焼き芋や🌋火山は熱で強くなるので、<b>🔥より後（右下側・導火線の後ろ）</b>に置こう。',
@@ -1253,7 +1219,6 @@ function statusTips() {
   const tips = [
     () => `<div class="tn">ラウンド ${S.round + 1} / 8</div><div class="td">全部で8ラウンド。1ラウンドに3枚（最後のラウンドだけ4枚）置いて点火する。タイルは次のラウンドにも残る。</div>`,
     () => `<div class="tn">いのち ${'🍃'.repeat(S.lives || 0)}</div><div class="td">目標に届かなかったラウンドは、いのちが1つ減る（遺物ももらえない）。全部なくなると終わり。庭はそのまま残るので、届かなくても続けて育てられる。</div>`,
-    () => `<div class="tn">昼と夜</div><div class="td">${PHASE_TIP[phaseOf(S.round)] || ''}<br>ラウンドごとに昼と夜が入れ替わる。</div>`,
     () => `<div class="tn">最高スコア</div><div class="td">この端末で出した、これまでの最高点。</div>`,
     () => `<div class="tn">目標 ${fmt(TARGETS[S.round] || 0)}</div><div class="td">このラウンドで超えたい点。超えるとクリアで、<b>遺物</b>（ずっと効くボーナス）を1つ選べる。ラウンドが進むほど大きくなる。</div>`,
   ];
@@ -1366,9 +1331,21 @@ function cellBadges(r) {
     if (b) c.insertAdjacentHTML('beforeend', b);
   });
 }
+// 置いている間・なぞっている間：各タイルが何回発動する予定かを右下に出す（なぞっている間は、その導火線の順で）
+function fireBadges(r) {
+  const cells = $('board').children;
+  S.board.forEach((t, i) => {
+    const c = cells[i]; if (!c) return;
+    const old = c.querySelector('.fc'); if (old) old.remove();
+    if (!t || !r) return;
+    const n = r.fired[i] || 0;
+    c.insertAdjacentHTML('beforeend', `<span class="fc${n >= 10 ? ' huge' : n >= 2 ? ' many' : ''}${isArrow(t) ? ' arw' : ''}">×${n}</span>`);
+  });
+}
+let lastPrev = null;
 function showPreview() {
-  const r = scoreBoard(S.board, S.relics, ctxNow());
-  factorBar(r); cellBadges(r);
+  const r = scoreBoard(S.board, S.relics, ctxNow()); lastPrev = r;
+  factorBar(r); cellBadges(r); fireBadges(r);
   // なぞっている間は数字を隠して、目標に届くかのゲージだけ
   if (S.fuse) {
     const rp = scoreBoard(S.board, S.relics, Object.assign(ctxNow(), { onlyPath: true }));
@@ -1439,7 +1416,7 @@ function onCell(i) {
   dealHand(); render(); flashNew(i); showPreview();
   info('次のタイルを選ぼう。');
   if (S.round === 0 && S.placed === 1) coach('preview', $('scorebox'), '<b>③ ここが「今の庭なら何点になるか」の見込み。</b><br>スコア＝<b>点 × 倍率</b>。右上の<b>目標</b>を超えればクリア。', { n: '3/7' });
-  if (S.round === 0 && S.placed === 2) coach('synergy', $('board'), '<b>④ 隣り合うと強くなるタイルが多い。</b>（例：🌱芽の隣に💧水）<br>タイルの下の<b>色札（属性）</b>が同じタイルを隣に置くと、<b>共鳴</b>で倍率+1。', { n: '4/7' });
+  if (S.round === 0 && S.placed === 2) coach('synergy', $('board'), '<b>④ 隣り合うと強くなるタイルが多い。</b>（例：🌱芽の隣に💧水）<br>タイルの右下の<b>×数字</b>は、今のまま点火したら そのタイルが何回発動するか。', { n: '4/7' });
 }
 // とっておき：手札を1枚取っておける（入れ替えは1ラウンド1回）。取っておいたカードはいつでも置ける
 hoverDesc($('hold'), () => S.held); longPress($('hold'), () => S.held);
@@ -1565,8 +1542,6 @@ async function nextRoundWithEvolve(after) {
     const cnt = k => r.changes.filter(c => c.kind === k).length;
     const parts = [];
     if (cnt('grow')) parts.push(`${r.changes.filter(c => c.kind === 'grow').map(c => TILES[c.from].e + '→' + TILES[c.to].e).join(' ')} 育った`);
-    if (cnt('burn')) parts.push(`🔥が${cnt('burn')}つ燃え移って🌫️灰に`);
-    if (cnt('move')) parts.push(`🐝が${cnt('move')}匹 花へ動いた`);
     const ev = $('evo'); ev.innerHTML = `🌱 庭が変わった：${parts.join('、')}`; ev.classList.add('on');
     clearTimeout(nextRoundWithEvolve.t); nextRoundWithEvolve.t = setTimeout(() => ev.classList.remove('on'), 4200);
     tone(600, 'sine', .15, .07); setTimeout(() => tone(900, 'sine', .2, .06), 120);
@@ -1833,9 +1808,11 @@ const HELP = [
       <li>タイルは次のラウンドにも残る。庭を育てて<b>全8ラウンド</b>をクリアしよう。</li>
     </ol>
     <h3>画面の見方</h3>
-    <p><b>上</b>：ラウンド・いのち🍃・☀️昼/🌙夜・最高点・目標。<b>タップすると意味が出る。</b>その下に、持っている遺物と、庭の要素（熱・群れなど）。</p>
+    <p><b>上</b>：ラウンド・いのち🍃・最高点・目標。<b>タップすると意味が出る。</b>その下に、持っている遺物と、庭の要素（熱・群れなど）。</p>
     <p><b>まんなか</b>：点 × 倍率 と「いまの庭なら何点か」の見込み、目標までのゲージ、5×5の庭。</p>
     <p><b>下</b>：手札、とっておき（左の枠）、引き直す・植え替え（右のボタン）。</p>
+    <h3>発動回数の予定</h3>
+    <p>盤面のタイルの右下の <b>×数字</b> は、今のまま点火したら そのタイルが<b>何回発動するか</b>。もう一度発動させるタイルや遺物の分も入っている。導火線をなぞっている間は、その順番での回数になる。</p>
     <h3>説明の見方</h3>
     <p>手札・とっておきのタイルは<b>長押し</b>、置いたタイルと遺物は<b>タップ</b>で大きな説明が出る。メニューの「📖 カード一覧」で全部見られる。</p>
     <h3>困ったら</h3>
@@ -1847,10 +1824,8 @@ const HELP = [
     <p>ふつうは<b>左上から右下へ</b>（横に読む順）。点火の前に盤面をなぞれば、順番を自分で決められる（→「導火線」）。</p>
     <h3>もう一度発動させるタイル</h3>
     <p>⭐⚡🦉☀️🌠👑🪁⛩️🪜 などは、ほかのタイルを<b>もう一度発動</b>させる。これらどうしは発動させ合わず、<b>回数を増やし合う</b>（⭐は隣の⭐1つにつき回数+1）。回数に上限はない。</p>
-    <h3>属性と共鳴</h3>
-    <p>タイルの下の色札が<b>属性</b>（<i class="el" style="background:#4f9d5d">草</i><i class="el" style="background:#3a86c8">水</i><i class="el" style="background:#d9532b">火</i><i class="el" style="background:#8a6a45">地</i><i class="el" style="background:#c99a00">虫</i><i class="el" style="background:#6a5acd">天</i><i class="el" style="background:#a0509a">術</i>）。発動したとき、<b>同じ属性の隣のタイル1つにつき +1倍</b>（共鳴）。</p>
-    <h3>☀️昼と🌙夜</h3>
-    <p>ラウンドごとに入れ替わる。昼は 草・火・虫、夜は 天・水・術 のタイルが<b>1回多く発動</b>（金の枠で光る）。最後のラウンドは🌆黄昏で両方。</p>
+    <h3>属性</h3>
+    <p>タイルの下の色札が<b>属性</b>（<i class="el" style="background:#4f9d5d">草</i><i class="el" style="background:#3a86c8">水</i><i class="el" style="background:#d9532b">火</i><i class="el" style="background:#8a6a45">地</i><i class="el" style="background:#c99a00">虫</i><i class="el" style="background:#6a5acd">天</i><i class="el" style="background:#a0509a">術</i>）。導火線で<b>同じ属性が続くと⚡伝導</b>で1回多く発動する。属性を数えるタイルや遺物もある。</p>
     <h3>強いタイル</h3>
     <p>ラウンド3から<b>「上」</b>、ラウンド5から<b>「極」</b>のタイルが出る。庭ごとの<b>専用タイル</b>はもっと早く出る。<b>庭のテーマに合わせて組むと勝ちやすい。</b></p></div>`],
   ['fuse', '導火線', () => `<div class="hsec">
@@ -1874,26 +1849,26 @@ const HELP = [
     <p>庭を選ぶと、その庭のタイルが多く出て、その庭の遺物を1つ持って始まる。庭ごとに<b>独自の要素</b>がある。</p>
     ${Object.keys(THEMES).map(k => `<p><b>${THEMES[k].e} ${THEMES[k].name}</b>${THEMES[k].locked ? `（ほかの庭を${THEMES[k].locked}つ全クリアで解放）` : ''}<br>${FACTOR_TIP[k] || ''}</p>`).join('')}
     <h3>🌱 生きている庭</h3>
-    <p>ラウンドの合間に庭が変わる。🌱は2ラウンドで🌿若葉に（水辺ではさらに3ラウンドで🌳大樹に）、🔥が3つ以上かたまると隣の🌱🌿を燃やして🌫️灰に、🐝は花へ1歩近づく。</p></div>`],
+    <p>ラウンドの合間に庭が変わる。🌱は2ラウンドで🌿若葉に（水辺ではさらに3ラウンドで🌳大樹に）。</p></div>`],
   ['words', '用語集', () => `<dl class="glossary">${GLOSSARY.map(([w, d]) => `<dt>${w}</dt><dd>${d}</dd>`).join('')}</dl>`],
 ];
 const GLOSSARY = [
   ['点', 'タイルが足していく数（左の数字）。'], ['倍率', '点に掛ける数（右の数字）。スコア＝点×倍率。'],
   ['+○倍 / ×○', '+は倍率への足し算、×は倍率への掛け算。掛け算は後ろで発動するほど得。'],
   ['発動', 'タイルが効果を出すこと。1回多く発動＝効果が2回出る。'], ['再発動', 'ほかのタイルをもう一度発動させること（⭐⚡など）。'],
-  ['属性', 'タイルの下の色札。<i class="el" style="background:#4f9d5d">草</i><i class="el" style="background:#3a86c8">水</i><i class="el" style="background:#d9532b">火</i><i class="el" style="background:#8a6a45">地</i><i class="el" style="background:#c99a00">虫</i><i class="el" style="background:#6a5acd">天</i><i class="el" style="background:#a0509a">術</i>'], ['共鳴', '同じ属性のタイルが上下左右に隣り合うと、1つにつき +1倍。'],
+  ['属性', 'タイルの下の色札。<i class="el" style="background:#4f9d5d">草</i><i class="el" style="background:#3a86c8">水</i><i class="el" style="background:#d9532b">火</i><i class="el" style="background:#8a6a45">地</i><i class="el" style="background:#c99a00">虫</i><i class="el" style="background:#6a5acd">天</i><i class="el" style="background:#a0509a">術</i>。導火線の⚡伝導に関わる。'], ['共鳴', '同じ属性のタイルが上下左右に隣り合うと、1つにつき +1倍。'],
   ['目標', 'そのラウンドで超えたい点。超えるとクリア。'], ['いのち🍃', '目標に届かないと1つ減る。3つなくなると終わり。'],
   ['遺物', 'クリアでもらえる、ずっと効くボーナス。どの庭でも出る共通の遺物と、その庭だけの専用遺物がある。'],
   ['上・極', '強いタイル。上はラウンド3、極はラウンド5から出る。'], ['専用', 'その庭でしか出ないタイル・遺物。'],
   ['導火線', '点火の前になぞって決める、発動の順番。'], ['🔥導火', '導火線でつないだタイル1マスにつき +1倍。'],
   ['⚡伝導', '導火線で、直前と同じ属性のタイルは1回多く発動。'], ['🏁完走', '盤面のタイルを全部（5枚以上）つなぐと最後に ×1.5。'],
   ['とっておき', '手札を1枚取っておける左の枠。置くと手札は配り直し。'], ['取り消す', '直前に置いた1枚を戻す（1ラウンド1回）。'], ['引き直す', '手札を全部入れ替える。'], ['植え替え', '置いたタイルを動かす・入れ替える。'],
-  ['☀️昼 / 🌙夜', '昼は草・火・虫、夜は天・水・術のタイルが1回多く発動。最後は🌆黄昏で両方。'],
   ['育つ', '水辺の庭の要素。置いてから経ったラウンドの数。'], ['熱', '火の庭の要素。そのラウンドで🔥が発動した回数。'],
   ['列', '夜の庭の要素。同じ縦・横の列。'], ['群れ', '蜂の庭の要素。つながった🐝のかたまり。'],
   ['道筋', 'からくりの庭の要素。導火線のなぞり方。'], ['風向き', '風の庭の要素。矢印タイルの向き（タップで回す）。'],
   ['対', '対の庭の要素。軸をはさんで左右の同じ位置に同じタイル。'], ['段', '重ねの庭の要素。同じタイルを重ねた高さ。'],
-  ['生きている庭', 'ラウンドの合間に庭が変わること（芽が育つ・火が燃え移る・蜂が動く）。'],
+  ['生きている庭', 'ラウンドの合間に🌱芽が🌿若葉に育つこと（水辺の庭では🌳大樹にも）。'],
+  ['×数字', '盤面のタイルの右下。今のまま点火したら そのタイルが何回発動するか。'],
 ];
 function help(first, fromMenu, tab) {
   tab = tab || 'basic';
@@ -1926,7 +1901,7 @@ function openMenu() {
       <button class="choice" id="mVib"><b>📳 振動：${!canVib ? 'この端末では使えない' : vibOn ? 'ON' : 'OFF'}</b><small>置いたとき・大きな掛け算・クリアで軽く振動（Android のみ。iPhone のブラウザは非対応）</small></button>
       <button class="choice" id="mSpeed"><b>⏩ 発動の速さ：${SPEEDS[speedMode][0]}</b><small>タップで切り替え（ふつう → 速い → すぐ結果）。発動中のタップでも早送り</small></button>
       <button class="choice" id="mHelp"><b>❓ 遊び方</b><small>はじめに・点の決まり方・導火線・操作・庭</small></button>
-      <button class="choice" id="mWords"><b>📘 用語集</b><small>「共鳴」「伝導」「遺物」など、言葉の意味</small></button>
+      <button class="choice" id="mWords"><b>📘 用語集</b><small>「伝導」「導火」「遺物」など、言葉の意味</small></button>
       <button class="choice" id="mTut"><b>🔰 はじめての案内：${TUT.on ? 'ON' : 'OFF'}</b><small>${TUT.on ? 'タップでやめる' : 'タップで、場面ごとの案内をもう一度出す'}</small></button>
       <button class="choice" id="mLight"><b>${lightFx ? '🍃 演出：軽め' : '✨ 演出：ふつう'}</b><small>動きが重いときは「軽め」に（線や飛ぶ数字を減らす）</small></button>
       <button class="choice" id="mSound"><b>${soundOn ? '🔊 音：ON' : '🔇 音：OFF'}</b><small>タップで切り替え</small></button>
