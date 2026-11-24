@@ -19,7 +19,7 @@ body{min-height:100vh;padding:calc(max(env(safe-area-inset-top), 24px) + 16px) c
 html,body{overflow:hidden}
 header{display:flex;align-items:center;gap:10px}
 header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24px;margin:0;flex:1;letter-spacing:.06em;color:var(--kinari)}
-.iconbtn{background:none;border:1.5px solid var(--kinari);color:var(--kinari);border-radius:3px;min-width:38px;height:32px;padding:0 8px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}
+.iconbtn{background:none;border:1.5px solid var(--kinari);color:var(--kinari);border-radius:3px;min-width:44px;height:38px;padding:0 10px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}
 .iconbtn:focus-visible,.card:focus-visible,.btn:focus-visible,.choice:focus-visible,.tcard:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 #status{display:flex;gap:16px;font-size:13px;color:var(--sub);align-items:baseline}
 #status b{color:var(--kinari);font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:17px;margin-left:3px}
@@ -80,8 +80,8 @@ header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24p
 #info::-webkit-scrollbar{display:none}
 #info b{color:var(--kinari)}
 #handrow{display:flex;gap:6px;align-items:flex-end}
-#hand{display:flex;gap:6px;flex:1;justify-content:center;min-height:96px;align-items:flex-end}
-.card{width:60px;height:86px;background:var(--kinari);color:var(--sumi);border:none;border-radius:4px;box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 3px 0 rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s;font-family:inherit}
+#hand{display:flex;gap:8px;flex:1;justify-content:center;min-height:106px;align-items:flex-end}
+.card{width:72px;height:100px;background:var(--kinari);color:var(--sumi);border:none;border-radius:4px;box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 3px 0 rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s;font-family:inherit}
 .card:nth-child(1){transform:rotate(-4deg)}.card:nth-child(3){transform:rotate(4deg)}.card:nth-child(4){transform:rotate(7deg)}
 .card{position:relative}
 .card,.cell,#hold{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
@@ -90,10 +90,10 @@ header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24p
 .card.t3{background:#f6e2a6;box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px #f6e2a6,inset 0 0 0 5px rgba(27,23,18,.35),0 3px 0 rgba(0,0,0,.4),0 0 12px rgba(242,185,56,.55)}
 .card.only .tag{background:var(--mult);color:#fff7ea}
 .card.t3 .tag{background:#b8860b;color:#fff7ea}
-.card .e{font-size:30px;line-height:1.2}.card .n{font-size:12px;font-weight:700;margin-top:4px}
+.card .e{font-size:34px;line-height:1.2}.card .n{font-size:13px;font-weight:700;margin-top:4px}
 .card.sel{transform:translateY(-12px) rotate(0);box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 0 0 3px var(--gold),0 8px 0 rgba(0,0,0,.3)}
-#side{display:flex;flex-direction:column;gap:6px;align-items:center;width:68px;flex:none}
-#left{font-size:12px;color:var(--sub);text-align:center}
+#side{display:flex;flex-direction:row;gap:8px;align-items:center;width:100%}
+#left{font-size:12px;color:var(--sub);text-align:center;width:58px;flex:none;line-height:1.3}
 .btn{font-family:inherit;cursor:pointer}
 .btn.sub{width:64px;height:64px;background:var(--mult);color:#fff7ea;border:none;border-radius:3px;font-weight:700;font-size:12px;line-height:1.35;box-shadow:inset 0 0 0 2px rgba(255,247,234,.85),inset 0 0 0 4px var(--mult),0 3px 0 rgba(0,0,0,.35)}
 .btn:disabled{opacity:.35}
@@ -119,7 +119,7 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 .cell .els i.el{font-size:8px;padding:1px 2px}
 .cell.swapsrc{box-shadow:0 0 0 3px var(--gold) !important}
 .cell.swapok{outline:2px dashed var(--gold);outline-offset:-2px}
-#hold{width:60px;height:86px;border-radius:4px;border:2px dashed var(--stitch);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--sub);font-size:10px;font-weight:700;cursor:pointer;background:none;font-family:inherit;flex:none;padding:0}
+#hold{width:68px;height:100px;border-radius:4px;border:2px dashed var(--stitch);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--sub);font-size:10px;font-weight:700;cursor:pointer;background:none;font-family:inherit;flex:none;padding:0}
 #hold.has{border:none;background:var(--kinari);color:var(--sumi);box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 3px 0 rgba(0,0,0,.4)}
 #hold.sel{box-shadow:inset 0 0 0 2px var(--sumi),0 0 0 3px var(--gold);transform:translateY(-8px)}
 #hold.can{border-color:var(--gold);color:var(--gold)}
@@ -128,7 +128,7 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 .btn.sub.mini.undo{background:#5d5444;color:#fff7ea}
 .card.shuf{opacity:.55}
 .card.shuf::after{content:'配り直し';position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);font-size:9px;font-weight:900;background:var(--sumi);color:var(--kinari);padding:1px 4px;border-radius:2px;white-space:nowrap}
-.btn.sub.mini{width:66px;height:48px;font-size:11px;line-height:1.4;padding:4px 0 0;white-space:nowrap;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.btn.sub.mini{flex:1;width:auto;height:54px;font-size:13px;line-height:1.35;padding:4px 0 0;white-space:nowrap;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .btn.sub.alt{background:var(--chips)}
 .btn.sub.on{background:var(--gold);color:var(--sumi)}
 #factor{display:flex;visibility:hidden;align-items:center;gap:10px;font-size:13px;color:var(--sub);height:26px;overflow:hidden;white-space:nowrap;padding:0 2px}
@@ -170,8 +170,8 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 #board.fusing{touch-action:none}
 #board.fusing .cell.t{cursor:crosshair}
 .fusebar{display:flex;gap:8px;flex:1;justify-content:center;align-items:center}
-.fusebar .btn{height:58px;padding:0 16px;font-size:15px;white-space:nowrap;writing-mode:horizontal-tb}
-.fusebar #igniteBtn{flex:1;max-width:180px;font-size:17px}
+.fusebar .btn{height:64px;padding:0 18px;font-size:16px;white-space:nowrap;writing-mode:horizontal-tb}
+.fusebar #igniteBtn{flex:1;max-width:220px;font-size:19px}
 #coach{position:fixed;z-index:60;width:min(92vw,360px);background:#fffaf0;color:var(--sumi);border:3px solid var(--gold);border-radius:6px;padding:12px 14px 10px;box-shadow:0 8px 24px rgba(0,0,0,.45);font-size:14px;line-height:1.65;display:none}
 #coach.on{display:block;animation:coachIn .2s ease-out}
 @keyframes coachIn{from{transform:translateY(6px)}to{transform:none}}
@@ -324,12 +324,12 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
   <div id="handrow">
     <button id="hold" aria-label="とっておき">とっておき</button>
     <div id="hand"></div>
-    <div id="side">
-      <div id="left"></div>
-      <button class="btn sub mini" id="rerollBtn">引き直す</button>
-      <button class="btn sub mini undo" id="undoBtn">取り消す</button>
-      <button class="btn sub mini alt" id="swapBtn">植え替え</button>
-    </div>
+  </div>
+  <div id="side">
+    <div id="left"></div>
+    <button class="btn sub mini" id="rerollBtn">引き直す</button>
+    <button class="btn sub mini undo" id="undoBtn">取り消す</button>
+    <button class="btn sub mini alt" id="swapBtn">植え替え</button>
   </div>
 </div>
 <div id="tip" aria-live="polite"></div>
@@ -969,6 +969,11 @@ let best = 0; try { best = +localStorage.getItem('synergy-best') || 0; } catch (
 
 // ===== 音 =====
 let ac = null, soundOn = true;
+// ===== 振動（対応している端末だけ。iPhoneのブラウザは非対応）=====
+const canVib = typeof navigator !== 'undefined' && 'vibrate' in navigator;
+let vibOn = true; try { vibOn = localStorage.getItem('rensa-vib') !== '0'; } catch (e) {}
+let lastVib = 0;
+function vib(p, force) { if (!vibOn || !canVib) return; const t = performance.now(); if (!force && t - lastVib < 70) return; lastVib = t; try { navigator.vibrate(p); } catch (e) {} }
 function tone(freq, type = 'triangle', dur = .09, vol = .12) {
   if (!soundOn) return;
   try {
@@ -1297,7 +1302,7 @@ function longPress(el, getTile) {
   let sx = 0, sy = 0;
   el.addEventListener('pointerdown', e => {
     lpCancel(); sx = e.clientX; sy = e.clientY;
-    lpTimer = setTimeout(() => { lpTimer = null; const t = getTile(); if (!t || !TILES[t]) return; lpSuppressClick = true; tileTip(t); tone(880, 'sine', .04, .05); }, LP_MS);
+    lpTimer = setTimeout(() => { lpTimer = null; const t = getTile(); if (!t || !TILES[t]) return; lpSuppressClick = true; tileTip(t); tone(880, 'sine', .04, .05); vib(10, true); }, LP_MS);
   });
   el.addEventListener('pointermove', e => { if (lpTimer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) lpCancel(); });
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => el.addEventListener(n, lpCancel));
@@ -1384,7 +1389,7 @@ function onCard(k) {
   if (S.busy) return; ensureAudio();
   if (S.swap) { S.swap = null; }
   S.sel = S.sel === k ? -1 : k; render();
-  if (S.sel >= 0) { coach('place', $('board'), '<b>② 盤面の空いているマスをタップ</b>して置こう。<br>同じカードをもう一度タップすると選ぶのをやめる。', { n: '2/7' }); const t = S.hand[k]; info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}${S.theme === 'stack' && S.board.includes(t) ? '　<b>（盤面の同じタイルの上に重ねられる）</b>' : ''}`); tone(660, 'sine', .05, .06); }
+  if (S.sel >= 0) { vib(8); coach('place', $('board'), '<b>② 盤面の空いているマスをタップ</b>して置こう。<br>同じカードをもう一度タップすると選ぶのをやめる。', { n: '2/7' }); const t = S.hand[k]; info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}${S.theme === 'stack' && S.board.includes(t) ? '　<b>（盤面の同じタイルの上に重ねられる）</b>' : ''}`); tone(660, 'sine', .05, .06); }
 }
 // ===== 取り消し（1ラウンド1回）：直前に置いた1枚を戻す。置く直前の状態をまるごと覚えておく =====
 function snapUndo() { S.undoSnap = JSON.parse(JSON.stringify({ board: S.board, ages: S.ages, dirs: S.dirs, levels: S.levels, hand: S.hand, held: S.held, holdUsed: S.holdUsed, placed: S.placed })); }
@@ -1393,7 +1398,7 @@ function doUndo() {
   const u = S.undoSnap; S.undoSnap = null; S.undos--;
   Object.assign(S, u); S.sel = -1; S.swap = null;
   if (S.fuse) { S.fuse = null; const fl = $('fuseline'); if (fl) fl.remove(); fuseDrag = false; }
-  coachHide(); render(); showPreview(); tone(330, 'triangle', .08, .08);
+  coachHide(); render(); showPreview(); tone(330, 'triangle', .08, .08); vib(10, true);
   info('置いたタイルを1枚取り消した（取り消しは1ラウンド1回）。');
 }
 // 置く以外のこと（引き直し・とっておき・植え替え・向き）をしたら、取り消しはできなくなる
@@ -1417,7 +1422,7 @@ function onCell(i) {
   if (t && canStack(i)) {
     snapUndo();
     if (S.sel === 'hold') { S.held = null; S.holdUsed = true; }
-    S.levels[i] = (S.levels[i] || 1) + 1; S.sel = -1; S.placed++;
+    S.levels[i] = (S.levels[i] || 1) + 1; S.sel = -1; S.placed++; vib([12, 40, 12], true);
     tone(440 + 60 * S.levels[i], 'triangle', .1, .1);
     if (S.placed >= perRound(S.round)) { S.hand = []; flashNew(i); startFuse(); return; }
     dealHand(); render(); flashNew(i); showPreview();
@@ -1429,7 +1434,7 @@ function onCell(i) {
   if (S.sel === 'hold') { S.board[i] = S.held; S.held = null; S.holdUsed = true; S.sel = -1; }
   else S.board[i] = S.hand[S.sel];
   S.ages[i] = S.round; S.dirs[i] = isArrow(S.board[i]) ? 1 : null; if (S.levels) S.levels[i] = 1; S.placed++;
-  tone(520, 'sine', .08, .1);
+  tone(520, 'sine', .08, .1); vib(15, true);
   if (S.placed >= perRound(S.round)) { S.hand = []; S.sel = -1; flashNew(i); startFuse(); return; }
   dealHand(); render(); flashNew(i); showPreview();
   info('次のタイルを選ぼう。');
@@ -1544,7 +1549,7 @@ function drawFuse() {
 }
 function ignite() {
   if (!S.fuse) return;
-  S.swap = null; lpCancel(); clearTimeout(fuseLP.t);
+  S.swap = null; lpCancel(); clearTimeout(fuseLP.t); vib(30, true);
   S.order = S.fuse.path.slice();
   S.busy = true; render(); drawFuse(); runScoring();
 }
@@ -1691,6 +1696,7 @@ async function runScoring(opt) {
     delayNow = delay / speed;
     if (S.theme === 'fire' && e.heat !== shownHeat && $('heatv')) { shownHeat = e.heat; $('heatv').textContent = e.heat; if (!lightFx) kick($('heatv'), [{ transform: 'scale(1.4)' }, { transform: 'scale(1)' }], 120); }
     kick(cells[e.i], e.kind === 'x' ? FIREX : FIRE, e.kind === 'x' ? 320 / speed : 220 / speed);
+    if (speed < 10 && !replay) { if (e.kind === 'x' && e.v >= 1.5) vib(e.v >= 3 ? 25 : 12); else if (e.kind === 's') vib(6); }
     // シナジーの線：何のおかげで点が入ったかを見せる（1回に出す本数は上限つき）
     const maxL = lightFx ? 3 : 8;
     if (e.by != null) beam(e.by, e.i, '#ece0c6', 4);
@@ -1779,6 +1785,7 @@ function burst(n) {
 function modal(h) { $('modal').innerHTML = h; $('overlay').classList.add('show'); }
 function closeModal() { $('overlay').classList.remove('show'); }
 function relicChoice(T, ratio) {
+  vib([30, 50, 30], true);
   setTimeout(() => coach('relic', null, '<b>⑥ クリア！ 遺物を1つ選ぼう。</b><br>遺物は、このゲームのあいだ<b>ずっと効く</b>ボーナス。今の庭に置いてあるタイルに関係するものを選ぶと強い。', { n: '6/7', top: true }), 200);
   const opts = relicOptions(S.relics, S.theme, Math.random);
   const msg = ratio >= 10 ? 'とんでもないシナジー！' : ratio >= 3 ? 'いい連鎖！' : 'クリア！';
@@ -1792,6 +1799,7 @@ function relicChoice(T, ratio) {
   });
 }
 function missed(T) {
+  vib(90, true);
   setTimeout(() => coach('missed', null, '目標に届かなかったときは、<b>いのち🍃が1つ減る</b>だけ。庭はそのまま残るので、次のラウンドで取り返そう。', { top: true }), 200);
   modal(`<h2>あと少し…</h2><div class="big" style="color:#c23b20">${fmt(T)}</div><p style="text-align:center">目標 ${fmt(TARGETS[S.round])} に届かなかった。<br><b>いのちを1つ失った</b>（残り ${'🍃'.repeat(S.lives)}）。</p>
     <p style="text-align:center">今回は遺物なし。でも庭はそのまま残る。続けて庭を育てよう。</p><div class="choices"><button class="choice" id="cont" style="text-align:center"><b>次のラウンドへ</b></button></div>`);
@@ -1807,6 +1815,7 @@ function gameOver(T) {
     <p style="text-align:center">最高スコア：${fmt(best)}</p>`, T, 'over');
 }
 function victory(T) {
+  vib([40, 60, 40, 60, 120], true);
   burst(40);
   const wasLocked = Object.keys(THEMES).filter(k => !isUnlocked(k));
   markCleared(S.theme);
@@ -1914,6 +1923,7 @@ function openMenu() {
       <button class="choice" id="mRec"><b>📜 庭の記録</b><small>クリアした庭の盤面と点数を見る（${SLOTS}枠）</small></button>
       ${playing ? `<button class="choice" id="mStat"><b>📊 ここまでの活躍</b><small>どのタイルが点を伸ばしているか</small></button>` : ''}
       ${playing ? `<button class="choice" id="mGarden"><b>${THEMES[S.theme].e} この庭のこと</b><small>${THEMES[S.theme].name}の要素・専用タイル・専用遺物</small></button>` : ''}
+      <button class="choice" id="mVib"><b>📳 振動：${!canVib ? 'この端末では使えない' : vibOn ? 'ON' : 'OFF'}</b><small>置いたとき・大きな掛け算・クリアで軽く振動（Android のみ。iPhone のブラウザは非対応）</small></button>
       <button class="choice" id="mSpeed"><b>⏩ 発動の速さ：${SPEEDS[speedMode][0]}</b><small>タップで切り替え（ふつう → 速い → すぐ結果）。発動中のタップでも早送り</small></button>
       <button class="choice" id="mHelp"><b>❓ 遊び方</b><small>はじめに・点の決まり方・導火線・操作・庭</small></button>
       <button class="choice" id="mWords"><b>📘 用語集</b><small>「共鳴」「伝導」「遺物」など、言葉の意味</small></button>
@@ -1926,6 +1936,7 @@ function openMenu() {
   $('mCards').onclick = () => cardList(playing && S.theme ? 'mine' : 'all');
   $('mHelp').onclick = () => help(false, true);
   $('mWords').onclick = () => help(false, true, 'words');
+  $('mVib').onclick = () => { if (!canVib) return; vibOn = !vibOn; try { localStorage.setItem('rensa-vib', vibOn ? '1' : '0'); } catch (e) {} if (vibOn) vib(30, true); openMenu(); };
   $('mSpeed').onclick = () => { speedMode = (speedMode + 1) % 3; try { localStorage.setItem('rensa-speed', speedMode); } catch (e) {} openMenu(); };
   $('mTut').onclick = () => { tutSet(TUT.on ? 'done' : 'on'); openMenu(); };
   if (playing) $('mGarden').onclick = () => gardenInfo();
