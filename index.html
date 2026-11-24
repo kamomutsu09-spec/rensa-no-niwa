@@ -24,6 +24,11 @@ header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24p
 #status{display:flex;gap:16px;font-size:13px;color:var(--sub);align-items:baseline}
 #status b{color:var(--kinari);font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:17px;margin-left:3px}
 #status .tg{margin-left:auto}
+#relrow{display:flex;align-items:center;gap:8px}
+#relrow #relics{flex:1;min-width:0}
+#statBtn{height:30px;font-size:12px;padding:0 9px;flex:none}
+.pickfoot{display:flex;justify-content:center;gap:22px}
+.pickfoot .textbtn{margin:12px 0 0}
 #relics{display:flex;gap:6px;flex-wrap:nowrap;height:28px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
 #relics::-webkit-scrollbar{display:none}
 .relic{flex:none;white-space:nowrap}
@@ -327,7 +332,7 @@ u.gl,#tip .gls b{text-decoration:none;background:linear-gradient(transparent 58%
     <button class="iconbtn" id="menuBtn" aria-label="メニュー">☰ メニュー</button>
   </header>
   <div id="status"><span>ラウンド<b id="round">1</b> / 8</span><span>いのち<b id="lives">🍃🍃🍃</b></span><span>最高<b id="best">-</b></span><span class="tg">目標<b id="target">0</b></span></div>
-  <div id="relics"></div>
+  <div id="relrow"><div id="relics"></div><button class="iconbtn" id="statBtn" aria-label="ここまでの活躍">📊 活躍</button></div>
   <div id="factor"></div>
   <div id="scorebox">
     <div id="eq"><div class="numwrap"><small>点</small><div class="num" id="chips">0</div></div><span class="op">×</span><div class="numwrap"><small>倍率</small><div class="num" id="mult">1</div></div></div>
@@ -1078,7 +1083,7 @@ function chooseTheme() {
     <div class="trow-h">上級の庭（ほかの庭のクリアで解放）</div>
     <div class="tgrid adv">${adv.map(themeCard).join('')}</div>
     <div id="tdet"></div>
-    <button class="textbtn" id="howto">遊び方を見る</button>`);
+    <div class="pickfoot"><button class="textbtn" id="rankBtn">🏆 ランキング</button><button class="textbtn" id="howto">遊び方を見る</button></div>`);
   const start = k => {
     try { localStorage.setItem(LAST_KEY, k); } catch (e) {}
     ensureAudio(); closeModal(); newGame(k); tone(660, 'triangle', .15, .1);
@@ -1098,6 +1103,7 @@ function chooseTheme() {
   pick(cur);
   if (sv) $('resume').onclick = () => { ensureAudio(); resumeGame(sv); };
   $('howto').onclick = () => help(true);
+  $('rankBtn').onclick = () => { ensureAudio(); rankingView(cur || 'water', 'pick'); };
 }
 // ===== 途中から再開：遊んでいる間はいつも自動で保存。ゲームが終わったら消す =====
 const SAVE_KEY = 'rensa-save';
@@ -1887,7 +1893,7 @@ const HELP = [
     <p><b>取り消す</b>：直前に置いたタイルを1枚戻す（1ラウンド1回。引き直し・とっておき・植え替え・向き変えをしたあとはできない）。</p>
     <p><b>発動中</b>：盤面をタップで早送り（もう一度で結果まで）。メニューの「発動の速さ」で最初から速くできる。</p>
     <p><b>続きから</b>：遊んでいる間は自動で保存される。閉じても、庭選びの画面の「▶ 続きから」で戻れる。</p>
-    <p><b>メニュー</b>：カード一覧・この庭のこと・ランキング・庭の記録・ここまでの活躍・演出の軽さ・音・やり直し。</p></div>`],
+    <p><b>メニュー</b>：音・振動・発動の速さ・演出の切り替え、遊び方・この庭のこと・カード一覧・はじめての案内・やり直し。</p><p><b>📊 活躍</b>：メニューの下のボタンで、どのタイルが点を伸ばしているか見られる。</p><p><b>🏆 ランキング</b>：庭を選ぶ画面から見られる。</p></div>`],
   ['garden', '庭', () => `<div class="hsec">
     <p>庭を選ぶと、その庭のタイルが多く出て、その庭の遺物を1つ持って始まる。庭ごとに<b>独自の要素</b>がある。</p>
     ${Object.keys(THEMES).map(k => `<p><b>${THEMES[k].e} ${THEMES[k].name}</b>${THEMES[k].locked ? `（ほかの庭を${THEMES[k].locked}つ全クリアで解放）` : ''}<br>${FACTOR_TIP[k] || ''}</p>`).join('')}
@@ -1917,13 +1923,6 @@ function openMenu() {
   modal(`<h2>メニュー</h2>
     ${playing ? `<p class="lead">${THEMES[S.theme].name}・ラウンド ${S.round + 1} / 8・いのち ${'🍃'.repeat(S.lives)}</p>` : ''}
     <div class="menu">
-      <button class="choice" id="mCards"><b>📖 カード一覧</b><small>タイルと遺物の効果をぜんぶ見る</small></button>
-      <button class="choice" id="mRank"><b>🏆 ランキング</b><small>庭ごとの上位${RANK_N}件</small></button>
-      <button class="choice" id="mRec"><b>📜 庭の記録</b><small>クリアした庭の盤面と点数を見る（${SLOTS}枠）</small></button>
-      ${playing ? `<button class="choice" id="mStat"><b>📊 ここまでの活躍</b><small>どのタイルが点を伸ばしているか</small></button>` : ''}
-      ${playing ? `<button class="choice" id="mGarden"><b>${THEMES[S.theme].e} この庭のこと</b><small>${THEMES[S.theme].name}の要素・専用タイル・専用遺物</small></button>` : ''}
-      <button class="choice" id="mHelp"><b>❓ 遊び方</b><small>はじめに・点の決まり方・導火線・操作・庭</small></button>
-      <button class="choice" id="mTut"><b>🔰 はじめての案内：${TUT.on ? 'ON' : 'OFF'}</b><small>${TUT.on ? 'タップでやめる' : 'タップで、場面ごとの案内をもう一度出す'}</small></button>
       <div class="setrow">
         <button class="sbtn${soundOn ? '' : ' off'}" id="mSound"><i>${soundOn ? '🔊' : '🔇'}</i><span>音</span><b>${soundOn ? 'ON' : 'OFF'}</b></button>
         <button class="sbtn${!canVib ? ' na' : vibOn ? '' : ' off'}" id="mVib"><i>📳</i><span>振動</span><b>${!canVib ? '非対応' : vibOn ? 'ON' : 'OFF'}</b></button>
@@ -1931,6 +1930,10 @@ function openMenu() {
         <button class="sbtn" id="mLight"><i>${lightFx ? '🍃' : '✨'}</i><span>演出</span><b>${lightFx ? '軽め' : 'ふつう'}</b></button>
       </div>
       <p class="setnote">タップで切り替え。重いときは演出を「軽め」に。発動中は庭をタップで早送り</p>
+      <button class="choice" id="mHelp"><b>❓ 遊び方</b><small>はじめに・点の決まり方・導火線・操作・庭</small></button>
+      ${playing ? `<button class="choice" id="mGarden"><b>${THEMES[S.theme].e} この庭のこと</b><small>${THEMES[S.theme].name}の要素・専用タイル・専用遺物</small></button>` : ''}
+      <button class="choice" id="mCards"><b>📖 カード一覧</b><small>タイルと遺物の効果をぜんぶ見る</small></button>
+      <button class="choice" id="mTut"><b>🔰 はじめての案内：${TUT.on ? 'ON' : 'OFF'}</b><small>${TUT.on ? 'タップでやめる' : 'タップで、場面ごとの案内をもう一度出す'}</small></button>
       ${playing ? `<button class="choice danger" id="mRestart"><b>↺ やり直す</b><small>庭を選ぶところから始め直す</small></button>` : ''}
       <button class="choice" id="mClose"><b>とじる</b></button>
     </div>`);
@@ -1940,9 +1943,6 @@ function openMenu() {
   $('mSpeed').onclick = () => { speedMode = (speedMode + 1) % 3; try { localStorage.setItem('rensa-speed', speedMode); } catch (e) {} openMenu(); };
   $('mTut').onclick = () => { tutSet(TUT.on ? 'done' : 'on'); openMenu(); };
   if (playing) $('mGarden').onclick = () => gardenInfo();
-  $('mRec').onclick = () => recordList();
-  $('mRank').onclick = () => rankingView(S.theme || 'water', 'menu');
-  if (playing) $('mStat').onclick = () => { modal(`<h2>ここまでの活躍</h2>${statsHtml()}<div class="menu"><button class="choice" id="stBack"><b>メニューに戻る</b></button></div>`); $('modal').scrollTop = 0; $('stBack').onclick = openMenu; };
   $('mSound').onclick = () => { toggleSound(); openMenu(); };
   $('mLight').onclick = () => { lightFx = !lightFx; try { localStorage.setItem('rensa-light', lightFx ? '1' : '0'); } catch (e) {} glowLevel = -1; openMenu(); };
   if (playing) $('mRestart').onclick = confirmRestart;
@@ -1960,53 +1960,11 @@ function gardenInfo() {
   $('modal').scrollTop = 0; $('giBack').onclick = openMenu;
 }
 
-// ===== 庭の記録（ゲームが終わったあと、盤面と点数を枠に残す）=====
-const SLOTS = 5, REC_KEY = 'rensa-record-';
-function readSlot(n) { try { const v = localStorage.getItem(REC_KEY + n); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
-function writeSlot(n, data) { try { if (data) localStorage.setItem(REC_KEY + n, JSON.stringify(data)); else localStorage.removeItem(REC_KEY + n); return true; } catch (e) { return false; } }
+// ===== 記録まわりの共通（ランキングで使う）=====
 const fmtDate = t => { const d = new Date(t); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
 const RESULT = { win: ['全クリア', ''], full: ['庭が埋まった', 'no'], over: ['ラウンド途中まで', 'no'] };
 function miniBoard(board, large) { return `<div class="mini${large ? ' l' : ''}">${board.map(t => t && TILES[t] ? `<span class="f">${TILES[t].e}</span>` : '<span></span>').join('')}</div>`; }
-function slotHtml(n, d, buttons) {
-  if (!d) return `<div class="slot empty">${miniBoard(Array(N * N).fill(null), true)}<div><div class="sn">枠 ${n + 1}</div><div class="sd">空き</div><div class="sb">${buttons}</div></div></div>`;
-  const r = RESULT[d.result] || RESULT.over;
-  return `<div class="slot">${miniBoard(d.board, true)}<div><div class="sn">枠 ${n + 1}　${THEMES[d.theme] ? THEMES[d.theme].name : ''}<span class="res ${r[1]}">${r[0]}</span></div>
-    <div class="score">${fmt(d.score)} ${titleHtml(d.score)}</div>
-    <div class="sd">ラウンド ${d.round + 1} / 8・遺物 ${d.relics.map(k => RELICS[k] ? RELICS[k].e : '').join('')}${d.mvp && d.mvp.length ? `<br>活躍 ${d.mvp.map(k => TILES[k] ? TILES[k].e : '').join(' ')}` : ''}<br>${fmtDate(d.at)}</div><div class="sb">${buttons}</div></div></div>`;
-}
-// メニューから見る記録の一覧
-function recordList(msg) {
-  const rows = Array.from({ length: SLOTS }, (_, n) => { const d = readSlot(n); return slotHtml(n, d, d ? `<button class="d" data-n="${n}">消す</button>` : ''); }).join('');
-  modal(`<h2>庭の記録</h2><p class="lead">${msg || 'ゲームが終わったときの画面から、盤面と点数をここに残せる。'}</p>
-    <div class="menu">${rows}<button class="choice" id="rcBack"><b>メニューに戻る</b></button></div>`);
-  document.querySelectorAll('.slot .sb button.d').forEach(b => b.onclick = () => {
-    const n = +b.dataset.n;
-    modal(`<h2>消す？</h2><p class="lead">枠 ${n + 1} の記録を消す。元には戻せない。</p>
-      <div class="menu"><button class="choice danger" id="ok"><b>消す</b></button><button class="choice" id="ng"><b>やめておく</b></button></div>`);
-    $('ok').onclick = () => { writeSlot(n, null); recordList(`枠 ${n + 1} を消した。`); }; $('ng').onclick = () => recordList();
-  });
-  $('rcBack').onclick = openMenu;
-}
-// 終わった直後：どの枠に残すか選ぶ
 let lastEnd = null;
-function recordPick(msg) {
-  const e = lastEnd;
-  const rows = Array.from({ length: SLOTS }, (_, n) => {
-    const d = readSlot(n);
-    return slotHtml(n, d, `<button class="p" data-n="${n}">${d ? '上書きする' : 'ここに残す'}</button>`);
-  }).join('');
-  modal(`<h2>どの枠に残す？</h2><div style="display:flex;gap:12px;align-items:center;justify-content:center;margin:6px 0">${miniBoard(e.board, true)}<div><div class="big" style="font-size:28px;margin:0">${fmt(e.score)}</div><div class="sd" style="font-size:12px">${THEMES[e.theme].name}・${RESULT[e.result][0]}</div></div></div>
-    <p class="lead">${msg || ''}</p><div class="menu">${rows}<button class="choice" id="rpBack"><b>もどる</b></button></div>`);
-  document.querySelectorAll('.slot .sb button.p').forEach(b => b.onclick = () => {
-    const n = +b.dataset.n, d = readSlot(n);
-    const save = () => { const ok = writeSlot(n, Object.assign({}, e, { at: Date.now() })); if (ok) { e.saved = n; tone(660, 'triangle', .12, .08); } e.reopen(ok ? `枠 ${n + 1} に記録した。` : 'この環境では保存できなかった。'); };
-    if (!d) return save();
-    modal(`<h2>上書きする？</h2><p class="lead">枠 ${n + 1}（${fmt(d.score)}・${THEMES[d.theme] ? THEMES[d.theme].name : ''}）を消して、この庭を残す。</p>
-      <div class="menu"><button class="choice danger" id="ok"><b>上書きする</b></button><button class="choice" id="ng"><b>やめておく</b></button></div>`);
-    $('ok').onclick = save; $('ng').onclick = () => recordPick();
-  });
-  $('rpBack').onclick = () => e.reopen();
-}
 // 終了画面の下に「記録する」「もう一度」を並べる
 // ===== ランキング（庭ごと・このブラウザに保存）=====
 const RANK_KEY = 'rensa-rank-', RANK_N = 10;
@@ -2031,10 +1989,10 @@ function rankHtml(th, meAt) {
 function rankingView(th, back, meAt) {
   const tabs = Object.keys(THEMES).map(k => `<button data-t="${k}" class="${k === th ? 'on' : ''}">${THEMES[k].e}${THEMES[k].name.replace('の庭', '')}</button>`).join('');
   modal(`<h2>🏆 ランキング</h2><div class="tabs">${tabs}</div><p class="lead" style="font-size:12px">${THEMES[th].name}・上位${RANK_N}件（このブラウザに保存）</p>${rankHtml(th, meAt)}
-    <div class="menu" style="margin-top:10px"><button class="choice" id="rkBack"><b>${back === 'end' ? 'もどる' : 'メニューに戻る'}</b></button></div>`);
+    <div class="menu" style="margin-top:10px"><button class="choice" id="rkBack"><b>${back === 'menu' ? 'メニューに戻る' : 'もどる'}</b></button></div>`);
   $('modal').scrollTop = 0;
   document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => rankingView(b.dataset.t, back, meAt));
-  $('rkBack').onclick = () => back === 'end' ? lastEnd.reopen() : openMenu();
+  $('rkBack').onclick = () => back === 'end' ? lastEnd.reopen() : back === 'pick' ? chooseTheme() : openMenu();
 }
 // ===== 桁の節目の演出 =====
 function milePop(name) {
@@ -2086,12 +2044,10 @@ function endScreen(head, T, result) {
   lastEnd.reopen = msg => {
     modal(head + `${msg ? `<p style="text-align:center;font-weight:700;color:#c23b20">${msg}</p>` : ''}
       <div class="choices">
-        <button class="choice" id="rec" style="text-align:center"${lastEnd.saved != null ? ' disabled' : ''}><b>${lastEnd.saved != null ? `📜 枠 ${lastEnd.saved + 1} に記録ずみ` : '📜 この庭を記録する'}</b></button>
         ${S.bestReplay ? `<button class="choice" id="replay" style="text-align:center"><b>🎞️ いちばんの連鎖をスロー再生</b><small style="display:block;font-size:11px;color:#5b5243">ラウンド ${S.bestReplay.round + 1}・${fmt(S.bestReplay.score)} 点</small></button>` : ''}
         <button class="choice" id="stat" style="text-align:center"><b>📊 活躍したタイルを見る</b></button>
         <button class="choice" id="rank" style="text-align:center"><b>🏆 ランキングを見る</b></button>
         <button class="choice" id="again" style="text-align:center"><b>もう一度あそぶ</b></button></div>`);
-    $('rec').onclick = () => recordPick();
     if ($('replay')) $('replay').onclick = async () => { await replayBest(); lastEnd.reopen(); };
     $('rank').onclick = () => rankingView(lastEnd.theme, 'end', lastEnd.rankAt);
     $('stat').onclick = () => { modal(`<h2>活躍したタイル</h2>${statsHtml()}<div class="menu"><button class="choice" id="stBack"><b>もどる</b></button></div>`); $('modal').scrollTop = 0; $('stBack').onclick = () => lastEnd.reopen(); };
@@ -2143,6 +2099,12 @@ function cardList(tab) {
   $('clBack').onclick = openMenu;
 }
 $('menuBtn').onclick = () => { ensureAudio(); openMenu(); };
+$('statBtn').onclick = () => {
+  ensureAudio();
+  if (scoring) { info('発動中は見られない。終わるまで待ってね（庭をタップで早送り）。'); return; }
+  if ($('overlay').classList.contains('show') || inThemePick()) return;
+  modal(`<h2>ここまでの活躍</h2>${statsHtml()}<div class="menu"><button class="choice" id="stBack"><b>とじる</b></button></div>`); $('modal').scrollTop = 0; $('stBack').onclick = closeModal;
+};
 function toggleSound() { soundOn = !soundOn; $('soundBtn').textContent = soundOn ? '音 ON' : '音 OFF'; }
 $('soundBtn').onclick = toggleSound;
 
