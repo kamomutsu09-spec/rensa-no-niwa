@@ -21,8 +21,9 @@ header{display:flex;align-items:center;gap:10px}
 header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24px;margin:0;flex:1;letter-spacing:.06em;color:var(--kinari)}
 .iconbtn{background:none;border:1.5px solid var(--kinari);color:var(--kinari);border-radius:3px;min-width:44px;height:38px;padding:0 10px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}
 .iconbtn:focus-visible,.card:focus-visible,.btn:focus-visible,.choice:focus-visible,.tcard:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-#status{display:flex;gap:16px;font-size:13px;color:var(--sub);align-items:baseline}
-#status b{color:var(--kinari);font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:17px;margin-left:3px}
+#status{display:flex;gap:14px;font-size:14px;color:var(--sub);align-items:baseline}
+#status b{color:var(--kinari);font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:20px;margin-left:3px}
+#status .tg b{font-size:24px;color:var(--gold)}
 #status .tg{margin-left:auto}
 #relrow{display:flex;align-items:center;gap:8px}
 #relrow #relics{flex:1;min-width:0}
@@ -81,7 +82,7 @@ header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24p
 @keyframes shake{25%{transform:translate(-4px,2px)}50%{transform:translate(4px,-2px)}75%{transform:translate(-2px,1px)}}
 .flash{animation:flash .6s ease-out}
 @keyframes flash{0%{background:rgba(242,185,56,.35)}100%{background:transparent}}
-#info{height:62px;overflow-y:auto;font-size:13px;color:var(--sub);line-height:1.6;padding:0 2px;scrollbar-width:none}
+#info{height:63px;overflow-y:auto;font-size:14px;color:var(--sub);line-height:1.5;padding:0 2px;scrollbar-width:none}
 #info::-webkit-scrollbar{display:none}
 #info b{color:var(--kinari)}
 #handrow{display:flex;gap:6px;align-items:flex-end}
@@ -95,7 +96,7 @@ header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24p
 .card.t3{background:#f6e2a6;box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px #f6e2a6,inset 0 0 0 5px rgba(27,23,18,.35),0 3px 0 rgba(0,0,0,.4),0 0 12px rgba(242,185,56,.55)}
 .card.only .tag{background:var(--mult);color:#fff7ea}
 .card.t3 .tag{background:#b8860b;color:#fff7ea}
-.card .e{font-size:34px;line-height:1.2}.card .n{font-size:13px;font-weight:700;margin-top:4px}
+.card .e{font-size:34px;line-height:1.2}.card .n{font-size:15px;font-weight:700;margin-top:3px}
 .card.sel{transform:translateY(-12px) rotate(0);box-shadow:inset 0 0 0 2px var(--sumi),inset 0 0 0 4px var(--kinari),inset 0 0 0 5px rgba(27,23,18,.35),0 0 0 3px var(--gold),0 8px 0 rgba(0,0,0,.3)}
 #side{display:flex;flex-direction:row;gap:8px;align-items:center;width:100%}
 #left{font-size:12px;color:var(--sub);text-align:center;width:58px;flex:none;line-height:1.3}
@@ -120,6 +121,7 @@ header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24p
 .st-note{font-size:11px;color:#7a6f5c;line-height:1.6;margin-top:10px}
 i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-height:1;color:#fff;padding:2px 3px;border-radius:2px;margin:0 1px}
 .card .els{margin-top:3px;line-height:1}
+.card .els i.el{font-size:10px;padding:2px 4px}
 .cell .els{position:absolute;left:3px;bottom:3px;display:flex;gap:1px;line-height:1}
 .cell .els i.el{font-size:8px;padding:1px 2px}
 .cell.swapsrc{box-shadow:0 0 0 3px var(--gold) !important}
@@ -136,11 +138,11 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 .btn.sub.mini{flex:1;width:auto;height:54px;font-size:13px;line-height:1.35;padding:4px 0 0;white-space:nowrap;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .btn.sub.alt{background:var(--chips)}
 .btn.sub.on{background:var(--gold);color:var(--sumi)}
-#factor{display:flex;visibility:hidden;align-items:center;gap:10px;font-size:13px;color:var(--sub);height:26px;overflow:hidden;white-space:nowrap;padding:0 2px}
+#factor{display:flex;visibility:hidden;align-items:center;gap:10px;font-size:14px;color:var(--sub);height:28px;overflow:hidden;white-space:nowrap;padding:0 2px}
 #factor.on{visibility:visible}
 #factor .fk{font-weight:700;color:var(--kinari);background:rgba(236,224,198,.1);border:1px solid var(--stitch);border-radius:3px;padding:1px 8px}
-#factor .fv{font-family:"Dela Gothic One",sans-serif;font-size:18px;color:var(--gold);min-width:28px;display:inline-block;transition:transform .08s}
-#factor .fs{font-size:11px}
+#factor .fv{font-family:"Dela Gothic One",sans-serif;font-size:21px;color:var(--gold);min-width:28px;display:inline-block;transition:transform .08s}
+#factor .fs{font-size:12px}
 .cell .badge{position:absolute;right:3px;top:3px;font-size:10px;font-weight:700;line-height:1;padding:2px 4px;border-radius:8px;background:var(--sumi);color:var(--kinari)}
 .cell .badge.g{background:#c99a00;color:#1b1712}
 .cell .badge.p{background:#a0509a;color:#fff}
@@ -229,7 +231,7 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 #tip .tn{font-family:"Dela Gothic One",sans-serif;font-size:24px;margin:4px 0 2px}
 #tip .tg{display:inline-block;font-size:12px;font-weight:700;padding:2px 7px;border-radius:2px;background:var(--ai);color:var(--kinari);margin:2px 3px}
 #tip .tg.o{background:var(--mult);color:#fff7ea}
-#tip .td{font-size:17px;line-height:1.7;margin-top:8px;font-weight:700}
+#tip .td{font-size:17px;line-height:1.75;margin-top:8px;font-weight:500}
 #tip .tx{font-size:13px;color:#5b5243;margin-top:8px;line-height:1.6}
 u.gl,#tip .gls b{text-decoration:none;background:linear-gradient(transparent 58%,rgba(239,90,60,.32) 58%,rgba(239,90,60,.32) 94%,transparent 94%);padding:0 2px;border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .setrow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
@@ -259,6 +261,14 @@ u.gl,#tip .gls b{text-decoration:none;background:linear-gradient(transparent 58%
 .tabs{display:flex;gap:6px;margin:4px 0 6px}
 .tabs button{flex:1;font-family:inherit;font-weight:700;font-size:13px;padding:7px 0;border:2px solid var(--sumi);background:#fffaf0;color:var(--sumi);border-radius:3px;cursor:pointer}
 .tabs button.on{background:var(--sumi);color:var(--kinari)}
+.tabs.rk button{font-size:19px;padding:5px 0;line-height:1.2}
+.vc,.vm,.vx{font-weight:700;padding:0 3px;border-radius:3px;white-space:nowrap}
+.vc{color:#0d6b58;background:rgba(79,194,168,.22)}
+.vm{color:#b4321a;background:rgba(239,90,60,.14)}
+.vx{color:#7a4f00;background:rgba(242,185,56,.34)}
+#info .vc,#hov .vc{color:var(--chips);background:rgba(79,194,168,.14)}
+#info .vm,#hov .vm{color:#ff8a6c;background:rgba(239,90,60,.17)}
+#info .vx,#hov .vx{color:var(--gold);background:rgba(242,185,56,.15)}
 .slot{background:#fffaf0;border:2px solid var(--sumi);border-radius:3px;padding:10px;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;box-shadow:0 3px 0 var(--sumi)}
 .slot.empty{border-style:dashed;box-shadow:none}
 .mini{display:grid;grid-template-columns:repeat(5,15px);gap:2px;background:var(--ai-deep);padding:4px;border-radius:2px}
@@ -291,7 +301,7 @@ u.gl,#tip .gls b{text-decoration:none;background:linear-gradient(transparent 58%
 .tcard:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sumi)}
 .tcard .te{font-size:24px;line-height:1.1;white-space:nowrap}
 .tcard .tn{font-family:"Dela Gothic One",sans-serif;font-size:14px;white-space:nowrap}
-.tcard .ts{font-size:9.5px;font-weight:700;color:#7a6f5c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tcard .ts{font-size:11px;font-weight:700;color:#7a6f5c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .tcard .tck{position:absolute;top:-7px;right:-6px;background:var(--gold,#c9a227);color:#1b1712;font-size:11px;font-weight:900;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--sumi)}
 .tcard.adv{background:#efe6f4;border-color:#5b3a6e;box-shadow:0 3px 0 #5b3a6e}
 .tcard.lockd{opacity:.6;background:#e9e2d2;border-style:dashed;box-shadow:none}
@@ -1051,7 +1061,7 @@ function themeCard(k) {
     return `<button class="tcard lockd" data-k="${k}"><span class="te">🔒</span><span class="tn">？？？</span><span class="ts">あと${t.locked - have}つ</span></button>`;
   }
   const cl = clearedSet().has(k), b = themeBest(k);
-  return `<button class="tcard${t.locked ? ' adv' : ''}${cl ? ' clr' : ''}" data-k="${k}">${cl ? '<span class="tck">✓</span>' : ''}<span class="te">${t.e}</span><span class="tn">${shortName(k)}</span><span class="ts">${b ? '最高 ' + fmt(b) : 'まだ遊んでない'}</span></button>`;
+  return `<button class="tcard${t.locked ? ' adv' : ''}${cl ? ' clr' : ''}" data-k="${k}">${cl ? '<span class="tck">✓</span>' : ''}<span class="te">${t.e}</span><span class="tn">${shortName(k)}</span><span class="ts">${b ? '最高 ' + fmt(b) : 'はじめて'}</span></button>`;
 }
 function themeDetail(k) {
   const t = THEMES[k];
@@ -1138,7 +1148,7 @@ function announceTier() {
   const fresh = Object.keys(TILES).filter(k => tierOf(k) > 1 && startOf(k) === S.round && tileWeight(k, S.round, S.theme) > 0);
   if (!fresh.length) return;
   const lv = [...new Set(fresh.map(k => tierOf(k) === 3 ? '極' : '上'))].join('・');
-  setTimeout(() => info(`<b>新しいタイル（${lv}）が出るようになった：</b>${fresh.map(k => TILES[k].e + TILES[k].name + (TILES[k].only ? '（専用）' : '')).join('、')}。タップで効果を確認できる。`), 0);
+  setTimeout(() => info(`<b>新タイル（${lv}）：</b>${fresh.map(k => TILES[k].e + TILES[k].name + (TILES[k].only ? '（専用）' : '')).join('、')}。タップで効果を見られる。`), 0);
   tone(784, 'triangle', .12, .08); setTimeout(() => tone(1047, 'triangle', .18, .08), 110);
 }
 function dealHand() { S.hand = Array.from({ length: handSize() }, () => drawTile(Math.random, S.round, S.theme)); S.sel = -1; }
@@ -1152,7 +1162,7 @@ function render() {
   if (!S.relics.length) { const d = document.createElement('div'); d.className = 'relic empty'; d.textContent = '遺物：まだなし（ラウンドをクリアすると手に入る）'; rb.appendChild(d); }
   for (const k of S.relics) {
     const d = document.createElement('div'); d.className = 'relic'; d.textContent = RELICS[k].e + ' ' + RELICS[k].name;
-    d.onclick = () => { info(`<b>${RELICS[k].e} ${RELICS[k].name}</b>：${RELICS[k].desc}`); relicTip(k); }; rb.appendChild(d);
+    d.onclick = () => { info(`<b>${RELICS[k].e} ${RELICS[k].name}</b>：${vfx(RELICS[k].desc)}`); relicTip(k); }; rb.appendChild(d);
   }
   const bd = $('board'); bd.innerHTML = ''; bd.classList.toggle('fusing', !!S.fuse);
   S.board.forEach((t, i) => {
@@ -1252,7 +1262,7 @@ function hoverDesc(el, getTile) {
     const T = TILES[t], tier = tierOf(t), h = $('hov');
     const tags = (tier === 3 ? '<span class="ht">極</span>' : tier === 2 ? '<span class="ht">上</span>' : '') + (T.only ? `<span class="ht o">${THEMES[T.only].name}専用</span>` : '');
     h.className = 't' + tier;
-    h.innerHTML = `<div class="hh"><span class="he">${T.e}</span><span class="hn">${T.name}</span>${tagHtml(t)}${tags}</div>${T.desc}`;
+    h.innerHTML = `<div class="hh"><span class="he">${T.e}</span><span class="hn">${T.name}</span>${tagHtml(t)}${tags}</div>${vfx(T.desc)}`;
     const r = el.getBoundingClientRect(), w = 220;
     h.style.left = Math.max(6, Math.min(innerWidth - w - 6, r.left + r.width / 2 - w / 2)) + 'px';
     h.style.top = '0px'; h.classList.add('on');
@@ -1291,11 +1301,14 @@ const CARD_GLOSS = [
   [['列'], '列', '盤面の同じ縦の列、または横の列。'],
   [['育つ', '育って'], '育つ', '🌱芽は置いてから2ラウンドで🌿若葉に育つ（水辺の庭では さらに3ラウンドで🌳大樹に）。'],
 ];
+// 説明文の数字を、スコア表示と同じ色に（点＝緑・+倍＝赤・×＝金）
+const VFX_RE = /倍率を?\s?×[\d.]+(?:\s?→\s?×[\d.]+)?|×[\d.]+(?:\s?→\s?×[\d.]+)?|\+\d+倍(?:\s?→\s?\+\d+倍)?|\+\d+点(?:\s?→\s?\+\d+点)?|(?<=点が )\+\d+\s?→\s?\+\d+/g;
+function vfx(desc) { return String(desc).replace(VFX_RE, m => `<span class="${m.includes('×') ? 'vx' : m.endsWith('倍') ? 'vm' : 'vc'}">${m}</span>`); }
 function glossify(desc) {
   const words = []; CARD_GLOSS.forEach((g, gi) => g[0].forEach(w => words.push([w, gi])));
   words.sort((a, b) => b[0].length - a[0].length);
   const re = new RegExp(words.map(w => w[0]).join('|'), 'g'), used = [];
-  const html = String(desc).replace(re, (m, off, str) => { if (m === '対' && str[off - 1] === '反') return m; const gi = words.find(w => w[0] === m)[1]; if (used.includes(gi)) return m; used.push(gi); return `<u class="gl">${m}</u>`; });
+  const html = vfx(desc).replace(re, (m, off, str) => { if (m === '対' && str[off - 1] === '反') return m; const gi = words.find(w => w[0] === m)[1]; if (used.includes(gi)) return m; used.push(gi); return `<u class="gl">${m}</u>`; });
   const br = t => t.replace(/。(?=[^）)」]|$)(?!$)/g, '。<br>');
   return { html: br(html), defs: used.map(gi => `<div><b>${CARD_GLOSS[gi][1]}</b>：${br(CARD_GLOSS[gi][2])}</div>`).join('') };
 }
@@ -1414,7 +1427,7 @@ function onCard(k) {
   if (S.busy) return; ensureAudio();
   if (S.swap) { S.swap = null; }
   S.sel = S.sel === k ? -1 : k; render();
-  if (S.sel >= 0) { vib(8); coach('place', $('board'), '<b>② 盤面の空いているマスをタップ</b>して置こう。<br>同じカードをもう一度タップすると選ぶのをやめる。', { n: '2/7' }); const t = S.hand[k]; info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}${S.theme === 'stack' && S.board.includes(t) ? '　<b>（盤面の同じタイルの上に重ねられる）</b>' : ''}`); tone(660, 'sine', .05, .06); }
+  if (S.sel >= 0) { vib(8); coach('place', $('board'), '<b>② 盤面の空いているマスをタップ</b>して置こう。<br>同じカードをもう一度タップすると選ぶのをやめる。', { n: '2/7' }); const t = S.hand[k]; info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${vfx(TILES[t].desc)}${S.theme === 'stack' && S.board.includes(t) ? '　<b>（盤面の同じタイルの上に重ねられる）</b>' : ''}`); tone(660, 'sine', .05, .06); }
 }
 // ===== 取り消し（1ラウンド1回）：直前に置いた1枚を戻す。置く直前の状態をまるごと覚えておく =====
 function snapUndo() { S.undoSnap = JSON.parse(JSON.stringify({ board: S.board, ages: S.ages, dirs: S.dirs, levels: S.levels, hand: S.hand, held: S.held, holdUsed: S.holdUsed, placed: S.placed })); }
@@ -1453,7 +1466,7 @@ function onCell(i) {
     dealHand(); render(); flashNew(i); showPreview();
     info(`${TILES[t].e} を重ねて <b>${S.levels[i]}段</b> になった（${S.levels[i]}回発動する）。次のタイルを選ぼう。`); return;
   }
-  if (t) { info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${TILES[t].desc}${S.levels && S.levels[i] > 1 ? `　<b>（${S.levels[i]}段）</b>` : ''}`); const a = S.ages[i] != null ? S.round - S.ages[i] : 0; tileTip(t, a ? `置いてから ${a} ラウンド` : 'このラウンドに置いた'); return; }
+  if (t) { info(`<b>${TILES[t].e} ${TILES[t].name}</b>：${vfx(TILES[t].desc)}${S.levels && S.levels[i] > 1 ? `　<b>（${S.levels[i]}段）</b>` : ''}`); const a = S.ages[i] != null ? S.round - S.ages[i] : 0; tileTip(t, a ? `置いてから ${a} ラウンド` : 'このラウンドに置いた'); return; }
   if (S.sel === -1) { info('先に下のタイルを1枚選んでね。'); return; }
   snapUndo();
   if (S.sel === 'hold') { S.board[i] = S.held; S.held = null; S.holdUsed = true; S.sel = -1; }
@@ -1476,9 +1489,9 @@ $('hold').onclick = () => {
     const k = S.sel, put = S.hand[k];
     if (S.held) S.hand[k] = S.held; else S.hand[k] = drawTile(Math.random, S.round, S.theme);
     S.held = put; S.holdUsed = true; S.sel = -1; dropUndo(); render(); showPreview(); tone(600, 'triangle', .08, .08);
-    info(`<b>${TILES[put].e} ${TILES[put].name}</b> をとっておいた。好きなときに とっておき をタップして置ける（置くと、そのときの手札は配り直しになる）。`); return;
+    info(`<b>${TILES[put].e} ${TILES[put].name}</b> をとっておいた。とっておきをタップで置ける（置くと手札は配り直し）。`); return;
   }
-  if (S.held) { S.sel = 'hold'; render(); info(`<b>${TILES[S.held].e} ${TILES[S.held].name}</b>：${TILES[S.held].desc}　<span style="opacity:.8">（とっておき）</span><br><b>⚠ とっておきを置くと、今の手札は配り直しになる。</b>`); tone(660, 'sine', .05, .06); return; }
+  if (S.held) { S.sel = 'hold'; render(); info(`<b>${TILES[S.held].e} ${TILES[S.held].name}</b>：${vfx(TILES[S.held].desc)}　<span style="opacity:.8">（とっておき）</span><br><b>⚠ とっておきを置くと、今の手札は配り直しになる。</b>`); tone(660, 'sine', .05, .06); return; }
   info('手札のカードを選んでから ここをタップすると、そのカードをとっておける（1ラウンド1回）。');
 };
 // 植え替え：1ラウンド1回、置いたタイルを空きマスに動かすか、別のタイルと入れ替える
@@ -1505,7 +1518,7 @@ function onSwapCell(i) {
 function startFuse() {
   S.fuse = { path: [] }; S.busy = false; S.swap = null; render(); showPreview(); drawFuse();
   setTimeout(() => coach('fuse', $('igniteBtn'), '<b>⑤ 置き終わったら🔥点火！</b><br>点火の前に、盤面を<b>指でなぞる</b>と発動の順番（導火線）を決められる。同じ属性が続くと⚡伝導で1回多く発動する。<br><b>なぞらずに点火してもOK</b>（左上から右下へ順に発動）。', { n: '5/7' }), 200);
-  info(`<b>導火線</b>：盤面を<b>なぞって</b>発動の順番を決めよう（上下左右につながったタイルを一筆書き）。なぞらなかったタイルは あとから いつもの順（左上→右下）。決まったら <b>🔥点火</b>。タイルを<b>長押し</b>で説明、<b>植え替え</b>もできる。`);
+  info(`<b>導火線</b>：タイルを<b>なぞって</b>発動の順番を決める（一筆書き）。なぞらないタイルは左上→右下の順。<b>長押し</b>で説明。決まったら<b>🔥点火</b>。`);
   tone(520, 'triangle', .1, .07);
 }
 function fuseCellAt(x, y) {
@@ -1561,7 +1574,7 @@ function fuseStatus() {
   const r = scoreBoard(S.board, S.relics, ctxNow());
   const n = S.board.filter(x => x).length, len = r.path.length;
   const left = n - len;
-  info(`<b>🔥導火線 ${len}マス</b>・<b>⚡伝導 ${r.conduct}</b>・${n >= 5 ? (left === 0 ? '<b style="color:var(--gold)">🏁完走！</b>' : `🏁完走まであと${left}枚`) : '🏁完走は5枚から'}　<span style="opacity:.75">同じ属性をつなぐと伝導（1回多く発動）。決まったら🔥点火</span>`);
+  info(`<b>🔥導火線 ${len}マス</b>・<b>⚡伝導 ${r.conduct}</b>・${n >= 5 ? (left === 0 ? '<b style="color:var(--gold)">🏁完走！</b>' : `🏁完走まであと${left}枚`) : '🏁完走は5枚から'}　<span style="opacity:.75">同じ属性が続くと伝導</span>`);
 }
 function drawFuse() {
   fuseStatus();
@@ -1813,7 +1826,7 @@ function relicChoice(T, ratio) {
   const opts = relicOptions(S.relics, S.theme, Math.random);
   const msg = ratio >= 10 ? 'とんでもないシナジー！' : ratio >= 3 ? 'いい連鎖！' : 'クリア！';
   modal(`<h2>${msg}</h2><div style="text-align:center">${titleHtml(T)}</div><div class="big">${fmt(T)}</div><p style="text-align:center">目標 ${fmt(TARGETS[S.round])}（×${ratio >= 100 ? fmt(Math.floor(ratio)) : ratio.toFixed(1)}）</p>
-    <p>遺物を1つ選ぼう。次のラウンドから効果がある。</p><div class="choices">${opts.map(k => `<button class="choice" data-k="${k}"><b>${RELICS[k].e} ${RELICS[k].name}</b>${RELICS[k].only ? ` <small style="color:#c23b20;font-weight:700">${THEMES[RELICS[k].only].name}専用</small>` : ''}<br>${RELICS[k].desc}</button>`).join('')}</div>`);
+    <p>遺物を1つ選ぼう。次のラウンドから効果がある。</p><div class="choices">${opts.map(k => `<button class="choice" data-k="${k}"><b>${RELICS[k].e} ${RELICS[k].name}</b>${RELICS[k].only ? ` <small style="color:#c23b20;font-weight:700">${THEMES[RELICS[k].only].name}専用</small>` : ''}<br>${vfx(RELICS[k].desc)}</button>`).join('')}</div>`);
   document.querySelectorAll('.choice').forEach(b => b.onclick = () => {
     const k = b.dataset.k;
     S.relics.push(k); closeModal(); S.busy = false; tone(880, 'sine', .12, .08);
@@ -1929,7 +1942,7 @@ function openMenu() {
         <button class="sbtn" id="mSpeed"><i>⏩</i><span>発動の速さ</span><b>${SPEEDS[speedMode][0]}</b></button>
         <button class="sbtn" id="mLight"><i>${lightFx ? '🍃' : '✨'}</i><span>演出</span><b>${lightFx ? '軽め' : 'ふつう'}</b></button>
       </div>
-      <p class="setnote">タップで切り替え。重いときは演出を「軽め」に。発動中は庭をタップで早送り</p>
+      <p class="setnote">重いときは演出を「軽め」に</p>
       <button class="choice" id="mHelp"><b>❓ 遊び方</b><small>はじめに・点の決まり方・導火線・操作・庭</small></button>
       ${playing ? `<button class="choice" id="mGarden"><b>${THEMES[S.theme].e} この庭のこと</b><small>${THEMES[S.theme].name}の要素・専用タイル・専用遺物</small></button>` : ''}
       <button class="choice" id="mCards"><b>📖 カード一覧</b><small>タイルと遺物の効果をぜんぶ見る</small></button>
@@ -1954,8 +1967,8 @@ function gardenInfo() {
   const k = S.theme, t = THEMES[k];
   const tiles = Object.keys(TILES).filter(j => TILES[j].only === k), rel = Object.keys(RELICS).filter(j => RELICS[j].only === k);
   modal(`<h2>${t.e} ${t.name}</h2><p>${t.desc}</p><p class="lead" style="text-align:left">${FACTOR_TIP[k] || ''}</p>
-    <h3 style="font-size:15px;margin:10px 0 4px">専用タイル</h3><div class="tilelist">${tiles.map(j => `<span>${TILES[j].e} ${TILES[j].name}</span><span><small style="color:#7a6f5c">ラウンド${startOf(j) + 1}から</small> ${TILES[j].desc}</span>`).join('')}</div>
-    <h3 style="font-size:15px;margin:10px 0 4px">専用遺物</h3><div class="tilelist">${rel.map(j => `<span>${RELICS[j].e} ${RELICS[j].name}${S.relics.includes(j) ? ' ✓' : ''}</span><span>${RELICS[j].desc}</span>`).join('')}</div>
+    <h3 style="font-size:15px;margin:10px 0 4px">専用タイル</h3><div class="tilelist">${tiles.map(j => `<span>${TILES[j].e} ${TILES[j].name}</span><span><small style="color:#7a6f5c">ラウンド${startOf(j) + 1}から</small> ${vfx(TILES[j].desc)}</span>`).join('')}</div>
+    <h3 style="font-size:15px;margin:10px 0 4px">専用遺物</h3><div class="tilelist">${rel.map(j => `<span>${RELICS[j].e} ${RELICS[j].name}${S.relics.includes(j) ? ' ✓' : ''}</span><span>${vfx(RELICS[j].desc)}</span>`).join('')}</div>
     <div class="menu"><button class="choice" id="giBack"><b>メニューに戻る</b></button></div>`);
   $('modal').scrollTop = 0; $('giBack').onclick = openMenu;
 }
@@ -1987,8 +2000,8 @@ function rankHtml(th, meAt) {
   }).join('')}</div>`;
 }
 function rankingView(th, back, meAt) {
-  const tabs = Object.keys(THEMES).map(k => `<button data-t="${k}" class="${k === th ? 'on' : ''}">${THEMES[k].e}${THEMES[k].name.replace('の庭', '')}</button>`).join('');
-  modal(`<h2>🏆 ランキング</h2><div class="tabs">${tabs}</div><p class="lead" style="font-size:12px">${THEMES[th].name}・上位${RANK_N}件（このブラウザに保存）</p>${rankHtml(th, meAt)}
+  const tabs = Object.keys(THEMES).map(k => `<button data-t="${k}" class="${k === th ? 'on' : ''}" aria-label="${THEMES[k].name}">${THEMES[k].e}</button>`).join('');
+  modal(`<h2>🏆 ランキング</h2><div class="tabs rk">${tabs}</div><p class="lead" style="font-size:12px">${THEMES[th].name}・上位${RANK_N}件（このブラウザに保存）</p>${rankHtml(th, meAt)}
     <div class="menu" style="margin-top:10px"><button class="choice" id="rkBack"><b>${back === 'menu' ? 'メニューに戻る' : 'もどる'}</b></button></div>`);
   $('modal').scrollTop = 0;
   document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => rankingView(b.dataset.t, back, meAt));
@@ -2067,7 +2080,7 @@ function cardList(tab) {
   const item = (k, t, extra = '') => {
     const off = t.only && mine && t.only !== mine;
     const cls = 'cl-i t' + (t.tier || 1) + (t.only && t.only === mine ? ' mine' : '') + (off ? ' off' : '');
-    return `<div class="${cls}"><span class="ce">${t.e}</span><span><b>${t.name}</b> ${tagHtml(k)}${extra}<br>${t.desc}</span></div>`;
+    return `<div class="${cls}"><span class="ce">${t.e}</span><span><b>${t.name}</b> ${tagHtml(k)}${extra}<br>${vfx(t.desc)}</span></div>`;
   };
   const when = k => tierOf(k) > 1 ? `<small style="margin-left:6px;color:#7a6f5c">ラウンド${startOf(k) + 1}から</small>` : '';
   const keys = Object.keys(TILES);
@@ -2076,7 +2089,7 @@ function cardList(tab) {
   if (tab === 'relic') {
     const ritem = ([k, r]) => {
       const has = S.relics.includes(k), start = Object.values(THEMES).find(t => t.relic === k), off = r.only && mine && r.only !== mine;
-      return `<div class="cl-i${has ? ' mine' : ''}${off ? ' off' : ''}"><span class="ce">${r.e}</span><span><b>${r.name}</b>${has ? '<small style="margin-left:6px;color:#c23b20;font-weight:700">持っている</small>' : ''}${start ? `<small style="margin-left:6px;color:#7a6f5c">最初に持っている</small>` : ''}<br>${r.desc}</span></div>`;
+      return `<div class="cl-i${has ? ' mine' : ''}${off ? ' off' : ''}"><span class="ce">${r.e}</span><span><b>${r.name}</b>${has ? '<small style="margin-left:6px;color:#c23b20;font-weight:700">持っている</small>' : ''}${start ? `<small style="margin-left:6px;color:#7a6f5c">最初に持っている</small>` : ''}<br>${vfx(r.desc)}</span></div>`;
     };
     const all = Object.entries(RELICS);
     const order = mine ? [mine, ...Object.keys(THEMES).filter(t => t !== mine)] : Object.keys(THEMES);
