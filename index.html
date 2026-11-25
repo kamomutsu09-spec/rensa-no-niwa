@@ -64,7 +64,7 @@ header h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:24p
 #bar.gauge #barin{border-radius:7px;background:linear-gradient(90deg,#8a6a2a,var(--gold));transition:width .25s}
 #bar.gauge::after{content:'🎯';position:absolute;right:-6px;top:50%;transform:translateY(-50%);font-size:16px}
 #bar.gauge.over #barin{background:linear-gradient(90deg,var(--gold),#fff2b0);box-shadow:0 0 12px rgba(242,185,56,.9)}
-#bar.gauge.over{animation:gpulse 1s ease-in-out infinite}
+#bar.gauge.over{animation:none}
 @keyframes gpulse{50%{box-shadow:inset 0 0 0 1.5px var(--gold),0 0 10px rgba(242,185,56,.6)}}
 .bump{transform:scale(1.2)}
 #combo{will-change:transform;position:absolute;left:0;right:0;top:64px;text-align:center;z-index:6;font-family:"Dela Gothic One",sans-serif;font-size:20px;pointer-events:none;opacity:0;transition:opacity .2s;-webkit-text-stroke:1px rgba(0,0,0,.35)}
@@ -224,11 +224,11 @@ i.el{font-style:normal;display:inline-block;font-size:9px;font-weight:700;line-h
 .cell .fc.arw{right:20px}
 .cell .dir{position:absolute;right:2px;bottom:1px;font-size:15px;font-weight:900;line-height:1;color:#2b6cb0;text-shadow:0 0 2px #fff,0 0 2px #fff}
 #mile{position:fixed;inset:0;z-index:44;pointer-events:none;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:0}
-#mile .mk{font-family:"Dela Gothic One",sans-serif;font-size:min(13vw,64px);color:var(--gold);text-shadow:0 0 18px rgba(242,185,56,.9),0 4px 0 #1b1712;-webkit-text-stroke:2px #1b1712;paint-order:stroke fill;white-space:nowrap}
+#mile .mk{font-family:"Dela Gothic One",sans-serif;font-size:min(13vw,64px);color:var(--gold);text-shadow:0 5px 0 #1b1712;-webkit-text-stroke:3px #1b1712;paint-order:stroke fill;white-space:nowrap}
 #mile .ms{font-family:"Dela Gothic One",sans-serif;font-size:20px;color:#fff7ea;-webkit-text-stroke:1.5px #1b1712;paint-order:stroke fill;margin-top:6px}
 #mile .mf{font-size:14px;font-weight:700;color:#1b1712;background:var(--gold);padding:2px 10px;border-radius:12px;margin-top:8px}
-#mile.big .mk{background:linear-gradient(90deg,#ff5e5e,#ffd23f,#5ee38b,#5ec8ff,#b65eff);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:0;text-shadow:none;filter:drop-shadow(0 0 12px rgba(255,255,255,.7))}
-#flashall{position:fixed;inset:0;z-index:43;pointer-events:none;opacity:0;background:radial-gradient(circle,rgba(255,246,200,.95),rgba(242,185,56,.5) 40%,transparent 75%)}
+#mile.big .mk{font-size:min(16vw,80px)}
+#flashall{position:fixed;inset:0;z-index:43;pointer-events:none;opacity:0;background:var(--kinari)}
 .ttl{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:9px;background:var(--ai);color:var(--kinari);vertical-align:middle}
 .ttl.ttl-rb{background:linear-gradient(90deg,#c2410c,#b8860b,#15803d,#1d4ed8,#7e22ce);color:#fff}
 .ttl.ttl-g{box-shadow:0 0 8px rgba(242,185,56,.9)}
@@ -342,6 +342,10 @@ u.gl,#tip .gls b{text-decoration:none;background:linear-gradient(transparent 58%
 .tilelist{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;font-size:13px;margin:8px 0;line-height:1.5}
 .burst{position:fixed;pointer-events:none;font-size:26px;z-index:30;animation:burst 1s ease-out forwards}
 @keyframes burst{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
+/* ===== 演出：紙片と判子（1枚のcanvasにまとめて描く） ===== */
+#pfx{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:24;pointer-events:none}
+.bflash{position:absolute;inset:0;pointer-events:none;z-index:3;border-radius:4px;background:var(--kinari);opacity:0}
+.bframe{position:absolute;inset:-4px;pointer-events:none;z-index:3;border-radius:6px;border:4px solid var(--x);opacity:0}
 @media (prefers-reduced-motion:reduce){.card,.card:nth-child(n){transform:none}.shake{animation:none}}
 </style>
 </head>
@@ -378,7 +382,7 @@ u.gl,#tip .gls b{text-decoration:none;background:linear-gradient(transparent 58%
 <div id="hov"></div>
 <div id="evo"></div>
 <div id="mile"></div>
-<div id="flashall"></div>
+<div id="flashall"></div><canvas id="pfx"></canvas>
 <div id="overlay"><div id="modal"></div></div>
 <script>
 const N = 5;
@@ -1565,13 +1569,9 @@ $('board').addEventListener('pointerdown', e => {
 });
 $('board').addEventListener('pointermove', e => {
   if (!S.fuse || !fuseDrag) return;
-  // 盤面の外へ出たらリセット
+  // 盤面の外に出ても消さない（そのまま止まるだけ。戻ってくれば続きから描ける）
   const br = $('board').getBoundingClientRect();
-  if (e.clientX < br.left || e.clientX > br.right || e.clientY < br.top || e.clientY > br.bottom) {
-    fuseDrag = false; clearTimeout(fuseLP.t); fuseLP.i = -1;
-    if (S.fuse.path.length) { S.fuse.path = []; tone(220, 'sawtooth', .12, .06); render(); showPreview(); drawFuse(); info('盤面の外に出たので、導火線をリセットした。もう一度なぞろう。'); }
-    return;
-  }
+  if (e.clientX < br.left || e.clientX > br.right || e.clientY < br.top || e.clientY > br.bottom) { clearTimeout(fuseLP.t); fuseLP.i = -1; return; }
   const i = fuseCellAt(e.clientX, e.clientY);
   if (fuseLP.i >= 0 && i !== fuseLP.i) { clearTimeout(fuseLP.t); fuseLP.i = -1; }   // 別のマスへ動いたら長押しではない
   const P = S.fuse.path;
@@ -1663,7 +1663,7 @@ function measure() {
 const KCOL = { c: '#4fc2a8', m: '#ef5a3c', x: '#f2b938', s: '#ece0c6', r: '#ece0c6', n: '#a9b3cc' };
 let liveBeams = 0, livePops = 0, liveFly = 0;
 function beam(from, to, col, w) {
-  if (liveBeams >= (lightFx ? 10 : 36)) return;
+  if (liveBeams >= (lightFx ? 8 : 22)) return;
   const a = centers[from], b = centers[to]; if (!a || !b) return;
   const len = Math.hypot(b.x - a.x, b.y - a.y);
   const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -1674,7 +1674,7 @@ function beam(from, to, col, w) {
   an.onfinish = () => { l.remove(); liveBeams--; };
 }
 function pop(i, text, kind) {
-  if (livePops >= (lightFx ? 4 : 14)) return;
+  if (livePops >= (lightFx ? 4 : 10)) return;
   const c = centers[i]; if (!c) return;
   const p = document.createElement('div'); p.className = 'pop ' + kind; p.textContent = text;
   p.style.left = c.x + 'px'; p.style.top = (c.y - 8) + 'px';
@@ -1699,8 +1699,8 @@ const FIREX = [{ transform: 'scale(1) rotate(0)' }, { transform: 'scale(1.4) rot
 const SHAKE = [{ transform: 'translate(0,0)' }, { transform: 'translate(-4px,2px)' }, { transform: 'translate(4px,-2px)' }, { transform: 'translate(-2px,1px)' }, { transform: 'translate(0,0)' }];
 let lastShake = 0;
 function comboStyle(n) {
-  const el = $('combo'); el.textContent = `${n} 連鎖！`;
-  el.style.color = n >= 30 ? `hsl(${(n * 23) % 360},90%,68%)` : n >= 15 ? '#f2b938' : n >= 8 ? '#f6d68a' : '#ece0c6';
+  const el = $('combo'); el.textContent = n;
+  el.style.color = n >= 50 ? '#ef5a3c' : n >= 15 ? '#f2b938' : n >= 8 ? '#f6d68a' : '#ece0c6';
   el.style.fontSize = Math.min(34, 18 + n * 0.5) + 'px';
   if (!lightFx) kick(el, [{ transform: 'scale(1.5)' }, { transform: 'scale(1)' }], 180);
 }
@@ -1709,7 +1709,7 @@ function glow(mult) {
   // 光の強さは5段階だけ。同じ段階なら描き直さない
   const g = Math.round(Math.min(1, Math.log10(Math.max(1, mult)) / 3) * 4) / 4;
   if (g === glowLevel) return; glowLevel = g;
-  $('mult').style.textShadow = g > 0 && !lightFx ? `0 0 ${6 + 20 * g}px rgba(239,90,60,${.4 + .5 * g})` : 'none';
+  $('mult').style.textShadow = 'none';
 }
 // 数字の書き換えは1フレームに1回だけ
 let pendingNums = null;
@@ -1718,17 +1718,19 @@ function queueNums(ch, mu) {
   if (first) requestAnimationFrame(() => {
     const [c, m] = pendingNums; pendingNums = null;
     setNums(c, m); glow(m);
+    const dg = Math.floor(Math.log10(Math.max(1, m)));
+    if (dg > multDig) { multDig = dg; if (dg >= 2 && !lightFx) { kick($('mult'), [{ transform: 'scale(1.9) rotate(-6deg)' }, { transform: 'scale(1)' }], 300); tone(note(18 + dg), 'square', .12, .05); } }
     $('barin').style.width = Math.min(100, Math.floor(c * m) / TARGETS[S.round] * 100) + '%';
   });
 }
-let delayNow = 320;
+let delayNow = 320, multDig = 0;
 async function runScoring(opt) {
   const replay = !!(opt && opt.replay);
   const res = scoreBoard(S.board, S.relics, ctxNow());
   if (!replay) collectStats(res);
   speed = replay ? 0.45 : SPEEDS[speedMode][1]; canFast = false; scoring = true;
   info(replay ? '🎞️ スロー再生中…（タップで少し速く）' : '導火線に沿って発動していく…（タップで早送り）');
-  $('bar').className = ''; setNums(0, 1); glowLevel = -1; glow(1); $('total').className = ''; $('total').textContent = ''; $('barin').style.width = '0%';
+  $('bar').className = ''; setNums(0, 1); multDig = 0; glowLevel = -1; glow(1); $('total').className = ''; $('total').textContent = ''; $('barin').style.width = '0%';
   await sleep(450); canFast = true;
   measure();
   let delay = 320, k = 0, combo = 0;
@@ -1743,6 +1745,7 @@ async function runScoring(opt) {
     delayNow = delay / speed;
     if (S.theme === 'fire' && e.heat !== shownHeat && $('heatv')) { shownHeat = e.heat; $('heatv').textContent = e.heat; if (!lightFx) kick($('heatv'), [{ transform: 'scale(1.4)' }, { transform: 'scale(1)' }], 120); }
     kick(cells[e.i], e.kind === 'x' ? FIREX : FIRE, e.kind === 'x' ? 320 / speed : 220 / speed);
+    if (delayNow >= 22 && parts.length < 110) { const c = centers[e.i]; if (c) paper(c.ax, c.ay + 6, e.kind === 'x' ? 5 : 2, PAL[e.kind] || PAL.s, e.kind === 'x' ? 1.1 : .7, 26); }
     if (speed < 10 && !replay) { if (e.kind === 'x' && e.v >= 1.5) vib(e.v >= 3 ? 25 : 12); else if (e.kind === 's') vib(6); }
     // シナジーの線：何のおかげで点が入ったかを見せる（1回に出す本数は上限つき）
     const maxL = lightFx ? 3 : 8;
@@ -1750,8 +1753,8 @@ async function runScoring(opt) {
     if (e.kind === 's') { e.links.slice(0, maxL).forEach(j => beam(e.i, j, '#ece0c6', 5)); (e.boosters || []).forEach(j => beam(j, e.i, '#f2b938', 4)); }
     else e.links.slice(0, maxL).forEach(j => beam(j, e.i, KCOL[e.kind], e.links.length > 6 ? 2 : 3));
     const synergy = e.links.length > 0 || e.by != null;
-    if (synergy) { combo++; $('combo').classList.add('on'); comboStyle(combo); }
-    const label = e.lbl ? e.lbl : e.kind === 'c' ? `+${fmt(e.v)}点` : e.kind === 'm' ? `+${fmt(e.v)}倍` : e.kind === 'x' ? `×${e.v}` : e.kind === 's' ? (e.times > 1 ? `✨再発動×${e.times}` : '✨再発動') : e.kind === 'r' ? `🪞→${TILES[e.as].e}` : '…';
+    if (synergy) { combo++; $('combo').classList.add('on'); comboStyle(combo); if (COMBO_MARKS.includes(combo) && speed < 10 && !replay) comboMark(combo); }
+    const label = e.lbl ? e.lbl : e.kind === 'c' ? `+${fmt(e.v)}点` : e.kind === 'm' ? `+${fmt(e.v)}倍` : e.kind === 'x' ? `×${e.v}` : e.kind === 's' ? (e.times > 1 ? `↻×${e.times}` : '↻') : e.kind === 'r' ? `🪞→${TILES[e.as].e}` : '…';
     const tid = e.kind === 'c' ? 'chips' : (e.kind === 'm' || e.kind === 'x') ? 'mult' : null;
     if (tid && e.v !== 0) {
       const ch = e.chips, mu = e.mult, kk = k, kind = e.kind;
@@ -1764,6 +1767,7 @@ async function runScoring(opt) {
           tone(note(kk) * 2, 'sawtooth', .18, .06); tone(note(kk) * 2.52, 'sine', .2, .08);
           const now = performance.now();
           if (!lightFx && now - lastShake > 150) { lastShake = now; kick($('boardwrap'), SHAKE, 250); }
+          if (e.v >= 1.5) { stamp(e.i, e.v >= 3); boardFlash(.12 + Math.min(.25, e.v * .04)); thump(e.v); }
         }
       });
     } else {
@@ -1772,6 +1776,7 @@ async function runScoring(opt) {
     }
     if (synergy && delayNow >= 40) tone(note(k) * 4, 'sine', .05, .03);
     k++;
+    if (e.kind === 'x' && e.v >= 3 && !lightFx && speed < 10 && delayNow >= 22) await sleep(110 / speed); // ヒットストップ
     await sleep(delay / speed); delay = Math.max(minDelay, delay * 0.9);
   }
   await sleep(450 / speed);
@@ -1787,11 +1792,14 @@ async function runScoring(opt) {
       const f = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - f, 3);
       const v = L > 6 ? (f >= 1 ? T : Math.pow(10, L * e)) : Math.floor(T * e);
       $('total').textContent = fmt(v);
-      while (passed < MILES.length && MILES[passed][0] <= 68 && lg(v) >= MILES[passed][0]) { if (MILES[passed][0] >= 12 && !replay) milePop(MILES[passed][1]); passed++; }
+      if (!lightFx) $('total').style.transform = `scale(${1 + .35 * e * Math.min(1, L / 8)})`;
+      while (passed < MILES.length && MILES[passed][0] <= 68 && lg(v) >= MILES[passed][0]) { if (MILES[passed][0] >= 12 && !replay) tone(880 + passed * 40, 'triangle', .06, .05); passed++; }
       if (f < 1) requestAnimationFrame(step); else done();
     };
     requestAnimationFrame(step);
   });
+  $('total').style.transform = '';
+  if (!lightFx) { kick($('total'), [{ transform: `scale(${1 + .35 * Math.min(1, L / 8)})` }, { transform: 'scale(1.75)', offset: .25 }, { transform: 'scale(1)' }], 380); thump(4); }
   if (!replay) await mileBanner(T);
   if (replay) { await sleep(900); return T; }
   // いちばんの連鎖を覚えておく（スロー再生用）
@@ -1803,7 +1811,9 @@ async function runScoring(opt) {
     $('scorebox').classList.remove('flash'); void $('scorebox').offsetWidth; $('scorebox').classList.add('flash');
     [0, 4, 7, 12].forEach((s, j) => setTimeout(() => tone(note(12 + s), 'triangle', .25, .1), j * 90));
     const ratio = T / TARGETS[S.round];
-    burst(ratio >= 10 ? 28 : ratio >= 3 ? 16 : 8);
+    burst(ratio >= 100 ? 48 : ratio >= 10 ? 32 : ratio >= 3 ? 18 : 10);
+    if (ratio >= 2 && !lightFx) $('flashall').animate([{ opacity: 0 }, { opacity: .35, offset: .1 }, { opacity: 0 }], { duration: 500 });
+    if (ratio >= 10 && !lightFx) kick($('app'), SHAKE, 350);
     await sleep(900);
     glow(1);
     if (S.round === TARGETS.length - 1) return victory(T);
@@ -1817,15 +1827,84 @@ async function runScoring(opt) {
     missed(T);
   }
 }
-function burst(n) {
-  const r = $('total').getBoundingClientRect(), em = ['✨', '🌱', '💧', '🔥', '⭐', '🌙'];
-  for (let j = 0; j < n; j++) {
-    const d = document.createElement('div'); d.className = 'burst'; d.textContent = em[j % em.length];
-    d.style.left = (r.left + r.width / 2) + 'px'; d.style.top = (r.top) + 'px';
-    const a = Math.random() * Math.PI * 2, s = 80 + Math.random() * 160;
-    d.style.setProperty('--dx', Math.cos(a) * s + 'px'); d.style.setProperty('--dy', Math.sin(a) * s + 'px'); d.style.setProperty('--r', (Math.random() * 360 - 180) + 'deg');
-    document.body.appendChild(d); setTimeout(() => d.remove(), 1100);
+// ===== 演出：紙片と判子 =====
+// DOMを増やさず、1枚のcanvasに描く。粒が無いときは止まる。色は藍染・花札の色だけ
+const PAL = { c: ['#4fc2a8', '#ece0c6'], m: ['#ef5a3c', '#ece0c6'], x: ['#f2b938', '#ef5a3c', '#ece0c6'], s: ['#ece0c6', '#a9b3cc'], r: ['#ece0c6'], n: ['#a9b3cc'], all: ['#ef5a3c', '#f2b938', '#ece0c6', '#4fc2a8', '#2c3e6b'] };
+const parts = []; let pfxOn = false, pfxW = 0, pfxH = 0, pfxDpr = 1;
+function pfxSize() {
+  const cv = $('pfx'); pfxDpr = Math.min(2, devicePixelRatio || 1); pfxW = innerWidth; pfxH = innerHeight;
+  cv.width = pfxW * pfxDpr; cv.height = pfxH * pfxDpr;
+}
+function pfxStart() {
+  if (pfxOn) return; pfxOn = true;
+  if (pfxW !== innerWidth || pfxH !== innerHeight) pfxSize();
+  let last = performance.now();
+  const cv = $('pfx'), g = cv.getContext('2d');
+  const step = now => {
+    const dt = Math.min(50, now - last) / 16.7; last = now;
+    g.setTransform(pfxDpr, 0, 0, pfxDpr, 0, 0); g.clearRect(0, 0, pfxW, pfxH);
+    for (let n = parts.length - 1; n >= 0; n--) {
+      const p = parts[n]; p.t += dt;
+      if (p.t >= p.life) { parts.splice(n, 1); continue; }
+      const f = p.t / p.life;
+      if (p.k === 'p') {          // 紙片：ひらひら落ちる
+        p.vy += .18 * dt; p.vx *= .985; p.vy *= .985; p.x += p.vx * dt; p.y += p.vy * dt; p.a += p.va * dt;
+        g.globalAlpha = f < .7 ? 1 : (1 - f) / .3;
+        g.save(); g.translate(p.x, p.y); g.rotate(p.a); g.scale(1, Math.cos(p.a * 1.7));
+        g.fillStyle = p.col; g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); g.restore();
+      } else {                    // 判子の枠：角ばった朱の四角が押される
+        const e = 1 - Math.pow(1 - f, 3), sz = p.s0 + (p.s1 - p.s0) * e;
+        g.globalAlpha = 1 - f; g.lineWidth = p.lw * (1 - f * .6); g.strokeStyle = p.col;
+        g.save(); g.translate(p.x, p.y); g.rotate(p.a); g.strokeRect(-sz / 2, -sz / 2, sz, sz); g.restore();
+      }
+    }
+    g.globalAlpha = 1;
+    if (parts.length) requestAnimationFrame(step); else { pfxOn = false; g.clearRect(0, 0, pfxW, pfxH); }
+  };
+  requestAnimationFrame(step);
+}
+function paper(x, y, n, cols, pow = 1, life = 40) {
+  if (lightFx) return;
+  for (let j = 0; j < n && parts.length < 140; j++) {
+    const a = Math.random() * Math.PI * 2, v = (1.5 + Math.random() * 3.5) * pow;
+    parts.push({ k: 'p', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2 * pow, a: Math.random() * 6, va: (Math.random() - .5) * .4, w: 4 + Math.random() * 4, h: 6 + Math.random() * 6, col: cols[j % cols.length], t: 0, life: life + Math.random() * 20 });
   }
+  pfxStart();
+}
+function cellXY(i) { const c = $('board').children[i]; if (!c) return null; const r = c.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width }; }
+function stamp(i, big) {
+  if (lightFx || parts.length >= 140) return;
+  const c = cellXY(i); if (!c) return;
+  parts.push({ k: 's', x: c.x, y: c.y, s0: c.w * 1.6, s1: c.w * (big ? 1.05 : .95), lw: big ? 7 : 5, a: (Math.random() - .5) * .25, col: '#ef5a3c', t: 0, life: big ? 22 : 16 });
+  if (big) parts.push({ k: 's', x: c.x, y: c.y, s0: c.w * .9, s1: c.w * 2.6, lw: 3, a: .785, col: '#f2b938', t: 0, life: 26 });
+  pfxStart();
+}
+function boardFx(cls, frames, dur) {
+  if (lightFx) return;
+  let el = $('boardwrap').querySelector('.' + cls);
+  if (!el) { el = document.createElement('div'); el.className = cls; $('boardwrap').appendChild(el); }
+  kick(el, frames, dur);
+}
+let lastBf = 0;
+function boardFlash(a) { const t = performance.now(); if (t - lastBf < 140) return; lastBf = t; boardFx('bflash', [{ opacity: a }, { opacity: 0 }], 220); }
+function thump(v) { tone(70, 'sine', .22, Math.min(.35, .12 + v * .03)); tone(140, 'triangle', .08, .06); }
+const COMBO_MARKS = [10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 1000];
+function comboMark(n) {
+  if (lightFx) return;
+  boardFx('bframe', [{ opacity: 1, transform: 'scale(1.03)' }, { opacity: 0, transform: 'scale(1)' }], 500);
+  const r = $('board').getBoundingClientRect(), m = Math.min(5, 2 + Math.floor(n / 50));
+  for (const [x, y] of [[r.left, r.top], [r.right, r.top], [r.left, r.bottom], [r.right, r.bottom]]) paper(x, y, 6 + m * 2, PAL.all, 1.2);
+  [0, 5, 9].forEach((st, j) => setTimeout(() => tone(note(14 + st + Math.min(10, n / 20)), 'triangle', .12, .06), j * 55));
+}
+function confetti(n) {      // 上から紙吹雪
+  if (lightFx) return;
+  for (let j = 0; j < n && parts.length < 140; j++) parts.push({ k: 'p', x: Math.random() * innerWidth, y: -10 - Math.random() * 80, vx: (Math.random() - .5) * 2, vy: 1 + Math.random() * 2, a: Math.random() * 6, va: (Math.random() - .5) * .3, w: 6 + Math.random() * 5, h: 9 + Math.random() * 7, col: PAL.all[j % 5], t: 0, life: 90 + Math.random() * 40 });
+  pfxStart();
+}
+function burst(n) {        // 合計の数字から紙片がはじける
+  const r = $('total').getBoundingClientRect();
+  paper(r.left + r.width / 2, r.top + r.height / 2, Math.min(70, n), PAL.all, 1.6, 50);
+  if (n >= 30) confetti(Math.min(70, n));
 }
 
 // ===== モーダル =====
@@ -2032,11 +2111,11 @@ async function mileBanner(T) {
   try { const prev = +(localStorage.getItem('rensa-mile') || 0); if (m[0] > prev) { first = true; localStorage.setItem('rensa-mile', m[0]); } } catch (e) {}
   const big = m[0] >= 68, g = m[0] >= 100, el = $('mile');
   el.className = big ? 'big' : '';
-  el.innerHTML = `<div class="mk">${m[1]}${g ? '到達！' : ' 突破！'}</div><div class="ms">${g ? '10の' + m[0] + '乗' : titleOf(T)}</div>${first ? '<div class="mf">初到達！</div>' : ''}`;
+  el.innerHTML = `<div class="mk">${m[1]}</div>`;
   const dur = big ? 2200 : 1300;
   el.animate([{ opacity: 0, transform: 'scale(.5)' }, { opacity: 1, transform: 'scale(1.1)', offset: .15 }, { opacity: 1, transform: 'scale(1)', offset: .8 }, { opacity: 0, transform: 'scale(1.05)' }], { duration: dur });
   if (big) {
-    $('flashall').animate([{ opacity: 0 }, { opacity: 1, offset: .1 }, { opacity: 0 }], { duration: 1400 });
+    $('flashall').animate([{ opacity: 0 }, { opacity: .45, offset: .1 }, { opacity: 0 }], { duration: 900 });
     burst(g ? 60 : 40);
     [0, 4, 7, 12, 16, 19, 24].forEach((st, j) => setTimeout(() => tone(note(12 + st), 'triangle', .3, .1), j * 80));
     if (!lightFx) kick($('app'), SHAKE, 400);
